@@ -36,12 +36,12 @@ Out (post-MVP):
 - [x] PostgreSQL in `compose.yaml`, Docker Compose support, Flyway, Testcontainers for PostgreSQL
 - [x] Apache 2.0 `LICENSE`
 - [x] Migrate the build from Groovy to Kotlin DSL (`build.gradle.kts`, `settings.gradle.kts`) with a version catalog
-- [ ] Pin the PostgreSQL image version and use a `topicman` database and user in `compose.yaml`
-- [ ] Set `spring.jpa.hibernate.ddl-auto: validate` and `spring.jpa.open-in-view: false`
-- [ ] Spotless (palantir-java-format) wired into `./gradlew check`
-- [ ] ArchUnit `ArchitectureTest` enforcing the layer and context rules from `CLAUDE.md`
-- [ ] GitHub Actions CI: build and test on every push and pull request
-- [ ] README stub replacing `HELP.md`, and `CONTRIBUTING.md`
+- [x] Pin the PostgreSQL image version and use a `topicman` database and user in `compose.yaml`
+- [x] Set `spring.jpa.hibernate.ddl-auto: validate` and `spring.jpa.open-in-view: false`
+- [x] Spotless (palantir-java-format) wired into `./gradlew check`
+- [x] ArchUnit `ArchitectureTest` enforcing the layer and context rules from `CLAUDE.md`
+- [x] GitHub Actions CI: build and test on every push and pull request
+- [x] README stub replacing `HELP.md`, and `CONTRIBUTING.md`
 - [ ] `openapi-generator` Gradle plugin generating per-context Java interfaces and DTOs from
       `src/main/resources/openapi/`; springdoc serves the hand-written spec (ADR 0004)
 
