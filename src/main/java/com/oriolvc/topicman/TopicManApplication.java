@@ -9,5 +9,4 @@ public class TopicManApplication {
     public static void main(String[] args) {
         SpringApplication.run(TopicManApplication.class, args);
     }
-
 }
