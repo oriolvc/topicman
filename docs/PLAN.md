@@ -47,6 +47,7 @@ Out (post-MVP):
 
 ## Phase 1 — Kafka end to end (API only)
 
+- [x] `messaging` domain: `Message`, `Destination`, `ConsumeSession`, ports `MessageProducer` and `MessageReader`
 - [x] `connection` domain and persistence: `Connection` aggregate, repository, migrations
 - [ ] Credential encryption (AES-GCM, `TOPICMAN_MASTER_KEY`)
 - [ ] Kafka adapter: produce with key, headers and acknowledgement
