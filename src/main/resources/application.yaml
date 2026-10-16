@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: TopicMan
+  threads:
+    virtual:
+      enabled: true
