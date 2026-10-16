@@ -42,6 +42,8 @@ Out (post-MVP):
 - [ ] ArchUnit `ArchitectureTest` enforcing the layer and context rules from `CLAUDE.md`
 - [ ] GitHub Actions CI: build and test on every push and pull request
 - [ ] README stub replacing `HELP.md`, and `CONTRIBUTING.md`
+- [ ] `openapi-generator` Gradle plugin generating per-context Java interfaces and DTOs from
+      `src/main/resources/openapi/`; springdoc serves the hand-written spec (ADR 0004)
 
 ## Phase 1 — Kafka end to end (API only)
 
@@ -51,6 +53,7 @@ Out (post-MVP):
 - [ ] Kafka adapter: produce with key, headers and acknowledgement
 - [ ] Kafka adapter: side-effect-free reader (no group, `assign()`, latest or earliest)
 - [ ] Abstract `BrokerAdapterContractTest`, with Kafka passing it via Testcontainers
+- [ ] OpenAPI spec for connections, produce and consume sessions (SSE), reviewed before coding
 - [ ] REST API for connections and produce; SSE endpoint for consume sessions
 - [ ] Session limits and idle timeout for consume sessions
 
@@ -64,7 +67,7 @@ Out (post-MVP):
 ## Phase 3 — Minimal UI
 
 - [ ] Vite + React + TypeScript + Mantine app in `frontend/`, built by Gradle and bundled into the jar
-- [ ] OpenAPI spec from the backend and generated TypeScript client
+- [ ] TypeScript client generated from the OpenAPI specs
 - [ ] Connections screen: list, create, edit, test, delete
 - [ ] Produce screen: destination, key, headers, JSON payload, send N, result
 - [ ] Consume screen: live stream with pause, clear and payload formatting
@@ -72,6 +75,7 @@ Out (post-MVP):
 ## Phase 4 — Collections and environments
 
 - [ ] `collection` domain: `MessageTemplate`, `Collection`, `Environment`, variable resolution
+- [ ] OpenAPI spec for collections and environments, reviewed before coding
 - [ ] Persistence and REST API for collections and environments
 - [ ] UI: save from the produce screen, browse collections, switch environment
 - [ ] YAML export and import

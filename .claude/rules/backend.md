@@ -41,10 +41,14 @@ com.oriolvc.topicman.<context>
 ## Infrastructure
 
 - Constructor injection only; no field injection, no `@Autowired`.
+- The HTTP API is defined first in `src/main/resources/openapi/<context>.yaml` (ADR 0004).
+  Controllers implement the interfaces generated from it; never add an endpoint, parameter or
+  field that is not in the spec, and never edit or commit generated code.
 - Controllers are thin: map DTO → command, call the use case, map result → DTO.
-- Never expose domain objects in the API. DTOs are records suffixed `Request` / `Response`.
+- Never expose domain objects in the API. DTOs are generated from the spec; schema names are
+  suffixed `Request` / `Response`.
 - API paths are versioned and plural: `/api/v1/connections/{id}`.
-- Errors are RFC 9457 `ProblemDetail`, mapped from domain error codes in one `@RestControllerAdvice`
+- Errors are RFC 9457 `ProblemDetail` (declared for every operation in the spec), mapped from domain error codes in one `@RestControllerAdvice`
   per context.
 - JPA entities are separate from domain objects and mapped explicitly; JPA and Spring Data
   annotations never appear in `domain`. Entities live only in `infrastructure/persistence`.

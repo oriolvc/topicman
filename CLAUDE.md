@@ -9,6 +9,7 @@ for Apache Pulsar, Apache Kafka and RabbitMQ from one UI. Open source (Apache 2.
 ## Tech stack
 
 - Backend: Java 25, Spring Boot 4.x, Gradle, Spring Data JPA, PostgreSQL, Flyway, springdoc-openapi
+- API: OpenAPI 3.1 specs written first, `openapi-generator` for Java interfaces and the TS client
 - Broker clients: `kafka-clients`, `pulsar-client`, `amqp-client` used directly (no Spring broker starters)
 - Frontend: React + TypeScript (Vite), Mantine, TanStack Query
 - Tests: JUnit 5, AssertJ, ArchUnit, Testcontainers; Vitest + Testing Library on the frontend
@@ -17,6 +18,7 @@ for Apache Pulsar, Apache Kafka and RabbitMQ from one UI. Open source (Apache 2.
 
 ```
 src/main/java/        Spring Boot application (single Gradle project at the repo root)
+src/main/resources/openapi/  OpenAPI specs, one per context: the source of truth for the API
 src/test/java/        backend tests
 frontend/             React app; its build output is bundled into the jar
 docs/                 PLAN.md and ADRs
@@ -62,6 +64,9 @@ Hexagonal architecture, packaged by bounded context, then by layer.
 
 - Work on one task from `docs/PLAN.md` at a time. When it is done and `./gradlew check` passes,
   tick its checkbox in `docs/PLAN.md`.
+- API first (ADR 0004): any new or changed endpoint starts in the OpenAPI spec in
+  `src/main/resources/openapi/`. Present the spec change for review before writing controller
+  code; controllers implement the generated interfaces. Never change the API in code only.
 - Test-first for `domain` and `application` code: write the failing test, then the code.
 - Ask before adding any new dependency, and say why it is needed.
 - If a change needs an architectural decision not covered by an ADR, stop and propose a new ADR
