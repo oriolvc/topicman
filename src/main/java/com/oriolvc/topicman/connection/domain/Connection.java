@@ -17,6 +17,7 @@ public final class Connection {
     private final Instant createdAt;
     private ConnectionName name;
     private BrokerAddress address;
+    private Credentials credentials;
     private Instant updatedAt;
 
     private Connection(
@@ -24,18 +25,21 @@ public final class Connection {
             ConnectionName name,
             BrokerType brokerType,
             BrokerAddress address,
+            Credentials credentials,
             Instant createdAt,
             Instant updatedAt) {
         this.id = Objects.requireNonNull(id, "id");
         this.name = Objects.requireNonNull(name, "name");
         this.brokerType = Objects.requireNonNull(brokerType, "brokerType");
         this.address = Objects.requireNonNull(address, "address");
+        this.credentials = requireSupported(credentials, brokerType);
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
     }
 
-    public static Connection create(ConnectionName name, BrokerType brokerType, BrokerAddress address, Instant now) {
-        return new Connection(ConnectionId.newId(), name, brokerType, address, now, now);
+    public static Connection create(
+            ConnectionName name, BrokerType brokerType, BrokerAddress address, Credentials credentials, Instant now) {
+        return new Connection(ConnectionId.newId(), name, brokerType, address, credentials, now, now);
     }
 
     public static Connection rehydrate(
@@ -43,9 +47,10 @@ public final class Connection {
             ConnectionName name,
             BrokerType brokerType,
             BrokerAddress address,
+            Credentials credentials,
             Instant createdAt,
             Instant updatedAt) {
-        return new Connection(id, name, brokerType, address, createdAt, updatedAt);
+        return new Connection(id, name, brokerType, address, credentials, createdAt, updatedAt);
     }
 
     public void rename(ConnectionName newName, Instant now) {
@@ -56,6 +61,20 @@ public final class Connection {
     public void changeAddress(BrokerAddress newAddress, Instant now) {
         address = Objects.requireNonNull(newAddress, "newAddress");
         touch(now);
+    }
+
+    public void changeCredentials(Credentials newCredentials, Instant now) {
+        credentials = requireSupported(newCredentials, brokerType);
+        touch(now);
+    }
+
+    private static Credentials requireSupported(Credentials credentials, BrokerType brokerType) {
+        Objects.requireNonNull(credentials, "credentials");
+        if (!credentials.isSupportedBy(brokerType)) {
+            throw new InvalidConnectionException(
+                    credentials.getClass().getSimpleName() + " credentials are not supported by " + brokerType);
+        }
+        return credentials;
     }
 
     private void touch(Instant now) {
@@ -76,6 +95,10 @@ public final class Connection {
 
     public BrokerAddress address() {
         return address;
+    }
+
+    public Credentials credentials() {
+        return credentials;
     }
 
     public Instant createdAt() {

@@ -8,3 +8,8 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+
+topicman:
+  crypto:
+    # Required: Base64-encoded 256-bit key, e.g. `openssl rand -base64 32` (ADR 0005)
+    master-key: ${TOPICMAN_MASTER_KEY:}

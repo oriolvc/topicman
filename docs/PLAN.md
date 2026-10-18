@@ -49,7 +49,7 @@ Out (post-MVP):
 
 - [x] `messaging` domain: `Message`, `Destination`, `ConsumeSession`, ports `MessageProducer` and `MessageReader`
 - [x] `connection` domain and persistence: `Connection` aggregate, repository, migrations
-- [ ] Credential encryption (AES-GCM, `TOPICMAN_MASTER_KEY`)
+- [x] Credential encryption (AES-GCM, `TOPICMAN_MASTER_KEY`)
 - [ ] Kafka adapter: produce with key, headers and acknowledgement
 - [ ] Kafka adapter: side-effect-free reader (no group, `assign()`, latest or earliest)
 - [ ] Abstract `BrokerAdapterContractTest`, with Kafka passing it via Testcontainers

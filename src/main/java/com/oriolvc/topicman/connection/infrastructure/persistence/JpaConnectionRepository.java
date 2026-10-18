@@ -13,19 +13,25 @@ import org.springframework.stereotype.Repository;
 class JpaConnectionRepository implements ConnectionRepository {
 
     private final ConnectionJpaRepository jpaRepository;
+    private final CredentialsCodec credentialsCodec;
 
-    JpaConnectionRepository(ConnectionJpaRepository jpaRepository) {
+    JpaConnectionRepository(ConnectionJpaRepository jpaRepository, CredentialsCodec credentialsCodec) {
         this.jpaRepository = jpaRepository;
+        this.credentialsCodec = credentialsCodec;
     }
 
     @Override
     public void save(Connection connection) {
+        var credentials = credentialsCodec.encode(connection.id(), connection.credentials());
         // Update the managed entity when it exists, so its @Version is kept and checked.
         var entity = jpaRepository
                 .findById(connection.id().value())
                 .map(existing -> {
                     existing.update(
-                            connection.name().value(), connection.address().value(), connection.updatedAt());
+                            connection.name().value(),
+                            connection.address().value(),
+                            credentials,
+                            connection.updatedAt());
                     return existing;
                 })
                 .orElseGet(() -> new ConnectionEntity(
@@ -33,6 +39,7 @@ class JpaConnectionRepository implements ConnectionRepository {
                         connection.name().value(),
                         connection.brokerType(),
                         connection.address().value(),
+                        credentials,
                         connection.createdAt(),
                         connection.updatedAt()));
         jpaRepository.save(entity);
@@ -40,13 +47,13 @@ class JpaConnectionRepository implements ConnectionRepository {
 
     @Override
     public Optional<Connection> findById(ConnectionId id) {
-        return jpaRepository.findById(id.value()).map(JpaConnectionRepository::toDomain);
+        return jpaRepository.findById(id.value()).map(this::toDomain);
     }
 
     @Override
     public List<Connection> findAll() {
         return jpaRepository.findAllByOrderByNameAsc().stream()
-                .map(JpaConnectionRepository::toDomain)
+                .map(this::toDomain)
                 .toList();
     }
 
@@ -60,12 +67,14 @@ class JpaConnectionRepository implements ConnectionRepository {
         jpaRepository.deleteById(id.value());
     }
 
-    private static Connection toDomain(ConnectionEntity entity) {
+    private Connection toDomain(ConnectionEntity entity) {
+        var id = new ConnectionId(entity.id());
         return Connection.rehydrate(
-                new ConnectionId(entity.id()),
+                id,
                 new ConnectionName(entity.name()),
                 entity.brokerType(),
                 new BrokerAddress(entity.address()),
+                credentialsCodec.decode(id, entity.credentials()),
                 entity.createdAt(),
                 entity.updatedAt());
     }

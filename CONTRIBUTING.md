@@ -16,6 +16,7 @@ to open an issue with feedback, a bug report or a use case you'd like covered.
 Requirements: Java 25 and Docker (used by Docker Compose and Testcontainers).
 
 ```bash
+export TOPICMAN_MASTER_KEY="$(openssl rand -base64 32)"   # required by bootRun, not by tests
 ./gradlew bootRun         # run the app; PostgreSQL starts via Docker Compose
 ./gradlew check           # format check, all tests, architecture rules
 ./gradlew spotlessApply   # format the code (palantir-java-format)

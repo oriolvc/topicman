@@ -20,9 +20,17 @@ fighting an admin console built for operators. TopicMan focuses on the developer
 Requirements: Java 25 and Docker.
 
 ```bash
+export TOPICMAN_MASTER_KEY="$(openssl rand -base64 32)"   # keep it: see below
 ./gradlew bootRun      # starts PostgreSQL through Docker Compose automatically
 ./gradlew check        # format check, tests and architecture rules
 ```
+
+### Master key
+
+Broker credentials are encrypted at rest with the key in `TOPICMAN_MASTER_KEY`
+([ADR 0005](docs/adr/0005-credential-encryption-at-rest.md)). It must be a Base64-encoded 256-bit
+key; TopicMan does not start without one. Store it safely and reuse it: **if you lose the key, the
+saved credentials cannot be recovered** and must be entered again.
 
 ## Design
 

@@ -1,0 +1,5 @@
+# Overrides src/main/resources/application.yaml in tests and in TestTopicmanApplication.
+topicman:
+  crypto:
+    # Test-only key (bytes 0x00..0x1f). Never use it outside tests.
+    master-key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=

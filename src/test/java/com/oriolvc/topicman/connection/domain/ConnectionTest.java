@@ -1,6 +1,7 @@
 package com.oriolvc.topicman.connection.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
@@ -14,13 +15,51 @@ class ConnectionTest {
     @Test
     void createsWithNameBrokerTypeAndAddress() {
         var connection = Connection.create(
-                new ConnectionName("Local Kafka"), BrokerType.KAFKA, new BrokerAddress("localhost:9092"), CREATED_AT);
+                new ConnectionName("Local Kafka"),
+                BrokerType.KAFKA,
+                new BrokerAddress("localhost:9092"),
+                Credentials.none(),
+                CREATED_AT);
 
         assertThat(connection.name()).isEqualTo(new ConnectionName("Local Kafka"));
         assertThat(connection.brokerType()).isEqualTo(BrokerType.KAFKA);
         assertThat(connection.address()).isEqualTo(new BrokerAddress("localhost:9092"));
+        assertThat(connection.credentials()).isEqualTo(Credentials.none());
         assertThat(connection.createdAt()).isEqualTo(CREATED_AT);
         assertThat(connection.updatedAt()).isEqualTo(CREATED_AT);
+    }
+
+    @Test
+    void rejectsCredentialsTheBrokerDoesNotSupport() {
+        assertThatThrownBy(() -> Connection.create(
+                        new ConnectionName("Local RabbitMQ"),
+                        BrokerType.RABBITMQ,
+                        new BrokerAddress("amqp://localhost:5672"),
+                        Credentials.token(new Secret("jwt")),
+                        CREATED_AT))
+                .isInstanceOf(InvalidConnectionException.class);
+    }
+
+    @Test
+    void changesCredentials() {
+        var connection = aKafkaConnection();
+        var later = CREATED_AT.plusSeconds(60);
+        var credentials = Credentials.usernamePassword("app", new Secret("pw"));
+
+        connection.changeCredentials(credentials, later);
+
+        assertThat(connection.credentials()).isEqualTo(credentials);
+        assertThat(connection.updatedAt()).isEqualTo(later);
+    }
+
+    @Test
+    void rejectsChangingToCredentialsTheBrokerDoesNotSupport() {
+        var connection = aKafkaConnection();
+
+        assertThatThrownBy(() ->
+                        connection.changeCredentials(Credentials.token(new Secret("jwt")), CREATED_AT.plusSeconds(60)))
+                .isInstanceOf(InvalidConnectionException.class);
+        assertThat(connection.credentials()).isEqualTo(Credentials.none());
     }
 
     @Test
@@ -64,6 +103,7 @@ class ConnectionTest {
                 new ConnectionName("Local Pulsar"),
                 BrokerType.PULSAR,
                 new BrokerAddress("pulsar://localhost:6650"),
+                Credentials.token(new Secret("jwt")),
                 CREATED_AT,
                 updatedAt);
 
@@ -71,6 +111,7 @@ class ConnectionTest {
         assertThat(connection.name()).isEqualTo(new ConnectionName("Local Pulsar"));
         assertThat(connection.brokerType()).isEqualTo(BrokerType.PULSAR);
         assertThat(connection.address()).isEqualTo(new BrokerAddress("pulsar://localhost:6650"));
+        assertThat(connection.credentials()).isEqualTo(Credentials.token(new Secret("jwt")));
         assertThat(connection.createdAt()).isEqualTo(CREATED_AT);
         assertThat(connection.updatedAt()).isEqualTo(updatedAt);
     }
@@ -84,6 +125,7 @@ class ConnectionTest {
                 new ConnectionName("Other name"),
                 BrokerType.KAFKA,
                 new BrokerAddress("other:9092"),
+                Credentials.none(),
                 CREATED_AT,
                 CREATED_AT);
 
@@ -93,6 +135,10 @@ class ConnectionTest {
 
     private static Connection aKafkaConnection() {
         return Connection.create(
-                new ConnectionName("Local Kafka"), BrokerType.KAFKA, new BrokerAddress("localhost:9092"), CREATED_AT);
+                new ConnectionName("Local Kafka"),
+                BrokerType.KAFKA,
+                new BrokerAddress("localhost:9092"),
+                Credentials.none(),
+                CREATED_AT);
     }
 }

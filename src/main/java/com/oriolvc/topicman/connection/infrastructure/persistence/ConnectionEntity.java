@@ -29,6 +29,13 @@ class ConnectionEntity {
     @Column(nullable = false)
     private String address;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "credentials_type", nullable = false)
+    private CredentialsType credentialsType;
+
+    @Column(name = "credentials_ciphertext")
+    private byte @Nullable [] credentialsCiphertext;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -42,18 +49,28 @@ class ConnectionEntity {
     protected ConnectionEntity() {}
 
     ConnectionEntity(
-            UUID id, String name, BrokerType brokerType, String address, Instant createdAt, Instant updatedAt) {
+            UUID id,
+            String name,
+            BrokerType brokerType,
+            String address,
+            StoredCredentials credentials,
+            Instant createdAt,
+            Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.brokerType = brokerType;
         this.address = address;
+        this.credentialsType = credentials.type();
+        this.credentialsCiphertext = credentials.ciphertext();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    void update(String name, String address, Instant updatedAt) {
+    void update(String name, String address, StoredCredentials credentials, Instant updatedAt) {
         this.name = name;
         this.address = address;
+        this.credentialsType = credentials.type();
+        this.credentialsCiphertext = credentials.ciphertext();
         this.updatedAt = updatedAt;
     }
 
@@ -71,6 +88,10 @@ class ConnectionEntity {
 
     String address() {
         return address;
+    }
+
+    StoredCredentials credentials() {
+        return new StoredCredentials(credentialsType, credentialsCiphertext);
     }
 
     Instant createdAt() {
