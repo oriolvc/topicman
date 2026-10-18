@@ -1,8 +1,11 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
+import com.oriolvc.topicman.messaging.domain.ConsumeSessionInUseException;
+import com.oriolvc.topicman.messaging.domain.ConsumeSessionNotFoundException;
 import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
 import com.oriolvc.topicman.messaging.domain.InvalidMessageException;
 import com.oriolvc.topicman.messaging.domain.ProduceFailedException;
+import com.oriolvc.topicman.messaging.domain.ReadFailedException;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
 import com.oriolvc.topicman.shared.infrastructure.web.ContextExceptionHandler;
 import org.slf4j.Logger;
@@ -34,6 +37,22 @@ class MessagingExceptionHandler extends ContextExceptionHandler {
     @ExceptionHandler
     ProblemDetail handle(InvalidDestinationException exception) {
         return problem(HttpStatus.BAD_REQUEST, "Invalid destination", exception);
+    }
+
+    @ExceptionHandler
+    ProblemDetail handle(ConsumeSessionNotFoundException exception) {
+        return problem(HttpStatus.NOT_FOUND, "Consume session not found", exception);
+    }
+
+    @ExceptionHandler
+    ProblemDetail handle(ConsumeSessionInUseException exception) {
+        return problem(HttpStatus.CONFLICT, "Consume session in use", exception);
+    }
+
+    @ExceptionHandler
+    ProblemDetail handle(ReadFailedException exception) {
+        log.warn("Read failed: {}", exception.getMessage());
+        return problem(HttpStatus.SERVICE_UNAVAILABLE, "Read failed", exception);
     }
 
     @ExceptionHandler

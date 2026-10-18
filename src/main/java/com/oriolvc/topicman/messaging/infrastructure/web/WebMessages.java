@@ -25,6 +25,22 @@ final class WebMessages {
         };
     }
 
+    static com.oriolvc.topicman.messaging.infrastructure.web.model.Destination toDestinationDto(
+            Destination destination) {
+        return switch (destination) {
+            case Destination.Topic(var name) -> new TopicDestination(TopicDestination.TypeEnum.TOPIC, name);
+            case Destination.Exchange(var name, var routingKey) ->
+                new ExchangeDestination(ExchangeDestination.TypeEnum.EXCHANGE, name, routingKey);
+        };
+    }
+
+    static com.oriolvc.topicman.messaging.infrastructure.web.model.Payload toPayload(Payload payload) {
+        return new com.oriolvc.topicman.messaging.infrastructure.web.model.Payload(
+                com.oriolvc.topicman.messaging.infrastructure.web.model.Payload.FormatEnum.fromValue(
+                        payload.format().name()),
+                payload.content());
+    }
+
     static Message toMessage(
             @Nullable String key,
             @Nullable Map<String, String> headers,
