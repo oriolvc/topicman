@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.flyway.database.postgresql)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
+    implementation(libs.kafka.clients)
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
     runtimeOnly(libs.postgresql)
@@ -38,6 +39,7 @@ dependencies {
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.testcontainers.junit.jupiter)
     testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.kafka)
     testImplementation(libs.archunit.junit5)
     testRuntimeOnly(libs.junit.platform.launcher)
 }

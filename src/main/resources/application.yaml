@@ -13,3 +13,8 @@ topicman:
   crypto:
     # Required: Base64-encoded 256-bit key, e.g. `openssl rand -base64 32` (ADR 0005)
     master-key: ${TOPICMAN_MASTER_KEY:}
+
+logging:
+  level:
+    # Kafka clients log every config and connection attempt at INFO
+    org.apache.kafka: warn

@@ -13,6 +13,11 @@ public abstract class DomainException extends RuntimeException {
         this.code = code;
     }
 
+    protected DomainException(String code, String message, Throwable cause) {
+        super(message, cause);
+        this.code = code;
+    }
+
     public String code() {
         return code;
     }

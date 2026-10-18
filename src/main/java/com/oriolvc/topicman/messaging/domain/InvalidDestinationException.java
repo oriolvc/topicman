@@ -6,7 +6,7 @@ public final class InvalidDestinationException extends DomainException {
 
     public static final String CODE = "messaging.invalid-destination";
 
-    InvalidDestinationException(String message) {
+    public InvalidDestinationException(String message) {
         super(CODE, message);
     }
 }

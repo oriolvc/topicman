@@ -12,6 +12,8 @@ public interface MessageProducer {
      * Sends one message and waits for the broker's acknowledgement.
      *
      * @throws InvalidDestinationException if the destination is not supported by this broker
+     * @throws ProduceFailedException if the broker rejects the message or does not acknowledge it in
+     *     time
      */
     SendReceipt send(BrokerEndpoint endpoint, Destination destination, Message message);
 }
