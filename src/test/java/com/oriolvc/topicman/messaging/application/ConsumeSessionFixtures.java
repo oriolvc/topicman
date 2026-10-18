@@ -4,6 +4,7 @@ import com.oriolvc.topicman.messaging.domain.Headers;
 import com.oriolvc.topicman.messaging.domain.Message;
 import com.oriolvc.topicman.messaging.domain.Payload;
 import com.oriolvc.topicman.messaging.domain.ReceivedMessage;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.concurrent.Executor;
 final class ConsumeSessionFixtures {
 
     static final Instant NOW = Instant.parse("2026-10-18T10:00:00Z");
+    static final ConsumeSessionLimits LIMITS = new ConsumeSessionLimits(20, Duration.ofMinutes(5));
 
     private ConsumeSessionFixtures() {}
 

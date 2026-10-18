@@ -34,7 +34,7 @@ public class StreamConsumeSessionUseCase {
      * while no client is connected, so the next client continues where this one stopped.
      */
     public void execute(StreamConsumeSessionCommand command) {
-        var active = registry.claim(command.id());
+        var active = registry.claim(command.id(), clock.instant());
         try {
             executor.execute(() -> stream(active, command.sink()));
         } catch (RuntimeException e) {
@@ -99,8 +99,8 @@ public class StreamConsumeSessionUseCase {
         sink.failed(failure);
     }
 
-    private static void release(ActiveSession active) {
-        if (active.release()) {
+    private void release(ActiveSession active) {
+        if (active.release(clock.instant())) {
             active.stream().close();
         }
     }

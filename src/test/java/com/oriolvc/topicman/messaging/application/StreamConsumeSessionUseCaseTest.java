@@ -32,7 +32,7 @@ class StreamConsumeSessionUseCaseTest {
     private final ConsumeSessionRegistry registry = new ConsumeSessionRegistry();
     private final MutableClock clock = new MutableClock(NOW);
     private final OpenConsumeSessionUseCase open =
-            new OpenConsumeSessionUseCase(endpoints, List.of(kafka), registry, clock);
+            new OpenConsumeSessionUseCase(endpoints, List.of(kafka), registry, ConsumeSessionFixtures.LIMITS, clock);
     private final CloseConsumeSessionUseCase close = new CloseConsumeSessionUseCase(registry, clock);
 
     @Test

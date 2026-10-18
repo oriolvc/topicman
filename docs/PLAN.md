@@ -55,7 +55,7 @@ Out (post-MVP):
 - [x] Abstract `BrokerAdapterContractTest`, with Kafka passing it via Testcontainers
 - [x] OpenAPI spec for connections, produce and consume sessions (SSE), reviewed before coding
 - [x] REST API for connections and produce; SSE endpoint for consume sessions
-- [ ] Session limits and idle timeout for consume sessions
+- [x] Session limits and idle timeout for consume sessions
 
 ## Phase 2 — Pulsar and RabbitMQ
 

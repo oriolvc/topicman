@@ -1,6 +1,7 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionInUseException;
+import com.oriolvc.topicman.messaging.domain.ConsumeSessionLimitReachedException;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionNotFoundException;
 import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
 import com.oriolvc.topicman.messaging.domain.InvalidMessageException;
@@ -47,6 +48,11 @@ class MessagingExceptionHandler extends ContextExceptionHandler {
     @ExceptionHandler
     ProblemDetail handle(ConsumeSessionInUseException exception) {
         return problem(HttpStatus.CONFLICT, "Consume session in use", exception);
+    }
+
+    @ExceptionHandler
+    ProblemDetail handle(ConsumeSessionLimitReachedException exception) {
+        return problem(HttpStatus.TOO_MANY_REQUESTS, "Too many consume sessions", exception);
     }
 
     @ExceptionHandler

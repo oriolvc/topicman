@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.ConsumeSessionLimitReachedException;
 import com.oriolvc.topicman.messaging.domain.Destination;
 import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
 import com.oriolvc.topicman.messaging.domain.ReadFailedException;
@@ -12,6 +13,7 @@ import com.oriolvc.topicman.messaging.domain.StartPosition;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
+import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +24,8 @@ class OpenConsumeSessionUseCaseTest {
     private final InMemoryBrokerEndpoints endpoints = new InMemoryBrokerEndpoints();
     private final FakeMessageReader kafka = new FakeMessageReader(BrokerType.KAFKA);
     private final ConsumeSessionRegistry registry = new ConsumeSessionRegistry();
-    private final OpenConsumeSessionUseCase useCase =
-            new OpenConsumeSessionUseCase(endpoints, List.of(kafka), registry, new MutableClock(NOW));
+    private final OpenConsumeSessionUseCase useCase = new OpenConsumeSessionUseCase(
+            endpoints, List.of(kafka), registry, ConsumeSessionFixtures.LIMITS, new MutableClock(NOW));
     private final ConnectionId kafkaConnection = endpoints.add(BrokerType.KAFKA, "localhost:9092");
 
     @Test
@@ -46,6 +48,37 @@ class OpenConsumeSessionUseCaseTest {
         var second = useCase.execute(new OpenConsumeSessionCommand(kafkaConnection, ORDERS, StartPosition.LATEST));
 
         assertThat(first.id()).isNotEqualTo(second.id());
+    }
+
+    @Test
+    void rejectsOpeningMoreSessionsThanTheLimitWithoutReadingTheBroker() {
+        var limited = new OpenConsumeSessionUseCase(
+                endpoints,
+                List.of(kafka),
+                registry,
+                new ConsumeSessionLimits(2, Duration.ofMinutes(5)),
+                new MutableClock(NOW));
+        limited.execute(new OpenConsumeSessionCommand(kafkaConnection, ORDERS, StartPosition.LATEST));
+        limited.execute(new OpenConsumeSessionCommand(kafkaConnection, ORDERS, StartPosition.LATEST));
+
+        assertThatThrownBy(() ->
+                        limited.execute(new OpenConsumeSessionCommand(kafkaConnection, ORDERS, StartPosition.LATEST)))
+                .isInstanceOf(ConsumeSessionLimitReachedException.class)
+                .hasFieldOrPropertyWithValue("code", "messaging.session-limit-reached");
+        assertThat(kafka.opened()).hasSize(2);
+    }
+
+    @Test
+    void closingASessionFreesASlot() {
+        var limits = new ConsumeSessionLimits(1, Duration.ofMinutes(5));
+        var clock = new MutableClock(NOW);
+        var limited = new OpenConsumeSessionUseCase(endpoints, List.of(kafka), registry, limits, clock);
+        var first = limited.execute(new OpenConsumeSessionCommand(kafkaConnection, ORDERS, StartPosition.LATEST));
+        new CloseConsumeSessionUseCase(registry, clock).execute(new CloseConsumeSessionCommand(first.id()));
+
+        var second = limited.execute(new OpenConsumeSessionCommand(kafkaConnection, ORDERS, StartPosition.LATEST));
+
+        assertThat(registry.contains(second.id())).isTrue();
     }
 
     @Test

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
+import java.time.Duration;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
@@ -96,6 +97,42 @@ class ConsumeSessionTest {
 
         assertThatThrownBy(() -> session.recordActivity(OPENED_AT.plusSeconds(90)))
                 .isInstanceOf(ConsumeSessionClosedException.class);
+    }
+
+    @Test
+    void isNotIdleBeforeTheTimeout() {
+        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+
+        assertThat(session.isIdle(
+                        Duration.ofMinutes(5),
+                        OPENED_AT.plus(Duration.ofMinutes(5)).minusMillis(1)))
+                .isFalse();
+    }
+
+    @Test
+    void isIdleOnceTheTimeoutPassedWithoutActivity() {
+        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+
+        assertThat(session.isIdle(Duration.ofMinutes(5), OPENED_AT.plus(Duration.ofMinutes(5))))
+                .isTrue();
+    }
+
+    @Test
+    void countsIdleTimeFromTheLastActivity() {
+        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        session.recordActivity(OPENED_AT.plus(Duration.ofMinutes(4)));
+
+        assertThat(session.isIdle(Duration.ofMinutes(5), OPENED_AT.plus(Duration.ofMinutes(6))))
+                .isFalse();
+    }
+
+    @Test
+    void aClosedSessionIsNotIdle() {
+        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        session.close(OPENED_AT);
+
+        assertThat(session.isIdle(Duration.ofMinutes(5), OPENED_AT.plus(Duration.ofHours(1))))
+                .isFalse();
     }
 
     private static ConsumeSession aKafkaSessionFrom(ConnectionId connectionId, StartPosition startPosition) {

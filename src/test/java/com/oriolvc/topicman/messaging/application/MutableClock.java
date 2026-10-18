@@ -16,6 +16,10 @@ class MutableClock extends Clock {
         this.now = start;
     }
 
+    void set(Instant now) {
+        this.now = now;
+    }
+
     void advanceOnEveryRead(Duration tick) {
         this.tick = tick;
     }

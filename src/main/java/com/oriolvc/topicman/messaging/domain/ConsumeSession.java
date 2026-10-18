@@ -2,6 +2,7 @@ package com.oriolvc.topicman.messaging.domain;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
@@ -73,6 +74,13 @@ public final class ConsumeSession {
         if (closedAt == null) {
             closedAt = at;
         }
+    }
+
+    /** Whether the session saw no activity for at least {@code timeout}. A closed session is not idle. */
+    public boolean isIdle(Duration timeout, Instant now) {
+        Objects.requireNonNull(timeout, "timeout");
+        Objects.requireNonNull(now, "now");
+        return isOpen() && !lastActivityAt.plus(timeout).isAfter(now);
     }
 
     public boolean isOpen() {

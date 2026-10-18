@@ -3,6 +3,8 @@ package com.oriolvc.topicman.messaging.application;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionId;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionInUseException;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionNotFoundException;
+import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,8 +16,21 @@ public class ConsumeSessionRegistry implements AutoCloseable {
 
     private final Map<ConsumeSessionId, ActiveSession> sessions = new ConcurrentHashMap<>();
 
-    void register(ActiveSession session) {
+    /** @return false, without registering, if {@code maxOpen} sessions are already open */
+    synchronized boolean registerWithin(ActiveSession session, int maxOpen) {
+        if (sessions.size() >= maxOpen) {
+            return false;
+        }
         sessions.put(session.session().id(), session);
+        return true;
+    }
+
+    int size() {
+        return sessions.size();
+    }
+
+    List<ActiveSession> all() {
+        return List.copyOf(sessions.values());
     }
 
     boolean contains(ConsumeSessionId id) {
@@ -23,12 +38,12 @@ public class ConsumeSessionRegistry implements AutoCloseable {
     }
 
     /** Reserves the session for one streaming client. */
-    ActiveSession claim(ConsumeSessionId id) {
+    ActiveSession claim(ConsumeSessionId id, Instant now) {
         var session = sessions.get(id);
         if (session == null) {
             throw new ConsumeSessionNotFoundException(id);
         }
-        if (!session.tryClaim()) {
+        if (!session.tryClaim(now)) {
             throw new ConsumeSessionInUseException(id);
         }
         return session;

@@ -3,6 +3,8 @@ package com.oriolvc.topicman.messaging.application;
 import com.oriolvc.topicman.messaging.domain.ConsumeSession;
 import com.oriolvc.topicman.messaging.domain.MessageStream;
 import com.oriolvc.topicman.messaging.domain.ReceivedMessage;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -37,11 +39,12 @@ final class ActiveSession {
         return undelivered;
     }
 
-    synchronized boolean tryClaim() {
+    synchronized boolean tryClaim(Instant now) {
         if (streaming || closeRequested) {
             return false;
         }
         streaming = true;
+        recordActivity(now);
         return true;
     }
 
@@ -56,8 +59,30 @@ final class ActiveSession {
     }
 
     /** Called by the streaming thread when it stops. @return whether it must close the stream */
-    synchronized boolean release() {
+    synchronized boolean release(Instant now) {
         streaming = false;
+        // The idle timeout counts from when the last client left.
+        recordActivity(now);
         return closeRequested;
+    }
+
+    /**
+     * Marks the session for closing if no client streams it and it has been idle for the timeout,
+     * under the same lock as {@link #tryClaim}, so a client cannot claim it meanwhile.
+     *
+     * @return whether it expired; the caller then closes the stream
+     */
+    synchronized boolean expireIfIdle(Duration timeout, Instant now) {
+        if (streaming || closeRequested || !session.isIdle(timeout, now)) {
+            return false;
+        }
+        closeRequested = true;
+        return true;
+    }
+
+    private void recordActivity(Instant now) {
+        if (session.isOpen()) {
+            session.recordActivity(now);
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.oriolvc.topicman.messaging.application;
 
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoints;
 import com.oriolvc.topicman.messaging.domain.ConsumeSession;
+import com.oriolvc.topicman.messaging.domain.ConsumeSessionLimitReachedException;
 import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
 import com.oriolvc.topicman.messaging.domain.MessageReader;
 import com.oriolvc.topicman.messaging.domain.ReadFailedException;
@@ -19,19 +20,30 @@ public class OpenConsumeSessionUseCase {
     private final BrokerEndpoints endpoints;
     private final Map<BrokerType, MessageReader> readers;
     private final ConsumeSessionRegistry registry;
+    private final ConsumeSessionLimits limits;
     private final Clock clock;
 
     public OpenConsumeSessionUseCase(
-            BrokerEndpoints endpoints, List<MessageReader> readers, ConsumeSessionRegistry registry, Clock clock) {
+            BrokerEndpoints endpoints,
+            List<MessageReader> readers,
+            ConsumeSessionRegistry registry,
+            ConsumeSessionLimits limits,
+            Clock clock) {
         this.endpoints = endpoints;
         this.readers =
                 readers.stream().collect(Collectors.toUnmodifiableMap(MessageReader::brokerType, Function.identity()));
         this.registry = registry;
+        this.limits = limits;
         this.clock = clock;
     }
 
     /** Starts reading the destination; the messages are delivered when a client streams the session. */
     public ConsumeSessionResult execute(OpenConsumeSessionCommand command) {
+        // Checked first so a full registry never opens a broker client, and again on registering
+        // because sessions may have been opened meanwhile.
+        if (registry.size() >= limits.maxOpen()) {
+            throw new ConsumeSessionLimitReachedException(limits.maxOpen());
+        }
         var endpoint = endpoints.of(command.connectionId());
         if (!command.destination().isSupportedBy(endpoint.type())) {
             throw new InvalidDestinationException(endpoint.type() + " does not support "
@@ -48,7 +60,10 @@ public class OpenConsumeSessionUseCase {
                 command.startPosition(),
                 clock.instant());
         var stream = reader.open(endpoint, command.destination(), command.startPosition());
-        registry.register(new ActiveSession(session, stream));
+        if (!registry.registerWithin(new ActiveSession(session, stream), limits.maxOpen())) {
+            stream.close();
+            throw new ConsumeSessionLimitReachedException(limits.maxOpen());
+        }
         return ConsumeSessionResult.of(session);
     }
 }
