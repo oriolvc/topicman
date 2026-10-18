@@ -57,20 +57,20 @@ Out (post-MVP):
 - [x] REST API for connections and produce; SSE endpoint for consume sessions
 - [x] Session limits and idle timeout for consume sessions
 
-## Phase 2 — Pulsar and RabbitMQ
+## Phase 2 — Minimal UI (Kafka only)
+
+- [ ] Vite + React + TypeScript + Mantine app in `frontend/`, built by Gradle and bundled into the jar
+- [ ] TypeScript client generated from the OpenAPI specs
+- [ ] Connections screen: list, create, edit, delete
+- [ ] Produce screen: destination, key, headers, JSON payload, send N, result
+- [ ] Consume screen: live stream with pause, clear and payload formatting
+
+## Phase 3 — Pulsar and RabbitMQ
 
 - [ ] Pulsar adapter (producer + Reader API) passing the contract test
 - [ ] RabbitMQ adapter (publisher confirms + temporary exclusive queue) passing the contract test
 - [ ] Broker capability model in the domain (e.g. `canReadFromBeginning`) exposed by the API
-- [ ] Test-connection use case for all three brokers
-
-## Phase 3 — Minimal UI
-
-- [ ] Vite + React + TypeScript + Mantine app in `frontend/`, built by Gradle and bundled into the jar
-- [ ] TypeScript client generated from the OpenAPI specs
-- [ ] Connections screen: list, create, edit, test, delete
-- [ ] Produce screen: destination, key, headers, JSON payload, send N, result
-- [ ] Consume screen: live stream with pause, clear and payload formatting
+- [ ] Test-connection use case for all three brokers, with a test action on the connections screen
 
 ## Phase 4 — Collections and environments
 
