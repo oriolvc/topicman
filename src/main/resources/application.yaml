@@ -14,6 +14,15 @@ topicman:
     # Required: Base64-encoded 256-bit key, e.g. `openssl rand -base64 32` (ADR 0005)
     master-key: ${TOPICMAN_MASTER_KEY:}
 
+springdoc:
+  # The specs are hand-written (ADR 0004). springdoc only runs Swagger UI when its code-first
+  # api-docs are on, so they stay on but document no controller path.
+  paths-to-match: /none
+  swagger-ui:
+    disable-swagger-default-url: true
+    # One entry per context spec in src/main/resources/openapi/; OpenApiSpecsIT checks the list.
+    urls: []
+
 logging:
   level:
     # Kafka clients log every config and connection attempt at INFO

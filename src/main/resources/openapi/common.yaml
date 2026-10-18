@@ -1,0 +1,43 @@
+# Schemas shared by every context spec (ADR 0004). Not an API by itself: it has no paths and
+# generates no code.
+#
+# To use a shared schema, declare it locally in the context spec's components and point that at
+# this file, then reference the local name. Referencing this file directly from an operation makes
+# the generator inline the schema under a generated name instead of applying its type mapping:
+#
+#   components:
+#     schemas:
+#       ProblemDetail:
+#         $ref: 'common.yaml#/components/schemas/ProblemDetail'
+openapi: 3.1.0
+info:
+  title: TopicMan common schemas
+  version: v1
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+paths: {}
+components:
+  schemas:
+    ProblemDetail:
+      description: >-
+        An RFC 9457 problem. Maps to Spring's ProblemDetail in generated code. `code` is the stable
+        domain error code, such as `connection.invalid-connection`, that clients can rely on.
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        code:
+          type: string
+      additionalProperties: true

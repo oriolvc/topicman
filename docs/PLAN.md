@@ -42,7 +42,7 @@ Out (post-MVP):
 - [x] ArchUnit `ArchitectureTest` enforcing the layer and context rules from `CLAUDE.md`
 - [x] GitHub Actions CI: build and test on every push and pull request
 - [x] README stub replacing `HELP.md`, and `CONTRIBUTING.md`
-- [ ] `openapi-generator` Gradle plugin generating per-context Java interfaces and DTOs from
+- [x] `openapi-generator` Gradle plugin generating per-context Java interfaces and DTOs from
       `src/main/resources/openapi/`; springdoc serves the hand-written spec (ADR 0004)
 
 ## Phase 1 — Kafka end to end (API only)
