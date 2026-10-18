@@ -133,8 +133,11 @@ node {
     nodeProjectDir = frontendDir
 }
 
+// The frontend generates its API types from the specs, so a spec change reruns its tasks.
 val frontendSources = listOf("src", "index.html", "package.json", "package-lock.json")
-    .map { frontendDir.file(it) } + frontendDir.asFileTree.matching { include("*.config.*", "tsconfig.json", ".prettier*") }
+    .map { frontendDir.file(it) } +
+    frontendDir.asFileTree.matching { include("*.config.*", "tsconfig.json", ".prettier*", "redocly.yaml") } +
+    openApiSpecs.asFileTree
 
 fun registerNpmScript(name: String, script: String, describe: String) =
     tasks.register<NpmTask>(name) {

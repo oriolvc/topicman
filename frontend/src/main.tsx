@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AppProviders } from './app/AppProviders';
 import { App } from './app/App';
+import { createQueryClient } from './app/queryClient';
 
 const root = document.getElementById('root');
 if (root === null) {
@@ -12,7 +13,7 @@ if (root === null) {
 
 createRoot(root).render(
   <StrictMode>
-    <AppProviders>
+    <AppProviders queryClient={createQueryClient()}>
       <App />
     </AppProviders>
   </StrictMode>,

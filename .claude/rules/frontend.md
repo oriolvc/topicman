@@ -22,8 +22,11 @@ frontend/src/
 ## TypeScript
 
 - `strict` mode on; no `any`, no non-null assertions (`!`). Use `unknown` and narrow.
-- API types are generated from the OpenAPI specs in `src/main/resources/openapi/` into `src/api/`;
-  never hand-write them. A missing field is a spec change first (ADR 0004).
+- API types are generated from the OpenAPI specs in `src/main/resources/openapi/` into
+  `src/api/generated/` (`npm run generate`, git-ignored); never hand-write them. A missing field is
+  a spec change first (ADR 0004).
+- Call the API through the typed clients in `src/api/` and `unwrap()` the result, so a failed call
+  throws an `ApiProblem` carrying the server's `ProblemDetail`.
 - Prefer type aliases and discriminated unions; no enums (use string literal unions).
 
 ## React

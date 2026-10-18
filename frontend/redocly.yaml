@@ -1,0 +1,10 @@
+# Specs the TypeScript API types are generated from (`npm run generate`), one per bounded context.
+apis:
+  connection:
+    root: ../src/main/resources/openapi/connection.yaml
+    x-openapi-ts:
+      output: ./src/api/generated/connection.ts
+  messaging:
+    root: ../src/main/resources/openapi/messaging.yaml
+    x-openapi-ts:
+      output: ./src/api/generated/messaging.ts
