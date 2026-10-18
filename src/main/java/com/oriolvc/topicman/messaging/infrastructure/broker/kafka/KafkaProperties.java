@@ -6,6 +6,9 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
  * @param sendTimeout how long a send waits for topic metadata, and then for the acknowledgement
+ * @param openTimeout how long opening a reader waits for topic metadata and start offsets
  */
 @ConfigurationProperties("topicman.kafka")
-public record KafkaProperties(@DefaultValue("10s") Duration sendTimeout) {}
+public record KafkaProperties(
+        @DefaultValue("10s") Duration sendTimeout,
+        @DefaultValue("10s") Duration openTimeout) {}

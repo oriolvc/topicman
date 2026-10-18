@@ -42,7 +42,8 @@ class KafkaMessageProducerIT {
     @Container
     private static final KafkaContainer KAFKA = new KafkaContainer("apache/kafka:4.2.1");
 
-    private final KafkaMessageProducer producer = new KafkaMessageProducer(new KafkaProperties(Duration.ofSeconds(3)));
+    private final KafkaMessageProducer producer =
+            new KafkaMessageProducer(new KafkaProperties(Duration.ofSeconds(3), Duration.ofSeconds(3)));
 
     @AfterEach
     void closeProducer() {

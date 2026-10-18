@@ -12,4 +12,9 @@ class KafkaConfiguration {
     KafkaMessageProducer kafkaMessageProducer(KafkaProperties properties) {
         return new KafkaMessageProducer(properties);
     }
+
+    @Bean
+    KafkaMessageReader kafkaMessageReader(KafkaProperties properties) {
+        return new KafkaMessageReader(properties);
+    }
 }

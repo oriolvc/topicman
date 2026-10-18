@@ -51,7 +51,7 @@ Out (post-MVP):
 - [x] `connection` domain and persistence: `Connection` aggregate, repository, migrations
 - [x] Credential encryption (AES-GCM, `TOPICMAN_MASTER_KEY`)
 - [x] Kafka adapter: produce with key, headers and acknowledgement
-- [ ] Kafka adapter: side-effect-free reader (no group, `assign()`, latest or earliest)
+- [x] Kafka adapter: side-effect-free reader (no group, `assign()`, latest or earliest)
 - [ ] Abstract `BrokerAdapterContractTest`, with Kafka passing it via Testcontainers
 - [ ] OpenAPI spec for connections, produce and consume sessions (SSE), reviewed before coding
 - [ ] REST API for connections and produce; SSE endpoint for consume sessions

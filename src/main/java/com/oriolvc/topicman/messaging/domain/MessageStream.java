@@ -12,6 +12,8 @@ public interface MessageStream extends AutoCloseable {
     /**
      * Returns the messages that arrive within the timeout, possibly none. Returns as soon as at
      * least one message is available.
+     *
+     * @throws ReadFailedException if the broker connection is lost
      */
     List<ReceivedMessage> poll(Duration timeout);
 

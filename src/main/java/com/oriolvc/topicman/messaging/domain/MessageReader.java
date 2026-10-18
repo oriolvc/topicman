@@ -15,6 +15,7 @@ public interface MessageReader {
      * Starts reading from the destination. The caller owns the returned stream and must close it.
      *
      * @throws InvalidDestinationException if the destination is not supported by this broker
+     * @throws ReadFailedException if the destination does not exist or the broker cannot be reached
      */
     MessageStream open(BrokerEndpoint endpoint, Destination destination, StartPosition startPosition);
 }

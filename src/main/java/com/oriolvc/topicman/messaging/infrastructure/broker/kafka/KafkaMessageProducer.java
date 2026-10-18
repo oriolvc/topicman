@@ -85,7 +85,7 @@ final class KafkaMessageProducer implements MessageProducer, AutoCloseable {
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 endpoint.address(),
                 ProducerConfig.CLIENT_ID_CONFIG,
-                "topicman",
+                KafkaClientIds.next("producer"),
                 ProducerConfig.ACKS_CONFIG,
                 "all",
                 // One message at a time from a UI: send right away instead of batching.
