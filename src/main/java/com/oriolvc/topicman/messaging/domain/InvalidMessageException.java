@@ -6,7 +6,7 @@ public final class InvalidMessageException extends DomainException {
 
     public static final String CODE = "messaging.invalid-message";
 
-    InvalidMessageException(String message) {
+    public InvalidMessageException(String message) {
         super(CODE, message);
     }
 }

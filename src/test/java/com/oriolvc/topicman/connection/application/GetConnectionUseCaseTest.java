@@ -5,8 +5,8 @@ import static com.oriolvc.topicman.connection.application.ConnectionFixtures.aCr
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.oriolvc.topicman.connection.domain.ConnectionNotFoundException;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
+import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
 import org.junit.jupiter.api.Test;
 
 class GetConnectionUseCaseTest {

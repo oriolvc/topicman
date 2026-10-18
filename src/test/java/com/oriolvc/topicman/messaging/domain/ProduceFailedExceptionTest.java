@@ -14,5 +14,24 @@ class ProduceFailedExceptionTest {
 
         assertThat(exception.code()).isEqualTo("messaging.produce-failed");
         assertThat(exception).hasMessage("Could not produce to orders").hasCause(cause);
+        assertThat(exception.sent()).isZero();
+    }
+
+    @Test
+    void tellsHowManyCopiesWereSentBeforeTheFailure() {
+        var cause = new ProduceFailedException("Could not produce to orders", new RuntimeException());
+
+        var exception = ProduceFailedException.afterSending(3, cause);
+
+        assertThat(exception.sent()).isEqualTo(3);
+        assertThat(exception).hasMessage("Could not produce to orders").hasCause(cause);
+    }
+
+    @Test
+    void canHaveNoCause() {
+        var exception = new ProduceFailedException("No producer for PULSAR");
+
+        assertThat(exception).hasNoCause();
+        assertThat(exception.sent()).isZero();
     }
 }

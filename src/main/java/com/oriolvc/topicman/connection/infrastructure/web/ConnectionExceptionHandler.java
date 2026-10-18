@@ -1,8 +1,8 @@
 package com.oriolvc.topicman.connection.infrastructure.web;
 
 import com.oriolvc.topicman.connection.domain.ConnectionNameTakenException;
-import com.oriolvc.topicman.connection.domain.ConnectionNotFoundException;
 import com.oriolvc.topicman.connection.domain.InvalidConnectionException;
+import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
 import com.oriolvc.topicman.shared.infrastructure.web.ContextExceptionHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

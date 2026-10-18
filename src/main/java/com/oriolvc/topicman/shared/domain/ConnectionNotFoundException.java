@@ -1,8 +1,6 @@
-package com.oriolvc.topicman.connection.domain;
+package com.oriolvc.topicman.shared.domain;
 
-import com.oriolvc.topicman.shared.domain.ConnectionId;
-import com.oriolvc.topicman.shared.domain.DomainException;
-
+/** In the shared kernel, so every context that references a connection reports it the same way. */
 public final class ConnectionNotFoundException extends DomainException {
 
     public static final String CODE = "connection.not-found";

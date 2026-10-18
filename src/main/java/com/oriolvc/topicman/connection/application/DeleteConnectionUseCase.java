@@ -1,7 +1,7 @@
 package com.oriolvc.topicman.connection.application;
 
-import com.oriolvc.topicman.connection.domain.ConnectionNotFoundException;
 import com.oriolvc.topicman.connection.domain.ConnectionRepository;
+import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
