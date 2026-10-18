@@ -43,5 +43,6 @@ frontend/src/
 
 ## Style
 
-- ESLint + Prettier own formatting; run `npm run lint -- --fix` instead of hand-formatting.
+- ESLint + Prettier own formatting; run `npm run format` and `npx eslint . --fix` instead of
+  hand-formatting. `npm run lint` checks both.
 - Named exports only, except where a framework requires a default export.

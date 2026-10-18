@@ -22,7 +22,17 @@ Requirements: Java 25 and Docker.
 ```bash
 export TOPICMAN_MASTER_KEY="$(openssl rand -base64 32)"   # keep it: see below
 ./gradlew bootRun      # starts PostgreSQL through Docker Compose automatically
-./gradlew check        # format check, tests and architecture rules
+./gradlew check        # format check, tests and architecture rules, frontend checks
+```
+
+`./gradlew bootRun` serves the UI at <http://localhost:8080>. Gradle downloads its own Node.js to
+build it. To work on the UI with hot reload (Node.js 22.12 or later), keep the backend running and
+start the Vite dev server, which proxies API calls to it:
+
+```bash
+cd frontend
+npm ci
+npm run dev            # http://localhost:5173
 ```
 
 ### Master key

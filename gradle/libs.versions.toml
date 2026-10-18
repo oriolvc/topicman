@@ -6,6 +6,7 @@ spotless = "8.10.4"
 palantir-java-format = "2.102.0"
 archunit = "1.5.1"
 openapi-generator = "7.26.0"
+node-gradle = "7.1.0"
 
 [libraries]
 # Versions managed by the Spring Boot BOM
@@ -40,3 +41,4 @@ spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }

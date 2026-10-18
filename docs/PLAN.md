@@ -59,7 +59,7 @@ Out (post-MVP):
 
 ## Phase 2 — Minimal UI (Kafka only)
 
-- [ ] Vite + React + TypeScript + Mantine app in `frontend/`, built by Gradle and bundled into the jar
+- [x] Vite + React + TypeScript + Mantine app in `frontend/`, built by Gradle and bundled into the jar
 - [ ] TypeScript client generated from the OpenAPI specs
 - [ ] Connections screen: list, create, edit, delete
 - [ ] Produce screen: destination, key, headers, JSON payload, send N, result

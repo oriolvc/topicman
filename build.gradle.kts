@@ -1,3 +1,4 @@
+import com.github.gradle.node.npm.task.NpmTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -6,6 +7,7 @@ plugins {
     alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.spotless)
     alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.node.gradle)
 }
 
 group = "com.oriolvc"
@@ -118,4 +120,52 @@ sourceSets.main {
 
 tasks.compileJava {
     dependsOn(openApiGenerateTasks)
+}
+
+// The React app in frontend/ is built with a Node version Gradle downloads, so building the jar
+// needs no local Node. Its output is served by Spring Boot as static resources.
+val frontendDir = layout.projectDirectory.dir("frontend")
+
+node {
+    download = true
+    version = "22.23.2"
+    npmInstallCommand = "ci"
+    nodeProjectDir = frontendDir
+}
+
+val frontendSources = listOf("src", "index.html", "package.json", "package-lock.json")
+    .map { frontendDir.file(it) } + frontendDir.asFileTree.matching { include("*.config.*", "tsconfig.json", ".prettier*") }
+
+fun registerNpmScript(name: String, script: String, describe: String) =
+    tasks.register<NpmTask>(name) {
+        group = "frontend"
+        description = describe
+        dependsOn(tasks.npmInstall)
+        args = listOf("run", script)
+        inputs.files(frontendSources).withPropertyName("frontendSources")
+    }
+
+val frontendBuild = registerNpmScript("frontendBuild", "build", "Builds the frontend into frontend/dist.")
+frontendBuild.configure { outputs.dir(frontendDir.dir("dist")) }
+
+// The checks have no outputs; a marker file lets Gradle skip them when nothing changed.
+val frontendChecks = listOf(
+    registerNpmScript("frontendLint", "lint", "Runs ESLint and the Prettier check on the frontend."),
+    registerNpmScript("frontendTypecheck", "typecheck", "Type-checks the frontend."),
+    registerNpmScript("frontendTest", "test", "Runs the frontend tests."),
+)
+frontendChecks.forEach { task ->
+    task.configure {
+        val marker = layout.buildDirectory.file("frontend-checks/$name")
+        outputs.file(marker)
+        doLast { marker.get().asFile.writeText("passed") }
+    }
+}
+
+tasks.processResources {
+    from(frontendBuild) { into("static") }
+}
+
+tasks.check {
+    dependsOn(frontendChecks)
 }
