@@ -8,6 +8,7 @@ import com.oriolvc.topicman.TestcontainersConfiguration;
 import com.oriolvc.topicman.connection.domain.BrokerAddress;
 import com.oriolvc.topicman.connection.domain.Connection;
 import com.oriolvc.topicman.connection.domain.ConnectionName;
+import com.oriolvc.topicman.connection.domain.ConnectionNameTakenException;
 import com.oriolvc.topicman.connection.domain.Credentials;
 import com.oriolvc.topicman.connection.domain.Secret;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CredentialDecryptionException;
@@ -163,6 +164,14 @@ class JpaConnectionRepositoryIT {
                 .isInstanceOf(CredentialDecryptionException.class)
                 .hasMessageContaining(target.id().toString())
                 .hasMessageNotContaining("pw");
+    }
+
+    @Test
+    void rejectsADuplicateNameEvenWithoutCheckingFirst() {
+        repository.save(aConnection("Local Kafka", BrokerType.KAFKA, "a:9092"));
+
+        assertThatThrownBy(() -> repository.save(aConnection("Local Kafka", BrokerType.KAFKA, "b:9092")))
+                .isInstanceOf(ConnectionNameTakenException.class);
     }
 
     @Test

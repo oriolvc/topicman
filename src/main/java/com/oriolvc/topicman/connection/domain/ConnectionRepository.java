@@ -7,7 +7,11 @@ import java.util.Optional;
 /** Outbound port that stores connections. */
 public interface ConnectionRepository {
 
-    /** Inserts a new connection or updates an existing one with the same id. */
+    /**
+     * Inserts a new connection or updates an existing one with the same id.
+     *
+     * @throws ConnectionNameTakenException if another connection has the same name
+     */
     void save(Connection connection);
 
     Optional<Connection> findById(ConnectionId id);

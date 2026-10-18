@@ -3,14 +3,19 @@ package com.oriolvc.topicman.connection.infrastructure.persistence;
 import com.oriolvc.topicman.connection.domain.BrokerAddress;
 import com.oriolvc.topicman.connection.domain.Connection;
 import com.oriolvc.topicman.connection.domain.ConnectionName;
+import com.oriolvc.topicman.connection.domain.ConnectionNameTakenException;
 import com.oriolvc.topicman.connection.domain.ConnectionRepository;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
 class JpaConnectionRepository implements ConnectionRepository {
+
+    // Declared in V1__create_broker_connection_table.sql
+    private static final String NAME_UNIQUE_CONSTRAINT = "broker_connection_name_unique";
 
     private final ConnectionJpaRepository jpaRepository;
     private final CredentialsCodec credentialsCodec;
@@ -42,7 +47,21 @@ class JpaConnectionRepository implements ConnectionRepository {
                         credentials,
                         connection.createdAt(),
                         connection.updatedAt()));
-        jpaRepository.save(entity);
+        try {
+            // Flush now, so a name taken by a concurrent request fails here as a domain error
+            // instead of at commit.
+            jpaRepository.saveAndFlush(entity);
+        } catch (DataIntegrityViolationException e) {
+            if (isNameUniqueViolation(e)) {
+                throw new ConnectionNameTakenException(connection.name());
+            }
+            throw e;
+        }
+    }
+
+    private static boolean isNameUniqueViolation(DataIntegrityViolationException e) {
+        return e.getMostSpecificCause().getMessage() != null
+                && e.getMostSpecificCause().getMessage().contains(NAME_UNIQUE_CONSTRAINT);
     }
 
     @Override
