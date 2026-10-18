@@ -1,0 +1,250 @@
+openapi: 3.1.0
+info:
+  title: TopicMan connections
+  version: v1
+  description: >-
+    Saved connections to Pulsar, Kafka and RabbitMQ brokers. Credentials are write-only: they are
+    encrypted at rest and never returned (ADR 0005); responses only say which kind is set.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+tags:
+  - name: Connections
+paths:
+  /api/v1/connections:
+    get:
+      operationId: listConnections
+      tags: [Connections]
+      summary: List connections, ordered by name
+      responses:
+        '200':
+          description: All connections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConnectionResponse'
+    post:
+      operationId: createConnection
+      tags: [Connections]
+      summary: Create a connection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConnectionRequest'
+      responses:
+        '201':
+          description: The connection was created
+          headers:
+            Location:
+              description: URL of the new connection
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+        '400':
+          $ref: '#/components/responses/InvalidConnection'
+        '409':
+          $ref: '#/components/responses/ConnectionNameTaken'
+  /api/v1/connections/{connectionId}:
+    parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+    get:
+      operationId: getConnection
+      tags: [Connections]
+      summary: Get a connection
+      responses:
+        '200':
+          description: The connection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+        '404':
+          $ref: '#/components/responses/ConnectionNotFound'
+    patch:
+      operationId: updateConnection
+      tags: [Connections]
+      summary: Change a connection's name, address or credentials
+      description: >-
+        Only the properties present are changed, so a client can rename a connection without
+        knowing its credentials. The broker type cannot be changed: create a new connection instead.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConnectionRequest'
+      responses:
+        '200':
+          description: The updated connection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+        '400':
+          $ref: '#/components/responses/InvalidConnection'
+        '404':
+          $ref: '#/components/responses/ConnectionNotFound'
+        '409':
+          $ref: '#/components/responses/ConnectionNameTaken'
+    delete:
+      operationId: deleteConnection
+      tags: [Connections]
+      summary: Delete a connection
+      responses:
+        '204':
+          description: The connection was deleted
+        '404':
+          $ref: '#/components/responses/ConnectionNotFound'
+components:
+  parameters:
+    ConnectionId:
+      name: connectionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    InvalidConnection:
+      description: >-
+        The request is malformed (`code` is `connection.invalid-request`) or breaks a connection
+        rule, such as credentials the broker does not support (`connection.invalid-connection`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ConnectionNotFound:
+      description: 'No connection has this id (`code` is `connection.not-found`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ConnectionNameTaken:
+      description: 'Another connection already has this name (`code` is `connection.name-taken`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  schemas:
+    ProblemDetail:
+      $ref: 'common.yaml#/components/schemas/ProblemDetail'
+    BrokerType:
+      type: string
+      enum: [PULSAR, KAFKA, RABBITMQ]
+    CredentialsType:
+      type: string
+      enum: [NONE, TOKEN, USERNAME_PASSWORD]
+      description: >-
+        `TOKEN` is supported by Pulsar only; `USERNAME_PASSWORD` by Kafka and RabbitMQ; `NONE` by
+        every broker.
+    ConnectionResponse:
+      type: object
+      required: [id, name, brokerType, address, credentialsType, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        brokerType:
+          $ref: '#/components/schemas/BrokerType'
+        address:
+          type: string
+          description: >-
+            Kafka bootstrap servers (`host:port,host:port`), Pulsar service URL
+            (`pulsar://host:6650`) or AMQP URI (`amqp://host:5672`).
+        credentialsType:
+          $ref: '#/components/schemas/CredentialsType'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateConnectionRequest:
+      type: object
+      required: [name, brokerType, address, credentials]
+      properties:
+        name:
+          $ref: '#/components/schemas/ConnectionName'
+        brokerType:
+          $ref: '#/components/schemas/BrokerType'
+        address:
+          $ref: '#/components/schemas/BrokerAddress'
+        credentials:
+          $ref: '#/components/schemas/CredentialsRequest'
+    UpdateConnectionRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          $ref: '#/components/schemas/ConnectionName'
+        address:
+          $ref: '#/components/schemas/BrokerAddress'
+        credentials:
+          $ref: '#/components/schemas/CredentialsRequest'
+    ConnectionName:
+      type: string
+      minLength: 1
+      maxLength: 100
+      description: Unique among connections. Surrounding whitespace is removed.
+    BrokerAddress:
+      type: string
+      minLength: 1
+      maxLength: 2048
+      description: >-
+        Kafka bootstrap servers (`host:port,host:port`), Pulsar service URL
+        (`pulsar://host:6650`) or AMQP URI (`amqp://host:5672`).
+    CredentialsRequest:
+      description: How TopicMan authenticates to the broker. Secrets are never returned.
+      oneOf:
+        - $ref: '#/components/schemas/NoCredentialsRequest'
+        - $ref: '#/components/schemas/TokenCredentialsRequest'
+        - $ref: '#/components/schemas/UsernamePasswordCredentialsRequest'
+      discriminator:
+        propertyName: type
+        mapping:
+          NONE: '#/components/schemas/NoCredentialsRequest'
+          TOKEN: '#/components/schemas/TokenCredentialsRequest'
+          USERNAME_PASSWORD: '#/components/schemas/UsernamePasswordCredentialsRequest'
+    NoCredentialsRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          const: NONE
+    TokenCredentialsRequest:
+      type: object
+      required: [type, token]
+      properties:
+        type:
+          type: string
+          const: TOKEN
+        token:
+          type: string
+          minLength: 1
+          writeOnly: true
+          description: A bearer token, such as a Pulsar JWT.
+    UsernamePasswordCredentialsRequest:
+      type: object
+      required: [type, username, password]
+      properties:
+        type:
+          type: string
+          const: USERNAME_PASSWORD
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+          writeOnly: true

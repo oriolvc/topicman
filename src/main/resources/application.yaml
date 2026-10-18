@@ -21,7 +21,11 @@ springdoc:
   swagger-ui:
     disable-swagger-default-url: true
     # One entry per context spec in src/main/resources/openapi/; OpenApiSpecsIT checks the list.
-    urls: []
+    urls:
+      - name: Connections
+        url: /openapi/connection.yaml
+      - name: Messaging
+        url: /openapi/messaging.yaml
 
 logging:
   level:

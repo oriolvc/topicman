@@ -53,7 +53,7 @@ Out (post-MVP):
 - [x] Kafka adapter: produce with key, headers and acknowledgement
 - [x] Kafka adapter: side-effect-free reader (no group, `assign()`, latest or earliest)
 - [x] Abstract `BrokerAdapterContractTest`, with Kafka passing it via Testcontainers
-- [ ] OpenAPI spec for connections, produce and consume sessions (SSE), reviewed before coding
+- [x] OpenAPI spec for connections, produce and consume sessions (SSE), reviewed before coding
 - [ ] REST API for connections and produce; SSE endpoint for consume sessions
 - [ ] Session limits and idle timeout for consume sessions
 

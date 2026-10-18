@@ -83,13 +83,19 @@ val openApiGenerateTasks = openApiContexts.map { context ->
         cleanupOutput = true
         apiPackage = "com.oriolvc.topicman.$context.infrastructure.web.api"
         modelPackage = "com.oriolvc.topicman.$context.infrastructure.web.model"
+        // Each context needs its own, or their generated configuration classes would clash.
+        configOptions.put("configPackage", "com.oriolvc.topicman.$context.infrastructure.web.config")
         // Errors are Spring's ProblemDetail, mapped from domain error codes; never a generated DTO.
         schemaMappings = mapOf("ProblemDetail" to "org.springframework.http.ProblemDetail")
+        // `format: event-stream` marks a server-sent event stream, so its operation returns an
+        // SseEmitter and the streaming controller still implements the generated interface.
+        typeMappings = mapOf("string+event-stream" to "SseEmitter")
+        importMappings = mapOf("SseEmitter" to "org.springframework.web.servlet.mvc.method.annotation.SseEmitter")
         generateApiTests = false
         generateModelTests = false
         generateApiDocumentation = false
         generateModelDocumentation = false
-        configOptions = mapOf(
+        configOptions.putAll(mapOf(
             "useSpringBoot4" to "true",
             "useJackson3" to "true",
             "useJakartaEe" to "true",
@@ -102,7 +108,7 @@ val openApiGenerateTasks = openApiContexts.map { context ->
             "annotationLibrary" to "none",
             "hideGenerationTimestamp" to "true",
             "sourceFolder" to "src/main/java",
-        )
+        ))
     }
 }
 

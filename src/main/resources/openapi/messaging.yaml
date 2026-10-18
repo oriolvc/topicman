@@ -1,0 +1,347 @@
+openapi: 3.1.0
+info:
+  title: TopicMan messaging
+  version: v1
+  description: >-
+    Produce messages and consume them live through a saved connection. Consuming never changes the
+    state of real consumers (ADR 0003): no consumer group, durable subscription or existing queue is
+    used.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+tags:
+  - name: Messages
+  - name: Consume sessions
+paths:
+  /api/v1/messages:
+    post:
+      operationId: produceMessage
+      tags: [Messages]
+      summary: Produce a message, or several copies of it
+      description: >-
+        Sends the copies one after the other and waits for the broker to acknowledge each. A JSON
+        payload must be well-formed. Sending stops at the first failure; the problem's `sent`
+        property then says how many copies were acknowledged before it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProduceMessageRequest'
+      responses:
+        '200':
+          description: Every copy was acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProduceMessageResponse'
+        '400':
+          description: >-
+            The request is malformed (`messaging.invalid-request`), the payload is not valid JSON
+            (`messaging.invalid-message`) or the broker does not support the destination
+            (`messaging.invalid-destination`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          $ref: '#/components/responses/ConnectionNotFound'
+        '503':
+          description: >-
+            The broker rejected a copy or did not acknowledge it in time (`messaging.produce-failed`).
+            The problem's `sent` property is the number of copies acknowledged before the failure.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProduceFailedProblem'
+  /api/v1/consume-sessions:
+    post:
+      operationId: openConsumeSession
+      tags: [Consume sessions]
+      summary: Open a consume session
+      description: >-
+        Starts reading the destination without side effects. Read the messages from the session's
+        `events` stream. A session closes when it is deleted or after being idle (no client
+        connected to its stream) for the idle timeout.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenConsumeSessionRequest'
+      responses:
+        '201':
+          description: The session is open
+          headers:
+            Location:
+              description: URL of the session
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumeSessionResponse'
+        '400':
+          description: >-
+            The request is malformed (`messaging.invalid-request`) or the broker does not support
+            the destination (`messaging.invalid-destination`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          $ref: '#/components/responses/ConnectionNotFound'
+        '429':
+          description: 'Too many consume sessions are open (`messaging.session-limit-reached`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '503':
+          description: >-
+            The destination does not exist or the broker cannot be reached
+            (`messaging.read-failed`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+  /api/v1/consume-sessions/{sessionId}:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    delete:
+      operationId: closeConsumeSession
+      tags: [Consume sessions]
+      summary: Close a consume session and release its broker resources
+      responses:
+        '204':
+          description: The session is closed
+        '404':
+          $ref: '#/components/responses/ConsumeSessionNotFound'
+  /api/v1/consume-sessions/{sessionId}/events:
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    get:
+      operationId: streamConsumeSessionEvents
+      tags: [Consume sessions]
+      summary: Stream the session's messages as server-sent events
+      description: |-
+        A `text/event-stream` meant for the browser's `EventSource`. Events:
+
+        - `message`: a message was read; `data` is a `ConsumedMessageEvent` as JSON, and the event
+          `id` is its position.
+        - `error`: reading failed and the session is closed; `data` is a `ProblemDetail` as JSON
+          (`messaging.read-failed`).
+        - `closed`: the session was closed or timed out; `data` is empty.
+
+        A comment line is sent every 15 seconds so proxies keep the connection open. One client can
+        stream a session at a time. Reading pauses while no client is connected, so after a
+        reconnect the stream continues where it stopped, until the session times out.
+      responses:
+        '200':
+          description: The event stream
+          content:
+            text/event-stream:
+              schema:
+                # Generated as Spring's SseEmitter (see build.gradle.kts)
+                type: string
+                format: event-stream
+        '404':
+          $ref: '#/components/responses/ConsumeSessionNotFound'
+        '409':
+          description: 'Another client is already streaming this session (`messaging.session-in-use`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+components:
+  parameters:
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    ConnectionNotFound:
+      description: 'No connection has this id (`connection.not-found`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    ConsumeSessionNotFound:
+      description: 'No open session has this id (`messaging.session-not-found`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  schemas:
+    ProblemDetail:
+      $ref: 'common.yaml#/components/schemas/ProblemDetail'
+    ProduceFailedProblem:
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetail'
+        - type: object
+          required: [sent]
+          properties:
+            sent:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Copies acknowledged before the failure.
+    ProduceMessageRequest:
+      type: object
+      required: [connectionId, destination, payload]
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        destination:
+          $ref: '#/components/schemas/Destination'
+        key:
+          type: string
+          minLength: 1
+          description: >-
+            Partitioning key (Kafka record key, Pulsar message key). Omit it for no key. RabbitMQ
+            has no message key: it routes with the destination's routing key.
+        headers:
+          $ref: '#/components/schemas/Headers'
+        payload:
+          $ref: '#/components/schemas/Payload'
+        copies:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+          default: 1
+    ProduceMessageResponse:
+      type: object
+      required: [receipts]
+      properties:
+        receipts:
+          type: array
+          description: >-
+            The broker's acknowledgement of each copy, in order and in the broker's own terms: a
+            Kafka `topic-partition@offset`, a Pulsar message id or a RabbitMQ publisher confirm.
+          items:
+            type: string
+    OpenConsumeSessionRequest:
+      type: object
+      required: [connectionId, destination]
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+        destination:
+          $ref: '#/components/schemas/Destination'
+        startPosition:
+          $ref: '#/components/schemas/StartPosition'
+    ConsumeSessionResponse:
+      type: object
+      required: [id, connectionId, destination, startPosition, openedAt, eventsUrl]
+      properties:
+        id:
+          type: string
+          format: uuid
+        connectionId:
+          type: string
+          format: uuid
+        destination:
+          $ref: '#/components/schemas/Destination'
+        startPosition:
+          $ref: '#/components/schemas/StartPosition'
+        openedAt:
+          type: string
+          format: date-time
+        eventsUrl:
+          type: string
+          format: uri-reference
+          description: Where to stream the session's messages from.
+    ConsumedMessageEvent:
+      description: The `data` of a `message` event on a session's event stream.
+      type: object
+      required: [headers, payload, timestamp, position]
+      properties:
+        key:
+          type: string
+          description: Absent when the message has no key.
+        headers:
+          $ref: '#/components/schemas/Headers'
+        payload:
+          $ref: '#/components/schemas/Payload'
+        timestamp:
+          type: string
+          format: date-time
+          description: When the broker recorded the message.
+        position:
+          type: string
+          description: >-
+            Where the message was read, in the broker's terms (Kafka `topic-partition@offset`,
+            Pulsar message id, RabbitMQ delivery tag).
+    StartPosition:
+      type: string
+      enum: [LATEST, EARLIEST]
+      default: LATEST
+      description: >-
+        `LATEST` reads only messages published after the session opens. `EARLIEST` also reads every
+        message the broker still retains; RabbitMQ cannot, and treats it as `LATEST` (ADR 0003).
+    Destination:
+      description: >-
+        A Kafka or Pulsar topic, or a RabbitMQ exchange and routing key. Each broker supports one
+        kind.
+      oneOf:
+        - $ref: '#/components/schemas/TopicDestination'
+        - $ref: '#/components/schemas/ExchangeDestination'
+      discriminator:
+        propertyName: type
+        mapping:
+          TOPIC: '#/components/schemas/TopicDestination'
+          EXCHANGE: '#/components/schemas/ExchangeDestination'
+    TopicDestination:
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          type: string
+          const: TOPIC
+        name:
+          type: string
+          minLength: 1
+          description: >-
+            Topic name. Pulsar names may be short (`orders`) or fully qualified
+            (`persistent://tenant/namespace/orders`).
+    ExchangeDestination:
+      type: object
+      required: [type, name, routingKey]
+      properties:
+        type:
+          type: string
+          const: EXCHANGE
+        name:
+          type: string
+          minLength: 1
+          description: A named exchange; the default exchange is not supported.
+        routingKey:
+          type: string
+          description: May be empty, as fanout exchanges ignore it.
+    Headers:
+      type: object
+      description: Message headers (Kafka headers, Pulsar properties, AMQP headers).
+      propertyNames:
+        minLength: 1
+      additionalProperties:
+        type: string
+    Payload:
+      type: object
+      required: [format, content]
+      properties:
+        format:
+          type: string
+          enum: [JSON, TEXT]
+          description: >-
+            How the content is meant to be read. Produced JSON must be well-formed; consumed
+            payloads are `JSON` when they parse as JSON, otherwise `TEXT`.
+        content:
+          type: string
+          description: The body, encoded as UTF-8 on the wire.
