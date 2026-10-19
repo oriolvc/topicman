@@ -1,0 +1,13 @@
+# Single-node Kafka (KRaft, no ZooKeeper) for manual testing on the host.
+# Bootstrap server: localhost:9092 (plaintext, no auth). Topics are auto-created on first produce.
+#
+#   docker compose -f compose.kafka.yaml up -d
+#   docker compose -f compose.kafka.yaml down     # stops it; no volume, so all data is discarded
+#
+# Kept separate from compose.yaml so `./gradlew bootRun` only starts PostgreSQL.
+services:
+  kafka:
+    image: 'apache/kafka:4.3.1'
+    container_name: topicman-kafka
+    ports:
+      - '9092:9092'

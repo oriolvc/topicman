@@ -63,7 +63,11 @@ Testcontainers, so they need Docker even when you develop with the `local` profi
 ./gradlew check        # format check, tests and architecture rules, frontend checks
 ```
 
-Producing and consuming need a running broker, such as a local Kafka on `localhost:9092`.
+Producing and consuming need a running broker. For a throwaway Kafka on `localhost:9092`:
+
+```bash
+docker compose -f compose.kafka.yaml up -d     # stop it with `down`; its data is discarded
+```
 
 ### Master key
 
