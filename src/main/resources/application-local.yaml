@@ -6,6 +6,6 @@ spring:
     compose:
       enabled: false
   datasource:
-    url: jdbc:postgresql://localhost:5432/topicman
+    url: jdbc:postgresql://localhost:5431/topicman
     username: topicman
     password: topicman

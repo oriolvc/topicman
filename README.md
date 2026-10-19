@@ -35,7 +35,9 @@ SPRING_PROFILES_ACTIVE=local ./gradlew bootRun  # uses the PostgreSQL on this ma
 ```
 
 The `local` profile ([`application-local.yaml`](src/main/resources/application-local.yaml)) expects
-a `topicman` database owned by a `topicman` user with password `topicman`, as in `compose.yaml`.
+PostgreSQL on port 5431, so it never clashes with a container publishing 5432, and a `topicman`
+database owned by a `topicman` user with password `topicman`, as in `compose.yaml`. Set
+`SPRING_DATASOURCE_URL` to use another address.
 Create them once:
 
 ```bash
