@@ -1,0 +1,11 @@
+# Runs against a PostgreSQL installed on this machine instead of starting one with Docker Compose:
+#   SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
+# The values match compose.yaml; override any of them with SPRING_DATASOURCE_* variables.
+spring:
+  docker:
+    compose:
+      enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/topicman
+    username: topicman
+    password: topicman

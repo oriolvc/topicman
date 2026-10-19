@@ -17,23 +17,51 @@ fighting an admin console built for operators. TopicMan focuses on the developer
 
 ## Run locally (development)
 
-Requirements: Java 25 and Docker.
+Requirements: Java 25, plus Docker or a local PostgreSQL.
+
+Create a master key once and keep it (see [Master key](#master-key)), for example:
 
 ```bash
-export TOPICMAN_MASTER_KEY="$(openssl rand -base64 32)"   # keep it: see below
-./gradlew bootRun      # starts PostgreSQL through Docker Compose automatically
-./gradlew check        # format check, tests and architecture rules, frontend checks
+mkdir -p ~/.config/topicman
+echo "export TOPICMAN_MASTER_KEY='$(openssl rand -base64 32)'" > ~/.config/topicman/env
+source ~/.config/topicman/env
 ```
 
-`./gradlew bootRun` serves the UI at <http://localhost:8080>. Gradle downloads its own Node.js to
-build it. To work on the UI with hot reload (Node.js 22.12 or later), keep the backend running and
-start the Vite dev server, which proxies API calls to it:
+Then start the backend in one of two ways:
+
+```bash
+./gradlew bootRun                              # starts PostgreSQL with Docker Compose
+SPRING_PROFILES_ACTIVE=local ./gradlew bootRun  # uses the PostgreSQL on this machine
+```
+
+The `local` profile ([`application-local.yaml`](src/main/resources/application-local.yaml)) expects
+a `topicman` database owned by a `topicman` user with password `topicman`, as in `compose.yaml`.
+Create them once:
+
+```bash
+sudo -u postgres psql \
+  -c "CREATE ROLE topicman LOGIN PASSWORD 'topicman';" \
+  -c "CREATE DATABASE topicman OWNER topicman;"
+```
+
+Either way the backend serves the API and the UI at <http://localhost:8080>; Gradle downloads its
+own Node.js to build the UI. To work on the UI with hot reload (Node.js 22.22 or later), keep the
+backend running and start the Vite dev server, which proxies API calls to it:
 
 ```bash
 cd frontend
 npm ci
 npm run dev            # http://localhost:5173
 ```
+
+Run every check before pushing. The integration tests start PostgreSQL and Kafka with
+Testcontainers, so they need Docker even when you develop with the `local` profile:
+
+```bash
+./gradlew check        # format check, tests and architecture rules, frontend checks
+```
+
+Producing and consuming need a running broker, such as a local Kafka on `localhost:9092`.
 
 ### Master key
 
