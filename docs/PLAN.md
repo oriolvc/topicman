@@ -63,7 +63,7 @@ Out (post-MVP):
 - [x] TypeScript client generated from the OpenAPI specs
 - [x] Connections screen: list, create, edit, delete
 - [x] Produce screen: destination, key, headers, JSON payload, send N, result
-- [ ] Consume screen: live stream with pause, clear and payload formatting
+- [x] Consume screen: live stream with pause, clear and payload formatting
 
 ## Phase 3 — Pulsar and RabbitMQ
 

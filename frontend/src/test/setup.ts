@@ -1,4 +1,5 @@
 import { cleanup } from '@testing-library/react';
+import { EventSource as FetchEventSource } from 'eventsource';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import { server } from './server';
 
@@ -46,3 +47,6 @@ Object.defineProperty(document, 'fonts', {
     removeEventListener: () => undefined,
   },
 });
+
+// jsdom has no EventSource. This one reads the stream with fetch, so MSW's `sse()` handlers serve it.
+globalThis.EventSource = FetchEventSource;

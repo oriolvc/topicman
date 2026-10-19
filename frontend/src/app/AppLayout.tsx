@@ -6,6 +6,7 @@ import { ColorSchemeToggle } from './ColorSchemeToggle';
 const NAVIGATION = [
   { label: 'Connections', to: '/connections' },
   { label: 'Produce', to: '/produce' },
+  { label: 'Consume', to: '/consume' },
 ];
 
 export function AppLayout() {

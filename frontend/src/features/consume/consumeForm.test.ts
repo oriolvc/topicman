@@ -1,0 +1,54 @@
+import { describe, expect, it } from 'vitest';
+import { initialConsumeValues, toOpenRequest, validateConsume } from './consumeForm';
+
+describe('validateConsume', () => {
+  it('asks for a connection first', () => {
+    expect(validateConsume(initialConsumeValues(null), undefined)).toEqual({
+      connectionId: 'Choose a connection',
+    });
+  });
+
+  it('asks for the kind of destination the broker uses', () => {
+    const values = initialConsumeValues('c-1');
+
+    expect(validateConsume(values, 'KAFKA')).toEqual({ destinationName: 'Enter a topic' });
+    expect(validateConsume(values, 'RABBITMQ')).toEqual({ destinationName: 'Enter an exchange' });
+  });
+
+  it('accepts a destination', () => {
+    expect(
+      validateConsume({ ...initialConsumeValues('c-1'), destinationName: 'orders' }, 'KAFKA'),
+    ).toEqual({});
+  });
+});
+
+describe('toOpenRequest', () => {
+  it('reads a topic from the chosen position', () => {
+    const values = {
+      ...initialConsumeValues('c-1'),
+      destinationName: ' orders ',
+      startPosition: 'EARLIEST' as const,
+    };
+
+    expect(toOpenRequest(values, 'c-1', 'KAFKA')).toEqual({
+      connectionId: 'c-1',
+      destination: { type: 'TOPIC', name: 'orders' },
+      startPosition: 'EARLIEST',
+    });
+  });
+
+  it('binds to an exchange with its routing key, reading only new messages', () => {
+    const values = {
+      ...initialConsumeValues('c-1'),
+      destinationName: 'events',
+      routingKey: 'orders.*',
+      startPosition: 'EARLIEST' as const,
+    };
+
+    expect(toOpenRequest(values, 'c-1', 'RABBITMQ')).toEqual({
+      connectionId: 'c-1',
+      destination: { type: 'EXCHANGE', name: 'events', routingKey: 'orders.*' },
+      startPosition: 'LATEST',
+    });
+  });
+});
