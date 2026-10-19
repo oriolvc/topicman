@@ -6,7 +6,7 @@ import type {
   CredentialsType,
   UpdateConnectionRequest,
 } from '../../api/connection';
-import { BROKERS } from './brokers';
+import { BROKER_SETTINGS } from './brokers';
 
 /** `KEEP` leaves an existing connection's credentials as they are, as the API never returns them. */
 export type CredentialsChoice = CredentialsType | 'KEEP';
@@ -41,7 +41,7 @@ export function existingConnectionValues(connection: ConnectionResponse): Connec
 }
 
 export function credentialsChoices(brokerType: BrokerType, editing: boolean): CredentialsChoice[] {
-  const supported = BROKERS[brokerType].credentials;
+  const supported = BROKER_SETTINGS[brokerType].credentials;
   return editing ? ['KEEP', ...supported] : supported;
 }
 
@@ -50,7 +50,8 @@ export function credentialsAfterBrokerChange(
   credentialsType: CredentialsChoice,
   brokerType: BrokerType,
 ): CredentialsChoice {
-  return credentialsType === 'KEEP' || BROKERS[brokerType].credentials.includes(credentialsType)
+  return credentialsType === 'KEEP' ||
+    BROKER_SETTINGS[brokerType].credentials.includes(credentialsType)
     ? credentialsType
     : 'NONE';
 }

@@ -14,7 +14,8 @@ import { notifications } from '@mantine/notifications';
 import type { BrokerType, ConnectionResponse } from '../../api/connection';
 import { ApiProblem } from '../../api/problem';
 import { showProblem } from '../../shared/showProblem';
-import { BROKER_TYPES, BROKERS, CREDENTIALS_LABELS } from './brokers';
+import { BROKER_LABELS, BROKER_TYPES } from '../../shared/brokers';
+import { BROKER_SETTINGS, CREDENTIALS_LABELS } from './brokers';
 import {
   credentialsAfterBrokerChange,
   credentialsChoices,
@@ -92,13 +93,13 @@ export function ConnectionFormModal({ connection, onClose }: ConnectionFormModal
               disabled={editing}
               value={brokerType}
               onChange={changeBroker}
-              data={BROKER_TYPES.map((type) => ({ value: type, label: BROKERS[type].label }))}
+              data={BROKER_TYPES.map((type) => ({ value: type, label: BROKER_LABELS[type] }))}
             />
           </Input.Wrapper>
           <TextInput
             label="Address"
             withAsterisk
-            placeholder={BROKERS[brokerType].addressPlaceholder}
+            placeholder={BROKER_SETTINGS[brokerType].addressPlaceholder}
             {...form.getInputProps('address')}
           />
           <Input.Wrapper label="Credentials">

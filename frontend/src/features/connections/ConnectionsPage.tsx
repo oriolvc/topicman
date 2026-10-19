@@ -2,9 +2,9 @@ import { Alert, Button, Center, Group, Loader, Stack, Text, Title } from '@manti
 import { useState } from 'react';
 import type { ConnectionResponse } from '../../api/connection';
 import { ApiProblem } from '../../api/problem';
+import { useConnections } from '../../shared/connections';
 import { ConnectionFormModal } from './ConnectionFormModal';
 import { ConnectionsTable } from './ConnectionsTable';
-import { useConnections } from './connectionQueries';
 import { DeleteConnectionModal } from './DeleteConnectionModal';
 
 type Dialog =

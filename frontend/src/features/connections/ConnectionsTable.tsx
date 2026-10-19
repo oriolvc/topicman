@@ -1,6 +1,7 @@
 import { Badge, Button, Group, Table, Text, VisuallyHidden } from '@mantine/core';
 import type { ConnectionResponse } from '../../api/connection';
-import { BROKERS, CREDENTIALS_LABELS } from './brokers';
+import { BROKER_LABELS } from '../../shared/brokers';
+import { CREDENTIALS_LABELS } from './brokers';
 
 type ConnectionsTableProps = {
   connections: ConnectionResponse[];
@@ -28,7 +29,7 @@ export function ConnectionsTable({ connections, onEdit, onDelete }: ConnectionsT
             <Table.Tr key={connection.id}>
               <Table.Td>{connection.name}</Table.Td>
               <Table.Td>
-                <Badge variant="light">{BROKERS[connection.brokerType].label}</Badge>
+                <Badge variant="light">{BROKER_LABELS[connection.brokerType]}</Badge>
               </Table.Td>
               <Table.Td>
                 <Text ff="monospace" size="sm">

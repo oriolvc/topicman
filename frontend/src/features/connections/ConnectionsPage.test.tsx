@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { ConnectionResponse } from '../../api/connection';
 import { server } from '../../test/server';
 import { renderAppAt } from '../../test/renderWithProviders';
-import { aConnection } from './connectionFixtures';
+import { aConnection } from '../../test/connectionFixtures';
 
 const CONNECTIONS = '/api/v1/connections';
 const CONNECTION = '/api/v1/connections/:connectionId';

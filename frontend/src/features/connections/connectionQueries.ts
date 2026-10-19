@@ -1,22 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   connectionApi,
   type CreateConnectionRequest,
   type UpdateConnectionRequest,
 } from '../../api/connection';
 import { unwrap } from '../../api/problem';
-
-export const connectionKeys = {
-  all: ['connections'] as const,
-  list: () => [...connectionKeys.all, 'list'] as const,
-};
-
-export function useConnections() {
-  return useQuery({
-    queryKey: connectionKeys.list(),
-    queryFn: async () => unwrap(await connectionApi.GET('/api/v1/connections')),
-  });
-}
+import { connectionKeys } from '../../shared/connections';
 
 function useInvalidateConnections() {
   const queryClient = useQueryClient();

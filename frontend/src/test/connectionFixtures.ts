@@ -1,4 +1,4 @@
-import type { ConnectionResponse } from '../../api/connection';
+import type { ConnectionResponse } from '../api/connection';
 
 export function aConnection(overrides: Partial<ConnectionResponse> = {}): ConnectionResponse {
   return {

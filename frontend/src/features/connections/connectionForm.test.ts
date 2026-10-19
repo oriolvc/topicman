@@ -9,7 +9,7 @@ import {
   validateConnection,
   type ConnectionFormValues,
 } from './connectionForm';
-import { aConnection } from './connectionFixtures';
+import { aConnection } from '../../test/connectionFixtures';
 
 function values(overrides: Partial<ConnectionFormValues>): ConnectionFormValues {
   return { ...newConnectionValues(), ...overrides };
