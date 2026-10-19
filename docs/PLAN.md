@@ -71,6 +71,8 @@ Out (post-MVP):
 - [ ] RabbitMQ adapter (publisher confirms + temporary exclusive queue) passing the contract test
 - [ ] Broker capability model in the domain (e.g. `canReadFromBeginning`) exposed by the API
 - [ ] Test-connection use case for all three brokers, with a test action on the connections screen
+- [ ] Produce to an unreachable broker fails fast with a clear problem (today Kafka blocks Send for
+      about 10s, then reports "Topic not present in metadata")
 
 ## Phase 4 — Collections and environments
 
@@ -83,6 +85,8 @@ Out (post-MVP):
 ## Phase 5 — Security and packaging
 
 - [ ] TLS and SASL options in connections, covered by integration tests
+- [ ] Mask credentials in the `toString()` of the generated request DTOs, so logging a request
+      never prints a password or token
 - [ ] Production Docker image published to GHCR on release
 - [ ] `compose.demo.yaml` with PostgreSQL, Pulsar, Kafka and RabbitMQ
 - [ ] App binds to localhost by default; documented way to expose it
