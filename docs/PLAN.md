@@ -61,7 +61,7 @@ Out (post-MVP):
 
 - [x] Vite + React + TypeScript + Mantine app in `frontend/`, built by Gradle and bundled into the jar
 - [x] TypeScript client generated from the OpenAPI specs
-- [ ] Connections screen: list, create, edit, delete
+- [x] Connections screen: list, create, edit, delete
 - [ ] Produce screen: destination, key, headers, JSON payload, send N, result
 - [ ] Consume screen: live stream with pause, clear and payload formatting
 

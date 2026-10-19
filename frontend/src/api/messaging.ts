@@ -1,4 +1,5 @@
 import createClient from 'openapi-fetch';
+import { clientOptions } from './clientOptions';
 import type { components, paths } from './generated/messaging';
 
 type Schemas = components['schemas'];
@@ -19,4 +20,4 @@ export type ConsumedMessageEvent = Schemas['ConsumedMessageEvent'];
  * Typed client for the messaging API (`messaging.yaml`). The event stream of a consume session is
  * read with an `EventSource` instead, at the session's `eventsUrl`.
  */
-export const messagingApi = createClient<paths>({ baseUrl: window.location.origin });
+export const messagingApi = createClient<paths>(clientOptions);

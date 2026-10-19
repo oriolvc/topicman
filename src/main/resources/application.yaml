@@ -4,6 +4,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  web:
+    resources:
+      # FrontendConfiguration serves the static resources instead, with the client-route fallback.
+      add-mappings: false
   jpa:
     open-in-view: false
     hibernate:

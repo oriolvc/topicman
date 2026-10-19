@@ -1,11 +1,21 @@
 import { cleanup } from '@testing-library/react';
-import { afterEach } from 'vitest';
+import { afterAll, afterEach, beforeAll } from 'vitest';
+import { server } from './server';
+
+beforeAll(() => {
+  server.listen({ onUnhandledFrame: 'error' });
+});
 
 afterEach(() => {
   cleanup();
+  server.resetHandlers();
 });
 
-// jsdom implements neither, and Mantine needs both to resolve the color scheme and layout.
+afterAll(() => {
+  server.close();
+});
+
+// jsdom implements none of these, and Mantine needs them to resolve the color scheme and layout.
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string): MediaQueryList => ({
@@ -26,3 +36,5 @@ class NoopResizeObserver {
   disconnect() {}
 }
 window.ResizeObserver = NoopResizeObserver;
+
+Element.prototype.scrollIntoView = () => undefined;
