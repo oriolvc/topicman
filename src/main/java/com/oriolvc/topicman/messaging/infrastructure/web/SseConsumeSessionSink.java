@@ -13,8 +13,8 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
- * Streams a consume session as server-sent events: {@code message}, {@code error} and
- * {@code closed} events, with a comment as heartbeat (see messaging.yaml).
+ * Streams a consume session as server-sent events: {@code message}, {@code failed}, {@code closed}
+ * and {@code replaced} events, with a comment as heartbeat (see messaging.yaml).
  */
 final class SseConsumeSessionSink implements ConsumeSessionSink {
 
@@ -55,13 +55,22 @@ final class SseConsumeSessionSink implements ConsumeSessionSink {
         var problem = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, failure.getMessage());
         problem.setTitle("Read failed");
         problem.setProperty("code", failure.code());
-        send(SseEmitter.event().name("error").data(problem, MediaType.APPLICATION_JSON));
+        send(SseEmitter.event().name("failed").data(problem, MediaType.APPLICATION_JSON));
         emitter.complete();
     }
 
     @Override
     public void closed() {
-        send(SseEmitter.event().name("closed").data(""));
+        end("closed");
+    }
+
+    @Override
+    public void replaced() {
+        end("replaced");
+    }
+
+    private void end(String event) {
+        send(SseEmitter.event().name(event).data(""));
         emitter.complete();
     }
 

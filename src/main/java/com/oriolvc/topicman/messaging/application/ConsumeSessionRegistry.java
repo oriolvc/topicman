@@ -1,9 +1,7 @@
 package com.oriolvc.topicman.messaging.application;
 
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionId;
-import com.oriolvc.topicman.messaging.domain.ConsumeSessionInUseException;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionNotFoundException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,14 +35,10 @@ public class ConsumeSessionRegistry implements AutoCloseable {
         return sessions.containsKey(id);
     }
 
-    /** Reserves the session for one streaming client. */
-    ActiveSession claim(ConsumeSessionId id, Instant now) {
+    ActiveSession get(ConsumeSessionId id) {
         var session = sessions.get(id);
         if (session == null) {
             throw new ConsumeSessionNotFoundException(id);
-        }
-        if (!session.tryClaim(now)) {
-            throw new ConsumeSessionInUseException(id);
         }
         return session;
     }

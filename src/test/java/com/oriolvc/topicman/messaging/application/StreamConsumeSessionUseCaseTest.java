@@ -4,8 +4,10 @@ import static com.oriolvc.topicman.messaging.application.ConsumeSessionFixtures.
 import static com.oriolvc.topicman.messaging.application.ConsumeSessionFixtures.aReceivedText;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 
 import com.oriolvc.topicman.messaging.application.ConsumeSessionFixtures.CapturingExecutor;
+import com.oriolvc.topicman.messaging.application.ConsumeSessionFixtures.ThreadPerTaskExecutor;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionId;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionInUseException;
 import com.oriolvc.topicman.messaging.domain.ConsumeSessionNotFoundException;
@@ -19,6 +21,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -34,6 +39,8 @@ class StreamConsumeSessionUseCaseTest {
     private final OpenConsumeSessionUseCase open =
             new OpenConsumeSessionUseCase(endpoints, List.of(kafka), registry, ConsumeSessionFixtures.LIMITS, clock);
     private final CloseConsumeSessionUseCase close = new CloseConsumeSessionUseCase(registry, clock);
+    private final ThreadPerTaskExecutor threads = new ThreadPerTaskExecutor();
+    private Duration handoverTimeout = Duration.ofSeconds(5);
 
     @Test
     void deliversMessagesInOrderUntilTheClientLeaves() {
@@ -112,13 +119,75 @@ class StreamConsumeSessionUseCaseTest {
     }
 
     @Test
-    void rejectsASecondClientWhileOneIsStreaming() {
+    void letsANewClientTakeOverTheStream() throws InterruptedException {
+        var session = openSession();
+        var first = new RecordingSink();
+        stream(threads, session, first);
+
+        stream(threads, session, new RecordingSink().leavingAfterMessages(0));
+        threads.joinAll();
+
+        assertThat(first.replaced).isTrue();
+        assertThat(first.closed).isFalse();
+        assertThat(registry.contains(session)).isTrue();
+        assertThat(kafka.lastStream().isClosed()).isFalse();
+    }
+
+    @Test
+    void handsTheMessagesNotYetDeliveredToTheClientTakingOver() throws InterruptedException {
+        var session = openSession();
+        kafka.lastStream()
+                .willReturn(List.of(
+                        aReceivedText("first", "p@0"), aReceivedText("second", "p@1"), aReceivedText("third", "p@2")));
+        var second = new RecordingSink().leavingAfterMessages(2);
+        var takeOver = new AtomicReference<TakeOver>();
+        var first = new RecordingSink().afterFirstMessage(() -> takeOver.set(startTakingOver(session, second)));
+
+        stream(threads, session, first);
+        threads.joinAll();
+        takeOver.get().thread().join();
+
+        assertThat(first.messages).extracting(ReceivedMessage::position).containsExactly("p@0");
+        assertThat(second.messages).extracting(ReceivedMessage::position).containsExactly("p@1", "p@2");
+    }
+
+    @Test
+    void letsTheLatestClientWinWhenTwoTakeOverAtOnce() throws InterruptedException {
+        var session = openSession();
+        var executor = new CapturingExecutor();
+        stream(executor, session, new RecordingSink());
+        var earlier = startTakingOver(session, new RecordingSink().leavingAfterMessages(0));
+        var later = startTakingOver(session, new RecordingSink().leavingAfterMessages(0));
+
+        earlier.thread().join();
+        executor.runAll();
+        later.thread().join();
+
+        assertThat(earlier.failure().get()).isInstanceOf(ConsumeSessionInUseException.class);
+        assertThat(later.failure().get()).isNull();
+    }
+
+    @Test
+    void rejectsATakeOverWhenTheStreamIsNotHandedOverInTime() {
         var session = openSession();
         stream(new CapturingExecutor(), session, new RecordingSink());
+        handoverTimeout = Duration.ofMillis(100);
 
         assertThatThrownBy(() -> stream(SAME_THREAD, session, new RecordingSink()))
                 .isInstanceOf(ConsumeSessionInUseException.class)
                 .hasFieldOrPropertyWithValue("code", "messaging.session-in-use");
+    }
+
+    @Test
+    void failsATakeOverWhenTheSessionClosesMeanwhile() throws InterruptedException {
+        var session = openSession();
+        stream(new CapturingExecutor(), session, new RecordingSink());
+        var takeOver = startTakingOver(session, new RecordingSink());
+
+        close.execute(new CloseConsumeSessionCommand(session));
+        takeOver.thread().join();
+
+        assertThat(takeOver.failure().get()).isInstanceOf(ConsumeSessionNotFoundException.class);
     }
 
     @Test
@@ -157,10 +226,32 @@ class StreamConsumeSessionUseCaseTest {
         assertThat(kafka.lastStream().isClosed()).isTrue();
     }
 
+    @AfterEach
+    void stopStreaming() throws InterruptedException {
+        registry.close();
+        threads.joinAll();
+    }
+
     private void stream(Executor executor, ConsumeSessionId session, ConsumeSessionSink sink) {
-        new StreamConsumeSessionUseCase(registry, executor, clock)
+        new StreamConsumeSessionUseCase(registry, executor, clock, handoverTimeout)
                 .execute(new StreamConsumeSessionCommand(session, sink));
     }
+
+    /** A client connecting from its own thread, which is waiting for the stream when this returns. */
+    private TakeOver startTakingOver(ConsumeSessionId session, ConsumeSessionSink sink) {
+        var failure = new AtomicReference<@Nullable RuntimeException>();
+        var thread = Thread.startVirtualThread(() -> {
+            try {
+                stream(SAME_THREAD, session, sink);
+            } catch (RuntimeException e) {
+                failure.set(e);
+            }
+        });
+        await().until(() -> thread.getState() == Thread.State.TIMED_WAITING);
+        return new TakeOver(thread, failure);
+    }
+
+    private record TakeOver(Thread thread, AtomicReference<@Nullable RuntimeException> failure) {}
 
     private ConsumeSessionId openSession() {
         var connection = endpoints.add(BrokerType.KAFKA, "localhost:9092");

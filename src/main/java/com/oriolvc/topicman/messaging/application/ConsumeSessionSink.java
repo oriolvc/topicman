@@ -23,4 +23,7 @@ public interface ConsumeSessionSink {
 
     /** The session was closed; the stream ends after this. */
     void closed();
+
+    /** Another client took the stream over; the session stays open and this stream ends after this. */
+    void replaced();
 }

@@ -57,7 +57,8 @@ class ConsumeSessionsController implements ConsumeSessionsApi {
     @Override
     public ResponseEntity<SseEmitter> streamConsumeSessionEvents(UUID sessionId) {
         var emitter = new SseEmitter(NO_TIMEOUT);
-        // Throws before anything is streamed for an unknown or busy session, so the client gets a problem.
+        // Takes the stream over from a previous client, or throws before anything is streamed, so the
+        // client gets a problem.
         streamSession.execute(
                 new StreamConsumeSessionCommand(new ConsumeSessionId(sessionId), new SseConsumeSessionSink(emitter)));
         return ResponseEntity.ok(emitter);

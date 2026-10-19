@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
 final class ConsumeSessionFixtures {
@@ -35,6 +36,23 @@ final class ConsumeSessionFixtures {
             var pending = List.copyOf(tasks);
             tasks.clear();
             pending.forEach(Runnable::run);
+        }
+    }
+
+    /** Runs each task on its own thread, as the application's executor does. */
+    static final class ThreadPerTaskExecutor implements Executor {
+
+        private final List<Thread> threads = new CopyOnWriteArrayList<>();
+
+        @Override
+        public void execute(Runnable task) {
+            threads.add(Thread.startVirtualThread(task));
+        }
+
+        void joinAll() throws InterruptedException {
+            for (var thread : threads) {
+                thread.join();
+            }
         }
     }
 }

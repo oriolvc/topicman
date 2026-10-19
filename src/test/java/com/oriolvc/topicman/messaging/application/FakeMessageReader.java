@@ -15,7 +15,10 @@ import java.util.Deque;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-/** Opens scripted streams: each poll returns the next batch, then nothing, or fails when told to. */
+/**
+ * Opens scripted streams: each poll returns the next batch, then nothing, or fails when told to.
+ * Streams can be scripted while another thread polls them.
+ */
 class FakeMessageReader implements MessageReader {
 
     record Opened(BrokerEndpoint endpoint, Destination destination, StartPosition startPosition) {}
@@ -64,24 +67,24 @@ class FakeMessageReader implements MessageReader {
         private boolean closed;
         private int polls;
 
-        void willReturn(List<ReceivedMessage> batch) {
+        synchronized void willReturn(List<ReceivedMessage> batch) {
             batches.add(batch);
         }
 
-        void willFail(ReadFailedException failure) {
+        synchronized void willFail(ReadFailedException failure) {
             pollFailure = failure;
         }
 
-        boolean isClosed() {
+        synchronized boolean isClosed() {
             return closed;
         }
 
-        int polls() {
+        synchronized int polls() {
             return polls;
         }
 
         @Override
-        public List<ReceivedMessage> poll(Duration timeout) {
+        public synchronized List<ReceivedMessage> poll(Duration timeout) {
             if (closed) {
                 throw new IllegalStateException("Polled a closed stream");
             }
@@ -93,7 +96,7 @@ class FakeMessageReader implements MessageReader {
         }
 
         @Override
-        public void close() {
+        public synchronized void close() {
             closed = true;
         }
     }

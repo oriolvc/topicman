@@ -6,17 +6,22 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-/** Records what a stream delivers; the client leaves after a number of messages or heartbeats. */
+/**
+ * Records what a stream delivers; the client leaves after a number of messages or heartbeats. Read
+ * it only once its stream has stopped.
+ */
 class RecordingSink implements ConsumeSessionSink {
 
     final List<ReceivedMessage> messages = new ArrayList<>();
     int heartbeats;
     boolean closed;
+    boolean replaced;
 
     @Nullable ReadFailedException failure;
 
     private int leaveAfterMessages = Integer.MAX_VALUE;
     private int leaveAfterHeartbeats = Integer.MAX_VALUE;
+    private Runnable afterFirstMessage = () -> {};
 
     RecordingSink leavingAfterMessages(int count) {
         leaveAfterMessages = count;
@@ -25,6 +30,12 @@ class RecordingSink implements ConsumeSessionSink {
 
     RecordingSink leavingAfterHeartbeats(int count) {
         leaveAfterHeartbeats = count;
+        return this;
+    }
+
+    /** Runs {@code action} on the streaming thread once the first message is delivered. */
+    RecordingSink afterFirstMessage(Runnable action) {
+        afterFirstMessage = action;
         return this;
     }
 
@@ -39,6 +50,9 @@ class RecordingSink implements ConsumeSessionSink {
             return false;
         }
         messages.add(message);
+        if (messages.size() == 1) {
+            afterFirstMessage.run();
+        }
         return true;
     }
 
@@ -59,5 +73,10 @@ class RecordingSink implements ConsumeSessionSink {
     @Override
     public void closed() {
         closed = true;
+    }
+
+    @Override
+    public void replaced() {
+        replaced = true;
     }
 }

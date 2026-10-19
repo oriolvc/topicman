@@ -130,13 +130,18 @@ paths:
 
         - `message`: a message was read; `data` is a `ConsumedMessageEvent` as JSON, and the event
           `id` is its position.
-        - `error`: reading failed and the session is closed; `data` is a `ProblemDetail` as JSON
-          (`messaging.read-failed`).
+        - `failed`: reading failed and the session is closed; `data` is a `ProblemDetail` as JSON
+          (`messaging.read-failed`). Not named `error`, which `EventSource` uses for connection
+          errors.
         - `closed`: the session was closed or timed out; `data` is empty.
+        - `replaced`: another connection took over this stream; `data` is empty. The session stays
+          open, so a client receiving it should stop streaming rather than reconnect.
 
         A comment line is sent every 15 seconds so proxies keep the connection open. One client can
-        stream a session at a time. Reading pauses while no client is connected, so after a
-        reconnect the stream continues where it stopped, until the session times out.
+        stream a session at a time: a new connection takes the stream over from the previous one,
+        so a reconnect or a reload never waits for the server to notice that the previous client is
+        gone. Reading pauses while no client is connected, so after a reconnect the stream
+        continues where it stopped, until the session times out.
       responses:
         '200':
           description: The event stream
@@ -149,7 +154,9 @@ paths:
         '404':
           $ref: '#/components/responses/ConsumeSessionNotFound'
         '409':
-          description: 'Another client is already streaming this session (`messaging.session-in-use`).'
+          description: >-
+            The previous connection did not hand over the stream within a few seconds
+            (`messaging.session-in-use`). Rare: retrying later succeeds.
           content:
             application/problem+json:
               schema:

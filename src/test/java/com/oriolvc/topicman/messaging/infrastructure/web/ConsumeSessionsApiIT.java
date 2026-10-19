@@ -118,14 +118,31 @@ class ConsumeSessionsApiIT {
     }
 
     @Test
-    void rejectsASecondClientWhileOneIsStreaming() throws Exception {
+    void letsASecondClientTakeOverTheStream() throws Exception {
         var connection = aKafkaConnection();
-        var session = post("/api/v1/consume-sessions", openRequest(connection, anExistingTopic(connection), "LATEST"));
-        connect(eventsUrlOf(session));
+        var topic = anExistingTopic(connection);
+        var eventsUrl = eventsUrlOf(post("/api/v1/consume-sessions", openRequest(connection, topic, "LATEST")));
+        var first = connect(eventsUrl);
 
-        var second = getEvents(eventsUrlOf(session));
+        var second = connect(eventsUrl);
 
-        assertProblem(second, 409, "messaging.session-in-use");
+        first.awaitLine("event:replaced");
+        first.awaitEnd();
+        produce(connection, topic, "{\"format\": \"TEXT\", \"content\": \"after\"}");
+        second.awaitLine("event:message");
+    }
+
+    @Test
+    void letsAClientReconnectRightAfterLeaving() throws Exception {
+        var connection = aKafkaConnection();
+        var topic = anExistingTopic(connection);
+        var eventsUrl = eventsUrlOf(post("/api/v1/consume-sessions", openRequest(connection, topic, "LATEST")));
+        connect(eventsUrl).disconnect();
+
+        var reconnected = connect(eventsUrl);
+
+        produce(connection, topic, "{\"format\": \"TEXT\", \"content\": \"after\"}");
+        reconnected.awaitLine("event:message");
     }
 
     @Test
