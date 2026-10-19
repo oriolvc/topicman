@@ -3,7 +3,10 @@ import { useDisclosure } from '@mantine/hooks';
 import { NavLink as RouterNavLink, Outlet } from 'react-router';
 import { ColorSchemeToggle } from './ColorSchemeToggle';
 
-const NAVIGATION = [{ label: 'Connections', to: '/connections' }];
+const NAVIGATION = [
+  { label: 'Connections', to: '/connections' },
+  { label: 'Produce', to: '/produce' },
+];
 
 export function AppLayout() {
   const [navigationOpened, { toggle: toggleNavigation, close: closeNavigation }] = useDisclosure();

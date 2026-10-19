@@ -1,5 +1,6 @@
 import { Navigate, type RouteObject } from 'react-router';
 import { ConnectionsPage } from '../features/connections/ConnectionsPage';
+import { ProducePage } from '../features/produce/ProducePage';
 import { AppLayout } from './AppLayout';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -10,6 +11,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="/connections" replace /> },
       { path: 'connections', element: <ConnectionsPage /> },
+      { path: 'produce', element: <ProducePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

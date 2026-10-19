@@ -38,3 +38,11 @@ class NoopResizeObserver {
 window.ResizeObserver = NoopResizeObserver;
 
 Element.prototype.scrollIntoView = () => undefined;
+
+// Mantine's autosizing textareas resize once fonts load.
+Object.defineProperty(document, 'fonts', {
+  value: {
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  },
+});
