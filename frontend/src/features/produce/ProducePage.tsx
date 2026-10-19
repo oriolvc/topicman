@@ -19,8 +19,9 @@ import { useForm } from '@mantine/form';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import type { Payload } from '../../api/messaging';
-import { BROKER_LABELS, DESTINATION_TYPES } from '../../shared/brokers';
-import { useConnections } from '../../shared/connections';
+import { DESTINATION_TYPES } from '../../shared/brokers';
+import { connectionOptions, useConnections } from '../../shared/connections';
+import { DestinationInputs } from '../../shared/DestinationInputs';
 import { HeadersInput } from './HeadersInput';
 import {
   initialProduceValues,
@@ -102,33 +103,15 @@ export function ProducePage() {
                   label="Connection"
                   withAsterisk
                   placeholder={connections.isPending ? 'Loading connections…' : 'Choose one'}
-                  data={savedConnections.map((connection) => ({
-                    value: connection.id,
-                    label: `${connection.name} (${BROKER_LABELS[connection.brokerType]})`,
-                  }))}
+                  data={connectionOptions(savedConnections)}
                   {...form.getInputProps('connectionId')}
                   onChange={chooseConnection}
                 />
-                {destinationType === 'TOPIC' ? (
-                  <TextInput
-                    label="Topic"
-                    withAsterisk
-                    {...form.getInputProps('destinationName')}
-                  />
-                ) : (
-                  <Group grow align="flex-start">
-                    <TextInput
-                      label="Exchange"
-                      withAsterisk
-                      {...form.getInputProps('destinationName')}
-                    />
-                    <TextInput
-                      label="Routing key"
-                      description="Empty for fanout exchanges"
-                      {...form.getInputProps('routingKey')}
-                    />
-                  </Group>
-                )}
+                <DestinationInputs
+                  destinationType={destinationType}
+                  nameProps={form.getInputProps('destinationName')}
+                  routingKeyProps={form.getInputProps('routingKey')}
+                />
                 {(brokerType === undefined || supportsMessageKey(brokerType)) && (
                   <TextInput
                     label="Key"

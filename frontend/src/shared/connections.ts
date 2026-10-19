@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { connectionApi } from '../api/connection';
+import { connectionApi, type ConnectionResponse } from '../api/connection';
 import { unwrap } from '../api/problem';
+import { BROKER_LABELS } from './brokers';
 
 export const connectionKeys = {
   all: ['connections'] as const,
@@ -13,4 +14,12 @@ export function useConnections() {
     queryKey: connectionKeys.list(),
     queryFn: async () => unwrap(await connectionApi.GET('/api/v1/connections')),
   });
+}
+
+/** The options of a connection picker: each connection's name and broker. */
+export function connectionOptions(connections: ConnectionResponse[]) {
+  return connections.map((connection) => ({
+    value: connection.id,
+    label: `${connection.name} (${BROKER_LABELS[connection.brokerType]})`,
+  }));
 }

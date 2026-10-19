@@ -1,6 +1,7 @@
 import type { BrokerType } from '../../api/connection';
-import type { Destination, Payload, ProduceMessageRequest } from '../../api/messaging';
+import type { Payload, ProduceMessageRequest } from '../../api/messaging';
 import { DESTINATION_TYPES } from '../../shared/brokers';
+import { destinationError, toDestination, type DestinationValues } from '../../shared/destinations';
 
 export const MAX_COPIES = 100;
 
@@ -11,11 +12,8 @@ export type HeaderRow = {
   value: string;
 };
 
-export type ProduceFormValues = {
+export type ProduceFormValues = DestinationValues & {
   connectionId: string | null;
-  /** The topic, or the exchange for a broker that produces to exchanges. */
-  destinationName: string;
-  routingKey: string;
   messageKey: string;
   headers: HeaderRow[];
   payloadFormat: Payload['format'];
@@ -53,9 +51,11 @@ export function validateProduce(
   const errors: Record<string, string> = {};
   if (brokerType === undefined) {
     errors['connectionId'] = 'Choose a connection';
-  } else if (values.destinationName.trim() === '') {
-    errors['destinationName'] =
-      DESTINATION_TYPES[brokerType] === 'TOPIC' ? 'Enter a topic' : 'Enter an exchange';
+  } else {
+    const destination = destinationError(values, brokerType);
+    if (destination !== undefined) {
+      errors['destinationName'] = destination;
+    }
   }
   const seen = new Set<string>();
   values.headers.forEach((header, index) => {
@@ -114,11 +114,4 @@ export function toProduceRequest(
     payload: { format: values.payloadFormat, content: values.payload },
     copies: typeof values.copies === 'number' ? values.copies : 1,
   };
-}
-
-function toDestination(values: ProduceFormValues, brokerType: BrokerType): Destination {
-  const name = values.destinationName.trim();
-  return DESTINATION_TYPES[brokerType] === 'TOPIC'
-    ? { type: 'TOPIC', name }
-    : { type: 'EXCHANGE', name, routingKey: values.routingKey };
 }
