@@ -16,6 +16,11 @@
 #
 # Broker UIs: Pulsar admin API http://localhost:8082, RabbitMQ management http://localhost:15672.
 # The broker ports are fixed, so stop compose.kafka.yaml first if it is running.
+
+# A project of its own: compose.yaml's PostgreSQL is in project `topicman` too, so removing the
+# demo's containers would otherwise remove the development database as well.
+name: topicman-demo
+
 services:
   postgres:
     image: 'postgres:18'
