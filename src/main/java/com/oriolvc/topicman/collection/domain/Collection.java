@@ -35,8 +35,9 @@ public final class Collection {
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
     }
 
-    public static Collection create(CollectionName name, Instant now) {
-        return new Collection(CollectionId.newId(), name, List.of(), now, now);
+    /** @param id a new id, from {@link CollectionRepository#nextId()} */
+    public static Collection create(CollectionId id, CollectionName name, Instant now) {
+        return new Collection(id, name, List.of(), now, now);
     }
 
     public static Collection rehydrate(

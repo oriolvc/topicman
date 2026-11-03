@@ -28,7 +28,6 @@ import com.oriolvc.topicman.connection.infrastructure.web.model.UsernamePassword
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -79,13 +78,13 @@ class ConnectionsController implements ConnectionsApi {
     }
 
     @Override
-    public ResponseEntity<ConnectionResponse> getConnection(UUID connectionId) {
+    public ResponseEntity<ConnectionResponse> getConnection(Long connectionId) {
         return ResponseEntity.ok(
                 toResponse(getConnection.execute(new GetConnectionCommand(new ConnectionId(connectionId)))));
     }
 
     @Override
-    public ResponseEntity<ConnectionResponse> updateConnection(UUID connectionId, UpdateConnectionRequest request) {
+    public ResponseEntity<ConnectionResponse> updateConnection(Long connectionId, UpdateConnectionRequest request) {
         if (request.getName() == null && request.getAddress() == null && request.getCredentials() == null) {
             throw new ErrorResponseException(
                     HttpStatus.BAD_REQUEST,
@@ -102,7 +101,7 @@ class ConnectionsController implements ConnectionsApi {
     }
 
     @Override
-    public ResponseEntity<Void> deleteConnection(UUID connectionId) {
+    public ResponseEntity<Void> deleteConnection(Long connectionId) {
         deleteConnection.execute(new DeleteConnectionCommand(new ConnectionId(connectionId)));
         return ResponseEntity.noContent().build();
     }

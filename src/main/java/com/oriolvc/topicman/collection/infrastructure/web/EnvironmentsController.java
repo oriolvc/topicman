@@ -16,7 +16,6 @@ import com.oriolvc.topicman.collection.infrastructure.web.api.EnvironmentsApi;
 import com.oriolvc.topicman.collection.infrastructure.web.model.EnvironmentRequest;
 import com.oriolvc.topicman.collection.infrastructure.web.model.EnvironmentResponse;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -61,13 +60,13 @@ class EnvironmentsController implements EnvironmentsApi {
     }
 
     @Override
-    public ResponseEntity<EnvironmentResponse> getEnvironment(UUID environmentId) {
+    public ResponseEntity<EnvironmentResponse> getEnvironment(Long environmentId) {
         return ResponseEntity.ok(WebCollections.toResponse(
                 getEnvironment.execute(new GetEnvironmentCommand(new EnvironmentId(environmentId)))));
     }
 
     @Override
-    public ResponseEntity<EnvironmentResponse> replaceEnvironment(UUID environmentId, EnvironmentRequest request) {
+    public ResponseEntity<EnvironmentResponse> replaceEnvironment(Long environmentId, EnvironmentRequest request) {
         var result = replaceEnvironment.execute(new ReplaceEnvironmentCommand(
                 new EnvironmentId(environmentId),
                 new EnvironmentName(request.getName()),
@@ -76,7 +75,7 @@ class EnvironmentsController implements EnvironmentsApi {
     }
 
     @Override
-    public ResponseEntity<Void> deleteEnvironment(UUID environmentId) {
+    public ResponseEntity<Void> deleteEnvironment(Long environmentId) {
         deleteEnvironment.execute(new DeleteEnvironmentCommand(new EnvironmentId(environmentId)));
         return ResponseEntity.noContent().build();
     }

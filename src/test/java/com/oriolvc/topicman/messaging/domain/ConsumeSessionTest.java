@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import java.time.Duration;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ class ConsumeSessionTest {
 
     @Test
     void opensWithTheRequestedStartPosition() {
-        var connectionId = ConnectionId.newId();
+        var connectionId = TestConnectionIds.next();
 
         var session = aKafkaSessionFrom(connectionId, StartPosition.EARLIEST);
 
@@ -29,7 +30,7 @@ class ConsumeSessionTest {
 
     @Test
     void givesEachSessionItsOwnIdentity() {
-        var connectionId = ConnectionId.newId();
+        var connectionId = TestConnectionIds.next();
 
         var first = aKafkaSessionFrom(connectionId, StartPosition.LATEST);
         var second = aKafkaSessionFrom(connectionId, StartPosition.LATEST);
@@ -41,7 +42,7 @@ class ConsumeSessionTest {
     @Test
     void rejectsDestinationTheBrokerCannotRead() {
         assertThatThrownBy(() -> ConsumeSession.open(
-                        ConnectionId.newId(),
+                        TestConnectionIds.next(),
                         BrokerType.RABBITMQ,
                         Destination.topic("orders"),
                         StartPosition.LATEST,
@@ -51,7 +52,7 @@ class ConsumeSessionTest {
 
     @Test
     void recordsActivity() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
         var later = OPENED_AT.plusSeconds(30);
 
         session.recordActivity(later);
@@ -61,7 +62,7 @@ class ConsumeSessionTest {
 
     @Test
     void ignoresActivityOlderThanTheLastOne() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
         session.recordActivity(OPENED_AT.plusSeconds(30));
 
         session.recordActivity(OPENED_AT.plusSeconds(10));
@@ -71,7 +72,7 @@ class ConsumeSessionTest {
 
     @Test
     void closes() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
         var closedAt = OPENED_AT.plusSeconds(60);
 
         session.close(closedAt);
@@ -82,7 +83,7 @@ class ConsumeSessionTest {
 
     @Test
     void closingTwiceKeepsTheFirstCloseTime() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
         session.close(OPENED_AT.plusSeconds(60));
 
         session.close(OPENED_AT.plusSeconds(90));
@@ -92,7 +93,7 @@ class ConsumeSessionTest {
 
     @Test
     void rejectsActivityAfterClose() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
         session.close(OPENED_AT.plusSeconds(60));
 
         assertThatThrownBy(() -> session.recordActivity(OPENED_AT.plusSeconds(90)))
@@ -101,7 +102,7 @@ class ConsumeSessionTest {
 
     @Test
     void isNotIdleBeforeTheTimeout() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
 
         assertThat(session.isIdle(
                         Duration.ofMinutes(5),
@@ -111,7 +112,7 @@ class ConsumeSessionTest {
 
     @Test
     void isIdleOnceTheTimeoutPassedWithoutActivity() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
 
         assertThat(session.isIdle(Duration.ofMinutes(5), OPENED_AT.plus(Duration.ofMinutes(5))))
                 .isTrue();
@@ -119,7 +120,7 @@ class ConsumeSessionTest {
 
     @Test
     void countsIdleTimeFromTheLastActivity() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
         session.recordActivity(OPENED_AT.plus(Duration.ofMinutes(4)));
 
         assertThat(session.isIdle(Duration.ofMinutes(5), OPENED_AT.plus(Duration.ofMinutes(6))))
@@ -128,7 +129,7 @@ class ConsumeSessionTest {
 
     @Test
     void aClosedSessionIsNotIdle() {
-        var session = aKafkaSessionFrom(ConnectionId.newId(), StartPosition.LATEST);
+        var session = aKafkaSessionFrom(TestConnectionIds.next(), StartPosition.LATEST);
         session.close(OPENED_AT);
 
         assertThat(session.isIdle(Duration.ofMinutes(5), OPENED_AT.plus(Duration.ofHours(1))))

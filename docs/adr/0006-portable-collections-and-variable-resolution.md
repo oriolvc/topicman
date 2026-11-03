@@ -26,7 +26,7 @@ in Git. Three things are open:
 connection is chosen when sending, among the saved connections of that broker type. The number of
 copies is also a send-time choice, not part of the template.
 
-**Model.** Two aggregates, both identified by UUIDs and named uniquely:
+**Model.** Two aggregates, both identified by ids (sequential, ADR 0007) and named uniquely:
 
 - `Collection`: a name and an ordered list of `MessageTemplate` entities, whose names are unique
   within the collection. Collections are flat; there are no folders.

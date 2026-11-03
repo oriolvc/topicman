@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.oriolvc.topicman.collection.domain.EnvironmentId;
 import com.oriolvc.topicman.collection.domain.EnvironmentName;
 import com.oriolvc.topicman.collection.domain.EnvironmentNotFoundException;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ class GetEnvironmentUseCaseTest {
 
     @Test
     void failsForAnUnknownEnvironment() {
-        assertThatThrownBy(() -> useCase.execute(new GetEnvironmentCommand(EnvironmentId.newId())))
+        assertThatThrownBy(() -> useCase.execute(new GetEnvironmentCommand(TestIds.environmentId())))
                 .isInstanceOf(EnvironmentNotFoundException.class);
     }
 }

@@ -9,6 +9,7 @@ import com.oriolvc.topicman.collection.domain.CollectionId;
 import com.oriolvc.topicman.collection.domain.CollectionName;
 import com.oriolvc.topicman.collection.domain.TemplateId;
 import com.oriolvc.topicman.collection.domain.TemplateNotFoundException;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import org.junit.jupiter.api.Test;
 
 class DeleteTemplateUseCaseTest {
@@ -31,7 +32,7 @@ class DeleteTemplateUseCaseTest {
 
     @Test
     void failsForAnUnknownTemplate() {
-        assertThatThrownBy(() -> useCase.execute(new DeleteTemplateCommand(collection, TemplateId.newId())))
+        assertThatThrownBy(() -> useCase.execute(new DeleteTemplateCommand(collection, TestIds.templateId())))
                 .isInstanceOf(TemplateNotFoundException.class);
     }
 }

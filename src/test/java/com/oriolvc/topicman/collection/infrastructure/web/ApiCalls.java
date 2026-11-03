@@ -80,7 +80,8 @@ final class ApiCalls {
     static String idOf(MvcTestResult result) {
         assertThat(result).hasStatus(HttpStatus.CREATED);
         try {
-            return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+            // Ids are JSON integers (ADR 0007); tests use them in URLs and bodies as text.
+            return String.valueOf(JsonPath.<Object>read(result.getResponse().getContentAsString(), "$.id"));
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

@@ -15,7 +15,6 @@ import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -23,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 class TemplateEntity {
 
     @Id
-    private UUID id;
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -60,7 +59,7 @@ class TemplateEntity {
     protected TemplateEntity() {}
 
     TemplateEntity(
-            UUID id,
+            long id,
             String name,
             BrokerType brokerType,
             DestinationKind destinationKind,
@@ -96,7 +95,7 @@ class TemplateEntity {
         payloadContent = other.payloadContent;
     }
 
-    UUID id() {
+    long id() {
         return id;
     }
 

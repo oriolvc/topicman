@@ -47,6 +47,7 @@ class BrokerFeaturesTest {
     private static MessageTemplate aTemplate(
             BrokerType brokerType, TemplateDestination destination, @Nullable String key) {
         return MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Template"),
                 brokerType,
                 destination,

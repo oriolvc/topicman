@@ -14,6 +14,12 @@ import java.util.Optional;
 class InMemoryConnectionRepository implements ConnectionRepository {
 
     private final Map<ConnectionId, Connection> connections = new LinkedHashMap<>();
+    private long nextId = 1;
+
+    @Override
+    public ConnectionId nextId() {
+        return new ConnectionId(nextId++);
+    }
 
     @Override
     public void save(Connection connection) {

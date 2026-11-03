@@ -5,6 +5,7 @@ import com.oriolvc.topicman.messaging.domain.BrokerEndpoints;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +14,7 @@ class InMemoryBrokerEndpoints implements BrokerEndpoints {
     private final Map<ConnectionId, BrokerEndpoint> endpoints = new HashMap<>();
 
     ConnectionId add(BrokerType type, String address) {
-        var id = ConnectionId.newId();
+        var id = TestConnectionIds.next();
         endpoints.put(id, new BrokerEndpoint(type, address));
         return id;
     }

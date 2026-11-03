@@ -8,9 +8,9 @@ import { aConnection } from '../../test/connectionFixtures';
 import { server } from '../../test/server';
 import { renderAppAt } from '../../test/renderWithProviders';
 
-const KAFKA = aConnection({ id: 'kafka-1', name: 'Local Kafka', brokerType: 'KAFKA' });
+const KAFKA = aConnection({ id: 1, name: 'Local Kafka', brokerType: 'KAFKA' });
 const RABBIT = aConnection({
-  id: 'rabbit-1',
+  id: 2,
   name: 'Shared RabbitMQ',
   brokerType: 'RABBITMQ',
   address: 'amqp://rabbit:5672',
@@ -78,7 +78,7 @@ describe('ProducePage', () => {
     expect(within(result).getByText('orders-0@41')).toBeDefined();
     expect(requests).toEqual([
       {
-        connectionId: 'kafka-1',
+        connectionId: 1,
         destination: { type: 'TOPIC', name: 'orders' },
         key: 'customer-7',
         headers: { 'trace-id': 'abc' },
@@ -106,7 +106,7 @@ describe('ProducePage', () => {
     expect(screen.queryByRole('textbox', { name: /^Key/ })).toBeNull();
     expect(requests).toEqual([
       {
-        connectionId: 'rabbit-1',
+        connectionId: 2,
         destination: { type: 'EXCHANGE', name: 'events', routingKey: 'orders.created' },
         payload: { format: 'TEXT', content: 'hello' },
         copies: 1,
@@ -146,7 +146,7 @@ describe('ProducePage', () => {
         ),
       ),
     );
-    renderAppAt('/produce?connection=kafka-1');
+    renderAppAt('/produce?connection=1');
 
     await user.type(await screen.findByRole('textbox', { name: /Topic/ }), 'orders');
     enterPayload('{}');
@@ -170,13 +170,13 @@ describe('ProducePage', () => {
 
     await chooseConnection(user, 'Shared RabbitMQ (RabbitMQ)');
 
-    expect(router.state.location.search).toBe('?connection=rabbit-1');
+    expect(router.state.location.search).toBe('?connection=2');
   });
 
   it('starts with the connection from the URL', async () => {
     serveConnections([KAFKA, RABBIT]);
 
-    renderAppAt('/produce?connection=rabbit-1');
+    renderAppAt('/produce?connection=2');
 
     await waitFor(() => {
       expect(screen.getByRole<HTMLInputElement>('combobox', { name: /Connection/ }).value).toBe(

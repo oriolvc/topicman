@@ -80,7 +80,7 @@ export function ConsumePage() {
 
   const savedConnections = connections.data ?? [];
   const brokerOf = (connectionId: string | null) => {
-    const brokerType = savedConnections.find(({ id }) => id === connectionId)?.brokerType;
+    const brokerType = savedConnections.find(({ id }) => String(id) === connectionId)?.brokerType;
     return brokers.data?.find(({ type }) => type === brokerType);
   };
   const broker = brokerOf(form.values.connectionId);
@@ -102,7 +102,7 @@ export function ConsumePage() {
     if (values.connectionId === null || broker === undefined) {
       return;
     }
-    open.mutate(toOpenRequest(values, values.connectionId, broker), {
+    open.mutate(toOpenRequest(values, Number(values.connectionId), broker), {
       onSuccess: (session) => {
         setMessages([]);
         setRun({ session, paused: false, attempt: 0 });

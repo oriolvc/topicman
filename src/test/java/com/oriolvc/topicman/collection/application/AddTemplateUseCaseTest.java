@@ -14,6 +14,7 @@ import com.oriolvc.topicman.collection.domain.TemplateDestination;
 import com.oriolvc.topicman.collection.domain.TemplateName;
 import com.oriolvc.topicman.collection.domain.TemplateNameTakenException;
 import com.oriolvc.topicman.collection.domain.TemplatePayload;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -74,8 +75,8 @@ class AddTemplateUseCaseTest {
 
     @Test
     void failsForAnUnknownCollection() {
-        assertThatThrownBy(() ->
-                        useCase.execute(new AddTemplateCommand(CollectionId.newId(), aKafkaTemplate("Order created"))))
+        assertThatThrownBy(() -> useCase.execute(
+                        new AddTemplateCommand(TestIds.collectionId(), aKafkaTemplate("Order created"))))
                 .isInstanceOf(CollectionNotFoundException.class);
     }
 }

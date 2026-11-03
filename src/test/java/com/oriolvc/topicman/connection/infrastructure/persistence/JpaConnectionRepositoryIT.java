@@ -14,11 +14,10 @@ import com.oriolvc.topicman.connection.domain.Secret;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CredentialDecryptionException;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CryptoConfiguration;
 import com.oriolvc.topicman.shared.domain.BrokerType;
-import com.oriolvc.topicman.shared.domain.ConnectionId;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
@@ -176,7 +175,7 @@ class JpaConnectionRepositoryIT {
 
     @Test
     void findsNothingForAnUnknownId() {
-        assertThat(repository.findById(ConnectionId.newId())).isEmpty();
+        assertThat(repository.findById(TestConnectionIds.next())).isEmpty();
     }
 
     @Test
@@ -217,7 +216,7 @@ class JpaConnectionRepositoryIT {
         entityManager.clear();
     }
 
-    private byte[] ciphertextOf(UUID id) {
+    private byte[] ciphertextOf(long id) {
         return (byte[]) entityManager
                 .createNativeQuery("SELECT credentials_ciphertext FROM broker_connection WHERE id = :id")
                 .setParameter("id", id)
@@ -226,6 +225,11 @@ class JpaConnectionRepositoryIT {
 
     private static Connection aConnection(String name, BrokerType brokerType, String address) {
         return Connection.create(
-                new ConnectionName(name), brokerType, new BrokerAddress(address), Credentials.none(), CREATED_AT);
+                TestConnectionIds.next(),
+                new ConnectionName(name),
+                brokerType,
+                new BrokerAddress(address),
+                Credentials.none(),
+                CREATED_AT);
     }
 }

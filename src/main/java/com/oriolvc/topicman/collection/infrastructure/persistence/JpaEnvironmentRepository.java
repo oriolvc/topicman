@@ -15,13 +15,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 class JpaEnvironmentRepository implements EnvironmentRepository {
 
-    // Declared in V3__create_collection_and_environment_tables.sql
+    // Declared in V1__create_schema.sql
     private static final String NAME_UNIQUE_CONSTRAINT = "environment_name_unique";
 
     private final EnvironmentJpaRepository jpaRepository;
 
     JpaEnvironmentRepository(EnvironmentJpaRepository jpaRepository) {
         this.jpaRepository = jpaRepository;
+    }
+
+    @Override
+    public EnvironmentId nextId() {
+        return new EnvironmentId(jpaRepository.nextId());
     }
 
     @Override

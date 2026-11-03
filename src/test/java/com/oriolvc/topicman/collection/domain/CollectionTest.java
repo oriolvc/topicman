@@ -16,7 +16,7 @@ class CollectionTest {
 
     @Test
     void startsEmpty() {
-        var collection = Collection.create(new CollectionName("Orders"), CREATED_AT);
+        var collection = Collection.create(TestIds.collectionId(), new CollectionName("Orders"), CREATED_AT);
 
         assertThat(collection.name()).isEqualTo(new CollectionName("Orders"));
         assertThat(collection.templates()).isEmpty();
@@ -129,6 +129,6 @@ class CollectionTest {
     }
 
     private static Collection anEmptyCollection() {
-        return Collection.create(new CollectionName("Orders"), CREATED_AT);
+        return Collection.create(TestIds.collectionId(), new CollectionName("Orders"), CREATED_AT);
     }
 }

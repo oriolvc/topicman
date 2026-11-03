@@ -1,21 +1,16 @@
 package com.oriolvc.topicman.collection.domain;
 
-import java.util.Objects;
-import java.util.UUID;
-
-/** Identity of a collection. */
-public record CollectionId(UUID value) {
+/** Identity of a collection: a value of its table's sequence, given by the repository (ADR 0007). */
+public record CollectionId(long value) {
 
     public CollectionId {
-        Objects.requireNonNull(value, "value");
-    }
-
-    public static CollectionId newId() {
-        return new CollectionId(UUID.randomUUID());
+        if (value < 1) {
+            throw new IllegalArgumentException("Collection id must be positive, not " + value);
+        }
     }
 
     @Override
     public String toString() {
-        return value.toString();
+        return String.valueOf(value);
     }
 }

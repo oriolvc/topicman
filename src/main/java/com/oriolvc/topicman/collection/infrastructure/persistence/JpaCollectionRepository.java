@@ -21,13 +21,23 @@ import org.springframework.stereotype.Repository;
 @Repository
 class JpaCollectionRepository implements CollectionRepository {
 
-    // Declared in V3__create_collection_and_environment_tables.sql
+    // Declared in V1__create_schema.sql
     private static final String NAME_UNIQUE_CONSTRAINT = "collection_name_unique";
 
     private final CollectionJpaRepository jpaRepository;
 
     JpaCollectionRepository(CollectionJpaRepository jpaRepository) {
         this.jpaRepository = jpaRepository;
+    }
+
+    @Override
+    public CollectionId nextId() {
+        return new CollectionId(jpaRepository.nextId());
+    }
+
+    @Override
+    public TemplateId nextTemplateId() {
+        return new TemplateId(jpaRepository.nextTemplateId());
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.oriolvc.topicman.collection.domain.EnvironmentId;
 import com.oriolvc.topicman.collection.domain.EnvironmentName;
 import com.oriolvc.topicman.collection.domain.EnvironmentNameTakenException;
 import com.oriolvc.topicman.collection.domain.EnvironmentNotFoundException;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import com.oriolvc.topicman.collection.domain.Variable;
 import com.oriolvc.topicman.collection.domain.VariableName;
 import java.util.List;
@@ -47,7 +48,7 @@ class ReplaceEnvironmentUseCaseTest {
     @Test
     void failsForAnUnknownEnvironment() {
         assertThatThrownBy(() -> useCase.execute(
-                        new ReplaceEnvironmentCommand(EnvironmentId.newId(), new EnvironmentName("dev"), List.of())))
+                        new ReplaceEnvironmentCommand(TestIds.environmentId(), new EnvironmentName("dev"), List.of())))
                 .isInstanceOf(EnvironmentNotFoundException.class);
     }
 }

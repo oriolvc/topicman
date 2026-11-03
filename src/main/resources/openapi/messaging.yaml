@@ -267,8 +267,9 @@ components:
       required: [connectionId, destination, payload]
       properties:
         connectionId:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         destination:
           $ref: '#/components/schemas/Destination'
         key:
@@ -303,8 +304,9 @@ components:
       required: [connectionId, destination]
       properties:
         connectionId:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         destination:
           $ref: '#/components/schemas/Destination'
         startPosition:
@@ -317,8 +319,9 @@ components:
           type: string
           format: uuid
         connectionId:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         destination:
           $ref: '#/components/schemas/Destination'
         startPosition:
@@ -381,8 +384,9 @@ components:
       required: [connectionId]
       properties:
         connectionId:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
     ConnectionTestResponse:
       type: object
       required: [status, detail, durationMs]

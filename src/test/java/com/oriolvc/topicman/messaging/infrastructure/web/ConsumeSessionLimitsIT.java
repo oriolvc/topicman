@@ -95,7 +95,7 @@ class ConsumeSessionLimitsIT {
                 .untilAsserted(() -> assertThat(open(connection, "orders")).hasStatus(HttpStatus.CREATED));
     }
 
-    private UUID aKafkaConnectionWithTopic(String topic) {
+    private long aKafkaConnectionWithTopic(String topic) {
         var connection = createConnection
                 .execute(new CreateConnectionCommand(
                         new ConnectionName("Kafka " + UUID.randomUUID()),
@@ -107,19 +107,19 @@ class ConsumeSessionLimitsIT {
                         .uri("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"connectionId": "%s", "destination": {"type": "TOPIC", "name": "%s"},
+                                {"connectionId": %s, "destination": {"type": "TOPIC", "name": "%s"},
                                  "payload": {"format": "TEXT", "content": "creates the topic"}}
                                 """.formatted(connection, topic)))
                 .hasStatusOk();
         return connection;
     }
 
-    private MvcTestResult open(UUID connection, String topic) {
+    private MvcTestResult open(long connection, String topic) {
         return mvc.post()
                 .uri("/api/v1/consume-sessions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                        {"connectionId": "%s", "destination": {"type": "TOPIC", "name": "%s"}}
+                        {"connectionId": %s, "destination": {"type": "TOPIC", "name": "%s"}}
                         """.formatted(connection, topic))
                 .exchange();
     }

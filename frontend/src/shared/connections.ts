@@ -16,10 +16,13 @@ export function useConnections() {
   });
 }
 
-/** The options of a connection picker: each connection's name and broker. */
+/**
+ * The options of a connection picker: each connection's name and broker. Pickers and the
+ * `?connection=` URL parameter hold the id as text; requests take it as a number.
+ */
 export function connectionOptions(connections: ConnectionResponse[]) {
   return connections.map((connection) => ({
-    value: connection.id,
+    value: String(connection.id),
     label: `${connection.name} (${BROKER_LABELS[connection.brokerType]})`,
   }));
 }

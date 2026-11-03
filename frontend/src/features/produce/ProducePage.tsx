@@ -50,7 +50,7 @@ export function ProducePage() {
 
   const savedConnections = connections.data ?? [];
   const brokerOf = (connectionId: string | null) => {
-    const brokerType = savedConnections.find(({ id }) => id === connectionId)?.brokerType;
+    const brokerType = savedConnections.find(({ id }) => String(id) === connectionId)?.brokerType;
     return brokers.data?.find(({ type }) => type === brokerType);
   };
   const broker = brokerOf(form.values.connectionId);
@@ -68,7 +68,7 @@ export function ProducePage() {
     if (values.connectionId === null || broker === undefined) {
       return;
     }
-    const request = toProduceRequest(values, values.connectionId, broker);
+    const request = toProduceRequest(values, Number(values.connectionId), broker);
     produce.mutate(request, {
       onSuccess: ({ receipts }) => {
         setOutcome({ kind: 'sent', receipts });

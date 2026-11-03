@@ -6,7 +6,6 @@ import static com.oriolvc.topicman.collection.infrastructure.web.ApiCalls.idOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oriolvc.topicman.TestcontainersConfiguration;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,7 +45,7 @@ class CollectionsApiIT {
         assertThat(result).headers().hasValue("Location", COLLECTIONS + "/" + id);
         assertThat(result)
                 .bodyJson()
-                .isLenientlyEqualTo("{\"id\": \"%s\", \"name\": \"Orders\", \"templates\": []}".formatted(id));
+                .isLenientlyEqualTo("{\"id\": %s, \"name\": \"Orders\", \"templates\": []}".formatted(id));
     }
 
     @Test
@@ -125,7 +124,7 @@ class CollectionsApiIT {
 
     @Test
     void answersNotFoundForAnUnknownCollection() {
-        var unknown = COLLECTIONS + "/" + UUID.randomUUID();
+        var unknown = COLLECTIONS + "/999999999";
 
         assertProblem(api.get(unknown), HttpStatus.NOT_FOUND, "collection.not-found");
         assertProblem(api.patch(unknown, "{\"name\": \"x\"}"), HttpStatus.NOT_FOUND, "collection.not-found");

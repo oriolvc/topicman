@@ -92,7 +92,7 @@ function isValidCopies(copies: number | string): copies is number {
 
 export function toProduceRequest(
   values: ProduceFormValues,
-  connectionId: string,
+  connectionId: number,
   broker: Broker,
 ): ProduceMessageRequest {
   const messageKey = values.messageKey;

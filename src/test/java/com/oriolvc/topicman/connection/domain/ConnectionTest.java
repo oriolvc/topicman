@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
-import com.oriolvc.topicman.shared.domain.ConnectionId;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +15,7 @@ class ConnectionTest {
     @Test
     void createsWithNameBrokerTypeAndAddress() {
         var connection = Connection.create(
+                TestConnectionIds.next(),
                 new ConnectionName("Local Kafka"),
                 BrokerType.KAFKA,
                 new BrokerAddress("localhost:9092"),
@@ -32,6 +33,7 @@ class ConnectionTest {
     @Test
     void rejectsCredentialsTheBrokerDoesNotSupport() {
         assertThatThrownBy(() -> Connection.create(
+                        TestConnectionIds.next(),
                         new ConnectionName("Local RabbitMQ"),
                         BrokerType.RABBITMQ,
                         new BrokerAddress("amqp://localhost:5672"),
@@ -95,7 +97,7 @@ class ConnectionTest {
 
     @Test
     void rehydratesStoredState() {
-        var id = ConnectionId.newId();
+        var id = TestConnectionIds.next();
         var updatedAt = CREATED_AT.plusSeconds(60);
 
         var connection = Connection.rehydrate(
@@ -135,6 +137,7 @@ class ConnectionTest {
 
     private static Connection aKafkaConnection() {
         return Connection.create(
+                TestConnectionIds.next(),
                 new ConnectionName("Local Kafka"),
                 BrokerType.KAFKA,
                 new BrokerAddress("localhost:9092"),

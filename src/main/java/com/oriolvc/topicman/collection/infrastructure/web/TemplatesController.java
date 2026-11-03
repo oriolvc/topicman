@@ -16,7 +16,6 @@ import com.oriolvc.topicman.collection.infrastructure.web.model.ResolveTemplateR
 import com.oriolvc.topicman.collection.infrastructure.web.model.ResolvedMessageResponse;
 import com.oriolvc.topicman.collection.infrastructure.web.model.TemplateRequest;
 import com.oriolvc.topicman.collection.infrastructure.web.model.TemplateResponse;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -41,7 +40,7 @@ class TemplatesController implements TemplatesApi {
     }
 
     @Override
-    public ResponseEntity<TemplateResponse> addTemplate(UUID collectionId, TemplateRequest request) {
+    public ResponseEntity<TemplateResponse> addTemplate(Long collectionId, TemplateRequest request) {
         var result = addTemplate.execute(
                 new AddTemplateCommand(new CollectionId(collectionId), WebCollections.toContent(request)));
         var location = UriComponentsBuilder.fromPath(TemplatesApi.PATH_REPLACE_TEMPLATE)
@@ -52,21 +51,21 @@ class TemplatesController implements TemplatesApi {
 
     @Override
     public ResponseEntity<TemplateResponse> replaceTemplate(
-            UUID collectionId, UUID templateId, TemplateRequest request) {
+            Long collectionId, Long templateId, TemplateRequest request) {
         var result = replaceTemplate.execute(new ReplaceTemplateCommand(
                 new CollectionId(collectionId), new TemplateId(templateId), WebCollections.toContent(request)));
         return ResponseEntity.ok(WebCollections.toResponse(result));
     }
 
     @Override
-    public ResponseEntity<Void> deleteTemplate(UUID collectionId, UUID templateId) {
+    public ResponseEntity<Void> deleteTemplate(Long collectionId, Long templateId) {
         deleteTemplate.execute(new DeleteTemplateCommand(new CollectionId(collectionId), new TemplateId(templateId)));
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<ResolvedMessageResponse> resolveTemplate(
-            UUID collectionId, UUID templateId, ResolveTemplateRequest request) {
+            Long collectionId, Long templateId, ResolveTemplateRequest request) {
         var environmentId = request.getEnvironmentId() == null ? null : new EnvironmentId(request.getEnvironmentId());
         var resolved = resolveTemplate.execute(
                 new ResolveTemplateCommand(new CollectionId(collectionId), new TemplateId(templateId), environmentId));

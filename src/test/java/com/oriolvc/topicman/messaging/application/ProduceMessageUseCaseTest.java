@@ -14,6 +14,7 @@ import com.oriolvc.topicman.messaging.domain.SendReceipt;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -110,7 +111,7 @@ class ProduceMessageUseCaseTest {
     @Test
     void failsForAnUnknownConnection() {
         assertThatThrownBy(() -> useCase.execute(
-                        new ProduceMessageCommand(ConnectionId.newId(), ORDERS, Message.of(Payload.text("hi")), 1)))
+                        new ProduceMessageCommand(TestConnectionIds.next(), ORDERS, Message.of(Payload.text("hi")), 1)))
                 .isInstanceOf(ConnectionNotFoundException.class);
     }
 

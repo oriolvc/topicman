@@ -325,22 +325,25 @@ components:
       in: path
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
+        minimum: 1
     TemplateId:
       name: templateId
       in: path
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
+        minimum: 1
     EnvironmentId:
       name: environmentId
       in: path
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
+        minimum: 1
   responses:
     InvalidCollection:
       description: >-
@@ -444,8 +447,9 @@ components:
       required: [id, name, templateCount, createdAt, updatedAt]
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         name:
           type: string
         templateCount:
@@ -463,8 +467,9 @@ components:
       required: [id, name, templates, createdAt, updatedAt]
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         name:
           type: string
         templates:
@@ -501,8 +506,9 @@ components:
       required: [id, name, brokerType, destination, headers, payload]
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         name:
           type: string
         brokerType:
@@ -520,8 +526,9 @@ components:
       type: object
       properties:
         environmentId:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
           description: Omit it to resolve built-in variables only.
     ResolvedMessageResponse:
       type: object
@@ -620,8 +627,9 @@ components:
       required: [id, name, variables, createdAt, updatedAt]
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         name:
           type: string
         variables:

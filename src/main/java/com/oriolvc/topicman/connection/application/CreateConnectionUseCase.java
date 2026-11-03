@@ -24,7 +24,12 @@ public class CreateConnectionUseCase {
             throw new ConnectionNameTakenException(command.name());
         }
         var connection = Connection.create(
-                command.name(), command.brokerType(), command.address(), command.credentials(), clock.instant());
+                repository.nextId(),
+                command.name(),
+                command.brokerType(),
+                command.address(),
+                command.credentials(),
+                clock.instant());
         repository.save(connection);
         return ConnectionResult.of(connection);
     }

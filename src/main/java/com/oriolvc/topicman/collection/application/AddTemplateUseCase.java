@@ -26,7 +26,7 @@ public class AddTemplateUseCase {
         var collection = repository
                 .findById(command.collectionId())
                 .orElseThrow(() -> new CollectionNotFoundException(command.collectionId()));
-        var template = command.content().toNewTemplate();
+        var template = command.content().toNewTemplate(repository.nextTemplateId());
         supportedBrokers.check(template);
         collection.addTemplate(template, clock.instant());
         repository.save(collection);

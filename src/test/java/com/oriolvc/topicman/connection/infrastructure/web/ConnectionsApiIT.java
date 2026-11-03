@@ -49,7 +49,7 @@ class ConnectionsApiIT {
         var id = idOf(result);
         assertThat(result).headers().hasValue("Location", CONNECTIONS + "/" + id);
         assertThat(result).bodyJson().isLenientlyEqualTo("""
-                        {"id": "%s", "name": "Local Kafka", "brokerType": "KAFKA", "address": "localhost:9092",
+                        {"id": %s, "name": "Local Kafka", "brokerType": "KAFKA", "address": "localhost:9092",
                          "credentialsType": "USERNAME_PASSWORD"}
                         """.formatted(id));
         assertThat(result)
@@ -95,9 +95,7 @@ class ConnectionsApiIT {
 
     @Test
     void answersNotFoundWithAProblem() {
-        var result = mvc.get()
-                .uri(CONNECTIONS + "/0f8fad5b-d9cb-469f-a165-70867728950e")
-                .exchange();
+        var result = mvc.get().uri(CONNECTIONS + "/999999999").exchange();
 
         assertProblem(result, HttpStatus.NOT_FOUND, "connection.not-found");
     }
@@ -188,10 +186,20 @@ class ConnectionsApiIT {
     }
 
     @Test
+    void rejectsAnIdThatIsNotAPositiveNumber() {
+        assertProblem(
+                mvc.get()
+                        .uri(CONNECTIONS + "/0f8fad5b-d9cb-469f-a165-70867728950e")
+                        .exchange(),
+                HttpStatus.BAD_REQUEST,
+                "connection.invalid-request");
+        assertProblem(
+                mvc.get().uri(CONNECTIONS + "/0").exchange(), HttpStatus.BAD_REQUEST, "connection.invalid-request");
+    }
+
+    @Test
     void answersNotFoundWhenDeletingAnUnknownConnection() {
-        var result = mvc.delete()
-                .uri(CONNECTIONS + "/0f8fad5b-d9cb-469f-a165-70867728950e")
-                .exchange();
+        var result = mvc.delete().uri(CONNECTIONS + "/999999999").exchange();
 
         assertProblem(result, HttpStatus.NOT_FOUND, "connection.not-found");
     }
@@ -222,7 +230,8 @@ class ConnectionsApiIT {
     private static String idOf(MvcTestResult result) {
         assertThat(result).hasStatus(HttpStatus.CREATED);
         try {
-            return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+            // Ids are JSON integers (ADR 0007); tests use them in URLs and bodies as text.
+            return String.valueOf(JsonPath.<Object>read(result.getResponse().getContentAsString(), "$.id"));
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

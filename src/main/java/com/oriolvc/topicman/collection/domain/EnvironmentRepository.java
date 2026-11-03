@@ -6,6 +6,9 @@ import java.util.Optional;
 /** Outbound port that stores environments with their variables. */
 public interface EnvironmentRepository {
 
+    /** A new environment id, never given before (ADR 0007). */
+    EnvironmentId nextId();
+
     /**
      * Inserts a new environment or updates an existing one with the same id.
      *

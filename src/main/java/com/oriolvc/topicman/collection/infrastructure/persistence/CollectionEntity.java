@@ -12,7 +12,6 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 class CollectionEntity {
 
     @Id
-    private UUID id;
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -45,7 +44,7 @@ class CollectionEntity {
 
     protected CollectionEntity() {}
 
-    CollectionEntity(UUID id, String name, List<TemplateEntity> templates, Instant createdAt, Instant updatedAt) {
+    CollectionEntity(long id, String name, List<TemplateEntity> templates, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.templates = new ArrayList<>(templates);
@@ -75,7 +74,7 @@ class CollectionEntity {
         this.updatedAt = updatedAt;
     }
 
-    UUID id() {
+    long id() {
         return id;
     }
 

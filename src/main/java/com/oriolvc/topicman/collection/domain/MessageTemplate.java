@@ -36,14 +36,16 @@ public record MessageTemplate(
         headers = copyOf(headers);
     }
 
+    /** @param id a new id, from {@link CollectionRepository#nextTemplateId()} */
     public static MessageTemplate create(
+            TemplateId id,
             TemplateName name,
             BrokerType brokerType,
             TemplateDestination destination,
             @Nullable String key,
             Map<String, String> headers,
             TemplatePayload payload) {
-        return new MessageTemplate(TemplateId.newId(), name, brokerType, destination, key, headers, payload);
+        return new MessageTemplate(id, name, brokerType, destination, key, headers, payload);
     }
 
     /** The same template, with every field but its id replaced. */

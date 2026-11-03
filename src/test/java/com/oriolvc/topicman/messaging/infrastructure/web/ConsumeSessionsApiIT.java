@@ -177,7 +177,7 @@ class ConsumeSessionsApiIT {
     @Test
     void rejectsADestinationTheBrokerDoesNotSupport() throws Exception {
         var response = post("/api/v1/consume-sessions", """
-                {"connectionId": "%s", "destination": {"type": "EXCHANGE", "name": "orders", "routingKey": ""}}
+                {"connectionId": %s, "destination": {"type": "EXCHANGE", "name": "orders", "routingKey": ""}}
                 """.formatted(aKafkaConnection()));
 
         assertProblem(response, 400, "messaging.invalid-destination");
@@ -185,12 +185,12 @@ class ConsumeSessionsApiIT {
 
     @Test
     void answersNotFoundForAnUnknownConnection() throws Exception {
-        var response = post("/api/v1/consume-sessions", openRequest(UUID.randomUUID(), "orders", "LATEST"));
+        var response = post("/api/v1/consume-sessions", openRequest(999_999_999L, "orders", "LATEST"));
 
         assertProblem(response, 404, "connection.not-found");
     }
 
-    private UUID aKafkaConnection() {
+    private long aKafkaConnection() {
         return createConnection
                 .execute(new CreateConnectionCommand(
                         new ConnectionName("Kafka " + UUID.randomUUID()),
@@ -201,22 +201,22 @@ class ConsumeSessionsApiIT {
     }
 
     /** Producing creates the topic; its first message is at offset 0. */
-    private String anExistingTopic(UUID connection) throws Exception {
+    private String anExistingTopic(long connection) throws Exception {
         var topic = "orders-" + UUID.randomUUID();
         produce(connection, topic, "{\"format\": \"TEXT\", \"content\": \"before\"}");
         return topic;
     }
 
-    private void produce(UUID connection, String topic, String payload) throws Exception {
+    private void produce(long connection, String topic, String payload) throws Exception {
         var response = post("/api/v1/messages", """
-                {"connectionId": "%s", "destination": {"type": "TOPIC", "name": "%s"}, "payload": %s}
+                {"connectionId": %s, "destination": {"type": "TOPIC", "name": "%s"}, "payload": %s}
                 """.formatted(connection, topic, payload));
         assertThat(response.statusCode()).as(response.body()).isEqualTo(200);
     }
 
-    private static String openRequest(UUID connection, String topic, String startPosition) {
+    private static String openRequest(long connection, String topic, String startPosition) {
         return """
-                {"connectionId": "%s", "destination": {"type": "TOPIC", "name": "%s"}, "startPosition": "%s"}
+                {"connectionId": %s, "destination": {"type": "TOPIC", "name": "%s"}, "startPosition": "%s"}
                 """.formatted(connection, topic, startPosition);
     }
 

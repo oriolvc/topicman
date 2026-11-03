@@ -25,7 +25,7 @@ public class CreateEnvironmentUseCase {
         if (repository.existsByName(command.name())) {
             throw new EnvironmentNameTakenException(command.name());
         }
-        var environment = Environment.create(command.name(), variables, clock.instant());
+        var environment = Environment.create(repository.nextId(), command.name(), variables, clock.instant());
         repository.save(environment);
         return EnvironmentResult.of(environment);
     }

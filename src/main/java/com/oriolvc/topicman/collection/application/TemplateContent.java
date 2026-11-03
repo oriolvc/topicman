@@ -2,6 +2,7 @@ package com.oriolvc.topicman.collection.application;
 
 import com.oriolvc.topicman.collection.domain.MessageTemplate;
 import com.oriolvc.topicman.collection.domain.TemplateDestination;
+import com.oriolvc.topicman.collection.domain.TemplateId;
 import com.oriolvc.topicman.collection.domain.TemplateName;
 import com.oriolvc.topicman.collection.domain.TemplatePayload;
 import com.oriolvc.topicman.shared.domain.BrokerType;
@@ -17,8 +18,8 @@ public record TemplateContent(
         Map<String, String> headers,
         TemplatePayload payload) {
 
-    MessageTemplate toNewTemplate() {
-        return MessageTemplate.create(name, brokerType, destination, key, headers, payload);
+    MessageTemplate toNewTemplate(TemplateId id) {
+        return MessageTemplate.create(id, name, brokerType, destination, key, headers, payload);
     }
 
     MessageTemplate applyTo(MessageTemplate template) {

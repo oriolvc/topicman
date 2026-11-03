@@ -12,7 +12,6 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -20,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 class EnvironmentEntity {
 
     @Id
-    private UUID id;
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -42,7 +41,7 @@ class EnvironmentEntity {
 
     protected EnvironmentEntity() {}
 
-    EnvironmentEntity(UUID id, String name, List<NameValueEmbeddable> variables, Instant createdAt, Instant updatedAt) {
+    EnvironmentEntity(long id, String name, List<NameValueEmbeddable> variables, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.variables = new ArrayList<>(variables);
@@ -57,7 +56,7 @@ class EnvironmentEntity {
         this.updatedAt = updatedAt;
     }
 
-    UUID id() {
+    long id() {
         return id;
     }
 

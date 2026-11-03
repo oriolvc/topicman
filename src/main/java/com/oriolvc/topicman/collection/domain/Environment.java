@@ -33,8 +33,10 @@ public final class Environment {
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
     }
 
-    public static Environment create(EnvironmentName name, Map<VariableName, String> variables, Instant now) {
-        return new Environment(EnvironmentId.newId(), name, variables, now, now);
+    /** @param id a new id, from {@link EnvironmentRepository#nextId()} */
+    public static Environment create(
+            EnvironmentId id, EnvironmentName name, Map<VariableName, String> variables, Instant now) {
+        return new Environment(id, name, variables, now, now);
     }
 
     public static Environment rehydrate(

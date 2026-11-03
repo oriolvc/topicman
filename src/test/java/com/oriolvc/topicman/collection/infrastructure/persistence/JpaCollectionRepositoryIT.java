@@ -12,6 +12,7 @@ import com.oriolvc.topicman.collection.domain.PayloadFormat;
 import com.oriolvc.topicman.collection.domain.TemplateDestination;
 import com.oriolvc.topicman.collection.domain.TemplateName;
 import com.oriolvc.topicman.collection.domain.TemplatePayload;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
@@ -41,11 +42,12 @@ class JpaCollectionRepositoryIT {
 
     @Test
     void savesAndFindsACollectionWithItsTemplatesInOrder() {
-        var collection = Collection.create(new CollectionName("Orders"), CREATED_AT);
+        var collection = Collection.create(TestIds.collectionId(), new CollectionName("Orders"), CREATED_AT);
         var headers = new LinkedHashMap<String, String>();
         headers.put("z-last-alphabetically", "{{$uuid}}");
         headers.put("a-first-alphabetically", "topicman");
         var kafka = MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Order created"),
                 BrokerType.KAFKA,
                 TemplateDestination.topic("orders-{{env}}"),
@@ -53,6 +55,7 @@ class JpaCollectionRepositoryIT {
                 headers,
                 new TemplatePayload(PayloadFormat.JSON, "{\"id\": \"{{orderId}}\"}"));
         var rabbitMq = MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Broadcast"),
                 BrokerType.RABBITMQ,
                 TemplateDestination.exchange("events", ""),
@@ -76,7 +79,7 @@ class JpaCollectionRepositoryIT {
 
     @Test
     void updatesTemplatesKeepingTheirIdsAndOrder() {
-        var collection = Collection.create(new CollectionName("Orders"), CREATED_AT);
+        var collection = Collection.create(TestIds.collectionId(), new CollectionName("Orders"), CREATED_AT);
         var created = aTemplate("Order created");
         var shipped = aTemplate("Order shipped");
         collection.addTemplate(created, CREATED_AT);
@@ -107,8 +110,8 @@ class JpaCollectionRepositoryIT {
 
     @Test
     void listsCollectionsByName() {
-        repository.save(Collection.create(new CollectionName("Shipping"), CREATED_AT));
-        repository.save(Collection.create(new CollectionName("Billing"), CREATED_AT));
+        repository.save(Collection.create(TestIds.collectionId(), new CollectionName("Shipping"), CREATED_AT));
+        repository.save(Collection.create(TestIds.collectionId(), new CollectionName("Billing"), CREATED_AT));
         flushAndClear();
 
         assertThat(repository.findAll())
@@ -120,15 +123,16 @@ class JpaCollectionRepositoryIT {
 
     @Test
     void rejectsATakenName() {
-        repository.save(Collection.create(new CollectionName("Orders"), CREATED_AT));
+        repository.save(Collection.create(TestIds.collectionId(), new CollectionName("Orders"), CREATED_AT));
 
-        assertThatThrownBy(() -> repository.save(Collection.create(new CollectionName("Orders"), CREATED_AT)))
+        assertThatThrownBy(() -> repository.save(
+                        Collection.create(TestIds.collectionId(), new CollectionName("Orders"), CREATED_AT)))
                 .isInstanceOf(CollectionNameTakenException.class);
     }
 
     @Test
     void deletesACollectionWithItsTemplatesAndHeaders() {
-        var collection = Collection.create(new CollectionName("Orders"), CREATED_AT);
+        var collection = Collection.create(TestIds.collectionId(), new CollectionName("Orders"), CREATED_AT);
         collection.addTemplate(aTemplate("Order created"), CREATED_AT);
         repository.save(collection);
         flushAndClear();
@@ -143,6 +147,7 @@ class JpaCollectionRepositoryIT {
 
     private static MessageTemplate aTemplate(String name) {
         return MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName(name),
                 BrokerType.KAFKA,
                 TemplateDestination.topic("orders"),

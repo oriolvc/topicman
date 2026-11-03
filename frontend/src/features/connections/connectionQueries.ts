@@ -25,7 +25,7 @@ export function useCreateConnection() {
 export function useUpdateConnection() {
   const invalidate = useInvalidateConnections();
   return useMutation({
-    mutationFn: async ({ id, request }: { id: string; request: UpdateConnectionRequest }) =>
+    mutationFn: async ({ id, request }: { id: number; request: UpdateConnectionRequest }) =>
       unwrap(
         await connectionApi.PATCH('/api/v1/connections/{connectionId}', {
           params: { path: { connectionId: id } },
@@ -39,7 +39,7 @@ export function useUpdateConnection() {
 export function useDeleteConnection() {
   const invalidate = useInvalidateConnections();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       unwrap(
         await connectionApi.DELETE('/api/v1/connections/{connectionId}', {
           params: { path: { connectionId: id } },
@@ -53,7 +53,7 @@ export function useDeleteConnection() {
 /** Checks that a saved connection reaches its broker; a failed check is a result, not an error. */
 export function useTestConnection() {
   return useMutation({
-    mutationFn: async (connectionId: string) =>
+    mutationFn: async (connectionId: number) =>
       unwrap(await messagingApi.POST('/api/v1/connection-tests', { body: { connectionId } })),
   });
 }

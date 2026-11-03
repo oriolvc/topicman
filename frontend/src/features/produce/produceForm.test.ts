@@ -9,7 +9,7 @@ import {
 
 function values(overrides: Partial<ProduceFormValues>): ProduceFormValues {
   return {
-    ...initialProduceValues('connection-1'),
+    ...initialProduceValues('1'),
     destinationName: 'orders',
     payload: '{"id": 1}',
     ...overrides,
@@ -79,12 +79,12 @@ describe('toProduceRequest', () => {
         headers: [{ key: 'a', name: ' trace-id ', value: 'abc' }],
         copies: 3,
       }),
-      'connection-1',
+      1,
       BROKERS.KAFKA,
     );
 
     expect(request).toEqual({
-      connectionId: 'connection-1',
+      connectionId: 1,
       destination: { type: 'TOPIC', name: 'orders' },
       key: 'customer-7',
       headers: { 'trace-id': 'abc' },
@@ -94,7 +94,7 @@ describe('toProduceRequest', () => {
   });
 
   it('omits an empty key and no headers', () => {
-    const request = toProduceRequest(values({}), 'connection-1', BROKERS.PULSAR);
+    const request = toProduceRequest(values({}), 1, BROKERS.PULSAR);
 
     expect(request).not.toHaveProperty('key');
     expect(request).not.toHaveProperty('headers');
@@ -103,7 +103,7 @@ describe('toProduceRequest', () => {
   it('sends an exchange and routing key to RabbitMQ, without a key', () => {
     const request = toProduceRequest(
       values({ destinationName: 'events', routingKey: 'orders.created', messageKey: 'ignored' }),
-      'connection-1',
+      1,
       BROKERS.RABBITMQ,
     );
 

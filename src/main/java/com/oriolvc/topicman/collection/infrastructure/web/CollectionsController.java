@@ -18,7 +18,6 @@ import com.oriolvc.topicman.collection.infrastructure.web.model.CollectionReques
 import com.oriolvc.topicman.collection.infrastructure.web.model.CollectionResponse;
 import com.oriolvc.topicman.collection.infrastructure.web.model.CollectionSummaryResponse;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -62,19 +61,19 @@ class CollectionsController implements CollectionsApi {
     }
 
     @Override
-    public ResponseEntity<CollectionResponse> getCollection(UUID collectionId) {
+    public ResponseEntity<CollectionResponse> getCollection(Long collectionId) {
         return ResponseEntity.ok(WebCollections.toResponse(
                 getCollection.execute(new GetCollectionCommand(new CollectionId(collectionId)))));
     }
 
     @Override
-    public ResponseEntity<CollectionResponse> renameCollection(UUID collectionId, CollectionRequest request) {
+    public ResponseEntity<CollectionResponse> renameCollection(Long collectionId, CollectionRequest request) {
         return ResponseEntity.ok(WebCollections.toResponse(renameCollection.execute(
                 new RenameCollectionCommand(new CollectionId(collectionId), new CollectionName(request.getName())))));
     }
 
     @Override
-    public ResponseEntity<Void> deleteCollection(UUID collectionId) {
+    public ResponseEntity<Void> deleteCollection(Long collectionId) {
         deleteCollection.execute(new DeleteCollectionCommand(new CollectionId(collectionId)));
         return ResponseEntity.noContent().build();
     }

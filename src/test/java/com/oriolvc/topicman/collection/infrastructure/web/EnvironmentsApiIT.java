@@ -46,7 +46,7 @@ class EnvironmentsApiIT {
         var id = idOf(result);
         assertThat(result).headers().hasValue("Location", ENVIRONMENTS + "/" + id);
         assertThat(result).bodyJson().isLenientlyEqualTo("""
-                {"id": "%s", "name": "staging",
+                {"id": %s, "name": "staging",
                  "variables": [{"name": "zone", "value": "eu"}, {"name": "app.suffix", "value": ""}]}
                 """.formatted(id));
         assertThat(result)

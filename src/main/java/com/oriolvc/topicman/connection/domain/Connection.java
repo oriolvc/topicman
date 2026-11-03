@@ -37,9 +37,15 @@ public final class Connection {
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt");
     }
 
+    /** @param id a new id, from {@link ConnectionRepository#nextId()} */
     public static Connection create(
-            ConnectionName name, BrokerType brokerType, BrokerAddress address, Credentials credentials, Instant now) {
-        return new Connection(ConnectionId.newId(), name, brokerType, address, credentials, now, now);
+            ConnectionId id,
+            ConnectionName name,
+            BrokerType brokerType,
+            BrokerAddress address,
+            Credentials credentials,
+            Instant now) {
+        return new Connection(id, name, brokerType, address, credentials, now, now);
     }
 
     public static Connection rehydrate(

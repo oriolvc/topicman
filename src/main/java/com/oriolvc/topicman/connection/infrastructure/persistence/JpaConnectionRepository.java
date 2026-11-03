@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 class JpaConnectionRepository implements ConnectionRepository {
 
-    // Declared in V1__create_broker_connection_table.sql
+    // Declared in V1__create_schema.sql
     private static final String NAME_UNIQUE_CONSTRAINT = "broker_connection_name_unique";
 
     private final ConnectionJpaRepository jpaRepository;
@@ -23,6 +23,11 @@ class JpaConnectionRepository implements ConnectionRepository {
     JpaConnectionRepository(ConnectionJpaRepository jpaRepository, CredentialsCodec credentialsCodec) {
         this.jpaRepository = jpaRepository;
         this.credentialsCodec = credentialsCodec;
+    }
+
+    @Override
+    public ConnectionId nextId() {
+        return new ConnectionId(jpaRepository.nextId());
     }
 
     @Override

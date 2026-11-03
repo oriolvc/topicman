@@ -11,10 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Stores rehydrated copies, so a test only sees what a use case saved. */
+/** Stores rehydrated copies, so a test only sees what a use case saved; ids come from a counter. */
 class InMemoryEnvironmentRepository implements EnvironmentRepository {
 
     private final Map<EnvironmentId, Environment> environments = new LinkedHashMap<>();
+    private long nextId = 1;
+
+    @Override
+    public EnvironmentId nextId() {
+        return new EnvironmentId(nextId++);
+    }
 
     @Override
     public void save(Environment environment) {

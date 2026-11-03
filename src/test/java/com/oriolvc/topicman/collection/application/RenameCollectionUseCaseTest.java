@@ -8,6 +8,7 @@ import com.oriolvc.topicman.collection.domain.CollectionId;
 import com.oriolvc.topicman.collection.domain.CollectionName;
 import com.oriolvc.topicman.collection.domain.CollectionNameTakenException;
 import com.oriolvc.topicman.collection.domain.CollectionNotFoundException;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import org.junit.jupiter.api.Test;
 
 class RenameCollectionUseCaseTest {
@@ -54,7 +55,7 @@ class RenameCollectionUseCaseTest {
     @Test
     void failsForAnUnknownCollection() {
         assertThatThrownBy(() -> useCase.execute(
-                        new RenameCollectionCommand(CollectionId.newId(), new CollectionName("Orders"))))
+                        new RenameCollectionCommand(TestIds.collectionId(), new CollectionName("Orders"))))
                 .isInstanceOf(CollectionNotFoundException.class);
     }
 }

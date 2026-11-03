@@ -57,7 +57,7 @@ class MessagesApiIT {
         var topic = "orders-" + UUID.randomUUID();
 
         var result = produce("""
-                {"connectionId": "%s", "destination": {"type": "TOPIC", "name": "%s"},
+                {"connectionId": %s, "destination": {"type": "TOPIC", "name": "%s"},
                  "key": "order-42", "headers": {"source": "topicman"},
                  "payload": {"format": "JSON", "content": "{\\"id\\": 42}"}, "copies": 3}
                 """.formatted(connection, topic));
@@ -89,7 +89,7 @@ class MessagesApiIT {
         var connection = aConnection(BrokerType.KAFKA, KAFKA.getBootstrapServers());
 
         var result = produce("""
-                {"connectionId": "%s", "destination": {"type": "TOPIC", "name": "orders"},
+                {"connectionId": %s, "destination": {"type": "TOPIC", "name": "orders"},
                  "payload": {"format": "JSON", "content": "{\\"id\\": "}}
                 """.formatted(connection));
 
@@ -111,7 +111,7 @@ class MessagesApiIT {
         var connection = aConnection(BrokerType.RABBITMQ, "amqp://localhost:5672");
 
         var result = produce("""
-                {"connectionId": "%s", "destination": {"type": "EXCHANGE", "name": "orders", "routingKey": ""},
+                {"connectionId": %s, "destination": {"type": "EXCHANGE", "name": "orders", "routingKey": ""},
                  "key": "order-42", "payload": {"format": "TEXT", "content": "hi"}}
                 """.formatted(connection));
 
@@ -123,7 +123,7 @@ class MessagesApiIT {
         var connection = aConnection(BrokerType.KAFKA, KAFKA.getBootstrapServers());
 
         var result = produce("""
-                {"connectionId": "%s", "destination": {"type": "TOPIC", "name": "orders"},
+                {"connectionId": %s, "destination": {"type": "TOPIC", "name": "orders"},
                  "payload": {"format": "TEXT", "content": "hi"}, "copies": 0}
                 """.formatted(connection));
 
@@ -132,7 +132,7 @@ class MessagesApiIT {
 
     @Test
     void answersNotFoundForAnUnknownConnection() {
-        var result = produce(aTextMessageTo(UUID.randomUUID(), "{\"type\": \"TOPIC\", \"name\": \"orders\"}"));
+        var result = produce(aTextMessageTo(999_999_999L, "{\"type\": \"TOPIC\", \"name\": \"orders\"}"));
 
         assertProblem(result, HttpStatus.NOT_FOUND, "connection.not-found");
     }
@@ -147,7 +147,7 @@ class MessagesApiIT {
         assertThat(result).bodyJson().extractingPath("$.sent").isEqualTo(0);
     }
 
-    private UUID aConnection(BrokerType brokerType, String address) {
+    private long aConnection(BrokerType brokerType, String address) {
         return createConnection
                 .execute(new CreateConnectionCommand(
                         new ConnectionName(brokerType + " " + UUID.randomUUID()),
@@ -165,9 +165,9 @@ class MessagesApiIT {
                 .exchange();
     }
 
-    private static String aTextMessageTo(UUID connection, String destination) {
+    private static String aTextMessageTo(long connection, String destination) {
         return """
-                {"connectionId": "%s", "destination": %s, "payload": {"format": "TEXT", "content": "hi"}}
+                {"connectionId": %s, "destination": %s, "payload": {"format": "TEXT", "content": "hi"}}
                 """.formatted(connection, destination);
     }
 

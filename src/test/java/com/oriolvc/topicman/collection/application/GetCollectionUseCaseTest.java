@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.oriolvc.topicman.collection.domain.CollectionId;
 import com.oriolvc.topicman.collection.domain.CollectionName;
 import com.oriolvc.topicman.collection.domain.CollectionNotFoundException;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import org.junit.jupiter.api.Test;
 
 class GetCollectionUseCaseTest {
@@ -30,7 +31,7 @@ class GetCollectionUseCaseTest {
 
     @Test
     void failsForAnUnknownCollection() {
-        assertThatThrownBy(() -> useCase.execute(new GetCollectionCommand(CollectionId.newId())))
+        assertThatThrownBy(() -> useCase.execute(new GetCollectionCommand(TestIds.collectionId())))
                 .isInstanceOf(CollectionNotFoundException.class);
     }
 }

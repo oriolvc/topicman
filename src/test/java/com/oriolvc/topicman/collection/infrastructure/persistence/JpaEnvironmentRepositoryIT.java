@@ -7,6 +7,7 @@ import com.oriolvc.topicman.TestcontainersConfiguration;
 import com.oriolvc.topicman.collection.domain.Environment;
 import com.oriolvc.topicman.collection.domain.EnvironmentName;
 import com.oriolvc.topicman.collection.domain.EnvironmentNameTakenException;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import com.oriolvc.topicman.collection.domain.VariableName;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
@@ -38,7 +39,8 @@ class JpaEnvironmentRepositoryIT {
         var variables = new LinkedHashMap<VariableName, String>();
         variables.put(new VariableName("zone"), "eu-west");
         variables.put(new VariableName("app.suffix"), "");
-        var environment = Environment.create(new EnvironmentName("staging"), variables, CREATED_AT);
+        var environment =
+                Environment.create(TestIds.environmentId(), new EnvironmentName("staging"), variables, CREATED_AT);
 
         repository.save(environment);
         flushAndClear();
@@ -55,8 +57,11 @@ class JpaEnvironmentRepositoryIT {
 
     @Test
     void replacesItsVariables() {
-        var environment =
-                Environment.create(new EnvironmentName("staging"), Map.of(new VariableName("env"), "stg"), CREATED_AT);
+        var environment = Environment.create(
+                TestIds.environmentId(),
+                new EnvironmentName("staging"),
+                Map.of(new VariableName("env"), "stg"),
+                CREATED_AT);
         repository.save(environment);
         flushAndClear();
         environment.replaceVariables(Map.of(new VariableName("region"), "eu"), CREATED_AT.plusSeconds(1));
@@ -73,21 +78,26 @@ class JpaEnvironmentRepositoryIT {
 
     @Test
     void listsEnvironmentsByNameAndRejectsATakenName() {
-        repository.save(Environment.create(new EnvironmentName("staging"), Map.of(), CREATED_AT));
-        repository.save(Environment.create(new EnvironmentName("dev"), Map.of(), CREATED_AT));
+        repository.save(
+                Environment.create(TestIds.environmentId(), new EnvironmentName("staging"), Map.of(), CREATED_AT));
+        repository.save(Environment.create(TestIds.environmentId(), new EnvironmentName("dev"), Map.of(), CREATED_AT));
         flushAndClear();
 
         assertThat(repository.findAll())
                 .extracting(found -> found.name().value())
                 .containsExactly("dev", "staging");
-        assertThatThrownBy(() -> repository.save(Environment.create(new EnvironmentName("dev"), Map.of(), CREATED_AT)))
+        assertThatThrownBy(() -> repository.save(
+                        Environment.create(TestIds.environmentId(), new EnvironmentName("dev"), Map.of(), CREATED_AT)))
                 .isInstanceOf(EnvironmentNameTakenException.class);
     }
 
     @Test
     void deletesAnEnvironmentWithItsVariables() {
-        var environment =
-                Environment.create(new EnvironmentName("staging"), Map.of(new VariableName("env"), "stg"), CREATED_AT);
+        var environment = Environment.create(
+                TestIds.environmentId(),
+                new EnvironmentName("staging"),
+                Map.of(new VariableName("env"), "stg"),
+                CREATED_AT);
         repository.save(environment);
         flushAndClear();
 

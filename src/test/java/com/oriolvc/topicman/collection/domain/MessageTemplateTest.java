@@ -11,14 +11,20 @@ import org.junit.jupiter.api.Test;
 class MessageTemplateTest {
 
     @Test
-    void createsATemplateWithANewId() {
-        var first = aTemplate("Order created");
-        var second = aTemplate("Order created");
+    void createsATemplateWithTheIdItIsGiven() {
+        var template = MessageTemplate.create(
+                new TemplateId(42),
+                new TemplateName("Order created"),
+                BrokerType.KAFKA,
+                TemplateDestination.topic("orders"),
+                "{{orderId}}",
+                Map.of(),
+                new TemplatePayload(PayloadFormat.TEXT, "hi"));
 
-        assertThat(first.id()).isNotEqualTo(second.id());
-        assertThat(first.name()).isEqualTo(new TemplateName("Order created"));
-        assertThat(first.brokerType()).isEqualTo(BrokerType.KAFKA);
-        assertThat(first.key()).isEqualTo("{{orderId}}");
+        assertThat(template.id()).isEqualTo(new TemplateId(42));
+        assertThat(template.name()).isEqualTo(new TemplateName("Order created"));
+        assertThat(template.brokerType()).isEqualTo(BrokerType.KAFKA);
+        assertThat(template.key()).isEqualTo("{{orderId}}");
     }
 
     @Test
@@ -28,6 +34,7 @@ class MessageTemplateTest {
         headers.put("source", "topicman");
 
         var template = MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Order created"),
                 BrokerType.KAFKA,
                 TemplateDestination.topic("orders"),
@@ -44,6 +51,7 @@ class MessageTemplateTest {
     @Test
     void rejectsAnEmptyKey() {
         assertThatThrownBy(() -> MessageTemplate.create(
+                        TestIds.templateId(),
                         new TemplateName("No key"),
                         BrokerType.KAFKA,
                         TemplateDestination.topic("orders"),
@@ -56,6 +64,7 @@ class MessageTemplateTest {
     @Test
     void rejectsABlankHeaderName() {
         assertThatThrownBy(() -> MessageTemplate.create(
+                        TestIds.templateId(),
                         new TemplateName("Blank header"),
                         BrokerType.KAFKA,
                         TemplateDestination.topic("orders"),
@@ -84,6 +93,7 @@ class MessageTemplateTest {
 
     static MessageTemplate aTemplate(String name) {
         return MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName(name),
                 BrokerType.KAFKA,
                 TemplateDestination.topic("orders-{{env}}"),

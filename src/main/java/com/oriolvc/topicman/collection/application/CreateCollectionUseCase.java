@@ -23,7 +23,7 @@ public class CreateCollectionUseCase {
         if (repository.existsByName(command.name())) {
             throw new CollectionNameTakenException(command.name());
         }
-        var collection = Collection.create(command.name(), clock.instant());
+        var collection = Collection.create(repository.nextId(), command.name(), clock.instant());
         repository.save(collection);
         return CollectionResult.of(collection);
     }

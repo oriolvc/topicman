@@ -9,7 +9,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 @Entity
@@ -17,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 class ConnectionEntity {
 
     @Id
-    private UUID id;
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -49,7 +48,7 @@ class ConnectionEntity {
     protected ConnectionEntity() {}
 
     ConnectionEntity(
-            UUID id,
+            long id,
             String name,
             BrokerType brokerType,
             String address,
@@ -74,7 +73,7 @@ class ConnectionEntity {
         this.updatedAt = updatedAt;
     }
 
-    UUID id() {
+    long id() {
         return id;
     }
 

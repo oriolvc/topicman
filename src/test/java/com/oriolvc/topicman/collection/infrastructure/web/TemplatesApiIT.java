@@ -6,7 +6,6 @@ import static com.oriolvc.topicman.collection.infrastructure.web.ApiCalls.idOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oriolvc.topicman.TestcontainersConfiguration;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,7 +46,7 @@ class TemplatesApiIT {
         var id = idOf(result);
         assertThat(result).headers().hasValue("Location", templates(collection) + "/" + id);
         assertThat(result).bodyJson().isLenientlyEqualTo("""
-                {"id": "%s", "name": "Order created", "brokerType": "KAFKA",
+                {"id": %s, "name": "Order created", "brokerType": "KAFKA",
                  "destination": {"type": "TOPIC", "name": "orders-{{env}}"},
                  "key": "{{orderId}}",
                  "headers": {"trace-id": "{{$uuid}}", "source": "topicman"},
@@ -109,10 +108,10 @@ class TemplatesApiIT {
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().isLenientlyEqualTo("""
-                {"id": "%s", "name": "Order placed", "brokerType": "PULSAR"}
+                {"id": %s, "name": "Order placed", "brokerType": "PULSAR"}
                 """.formatted(id));
         assertProblem(
-                api.put(templates(collection) + "/" + UUID.randomUUID(), ApiCalls.kafkaTemplate("x")),
+                api.put(templates(collection) + "/999999999", ApiCalls.kafkaTemplate("x")),
                 HttpStatus.NOT_FOUND,
                 "collection.template-not-found");
     }
@@ -134,7 +133,7 @@ class TemplatesApiIT {
         var staging = api.anEnvironment(
                 "staging", "[{\"name\": \"env\", \"value\": \"stg\"}, {\"name\": \"orderId\", \"value\": \"42\"}]");
 
-        var result = api.post(resolution(collection, template), "{\"environmentId\": \"%s\"}".formatted(staging));
+        var result = api.post(resolution(collection, template), "{\"environmentId\": %s}".formatted(staging));
 
         assertThat(result).hasStatusOk();
         assertThat(result).bodyJson().isLenientlyEqualTo("""
@@ -168,7 +167,7 @@ class TemplatesApiIT {
         var template = api.aKafkaTemplate(collection, "Order created");
 
         assertProblem(
-                api.post(resolution(collection, template), "{\"environmentId\": \"%s\"}".formatted(UUID.randomUUID())),
+                api.post(resolution(collection, template), "{\"environmentId\": 999999999}"),
                 HttpStatus.NOT_FOUND,
                 "collection.environment-not-found");
     }

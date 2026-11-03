@@ -18,7 +18,8 @@ class EnvironmentTest {
         variables.put(new VariableName("env"), "stg");
         variables.put(new VariableName("orderId"), "42");
 
-        var environment = Environment.create(new EnvironmentName("staging"), variables, CREATED_AT);
+        var environment =
+                Environment.create(TestIds.environmentId(), new EnvironmentName("staging"), variables, CREATED_AT);
 
         assertThat(environment.variables())
                 .containsExactly(
@@ -29,16 +30,22 @@ class EnvironmentTest {
 
     @Test
     void allowsAnEmptyValue() {
-        var environment =
-                Environment.create(new EnvironmentName("local"), Map.of(new VariableName("suffix"), ""), CREATED_AT);
+        var environment = Environment.create(
+                TestIds.environmentId(),
+                new EnvironmentName("local"),
+                Map.of(new VariableName("suffix"), ""),
+                CREATED_AT);
 
         assertThat(environment.valueOf("suffix")).contains("");
     }
 
     @Test
     void replacesItsVariables() {
-        var environment =
-                Environment.create(new EnvironmentName("staging"), Map.of(new VariableName("env"), "stg"), CREATED_AT);
+        var environment = Environment.create(
+                TestIds.environmentId(),
+                new EnvironmentName("staging"),
+                Map.of(new VariableName("env"), "stg"),
+                CREATED_AT);
 
         environment.replaceVariables(Map.of(new VariableName("region"), "eu"), LATER);
 
@@ -48,7 +55,8 @@ class EnvironmentTest {
 
     @Test
     void renames() {
-        var environment = Environment.create(new EnvironmentName("staging"), Map.of(), CREATED_AT);
+        var environment =
+                Environment.create(TestIds.environmentId(), new EnvironmentName("staging"), Map.of(), CREATED_AT);
 
         environment.rename(new EnvironmentName("stage"), LATER);
 

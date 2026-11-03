@@ -7,6 +7,9 @@ import java.util.Optional;
 /** Outbound port that stores connections. */
 public interface ConnectionRepository {
 
+    /** A new connection id, never given before (ADR 0007). */
+    ConnectionId nextId();
+
     /**
      * Inserts a new connection or updates an existing one with the same id.
      *

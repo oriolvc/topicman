@@ -8,7 +8,7 @@ import { aConnection } from '../../test/connectionFixtures';
 import { renderAppAt } from '../../test/renderWithProviders';
 import { server } from '../../test/server';
 
-const KAFKA = aConnection({ id: 'kafka-1', name: 'Local Kafka', brokerType: 'KAFKA' });
+const KAFKA = aConnection({ id: 1, name: 'Local Kafka', brokerType: 'KAFKA' });
 
 let sessions = 0;
 
@@ -17,7 +17,7 @@ function aSession(): ConsumeSessionResponse {
   const id = `session-${String(++sessions)}`;
   return {
     id,
-    connectionId: 'kafka-1',
+    connectionId: 1,
     destination: { type: 'TOPIC', name: 'orders' },
     startPosition: 'LATEST',
     openedAt: '2026-10-19T10:00:00Z',
@@ -91,7 +91,7 @@ describe('ConsumePage', () => {
 
   it('explains that a broker which cannot read from the beginning only reads new messages', async () => {
     const user = userEvent.setup();
-    const rabbit = aConnection({ id: 'rabbit-1', name: 'Shared RabbitMQ', brokerType: 'RABBITMQ' });
+    const rabbit = aConnection({ id: 2, name: 'Shared RabbitMQ', brokerType: 'RABBITMQ' });
     server.use(http.get('/api/v1/connections', () => HttpResponse.json([rabbit])));
     renderAppAt('/consume');
 
@@ -145,7 +145,7 @@ describe('ConsumePage', () => {
     expect(screen.getByText('2 messages')).toBeDefined();
     expect(opened).toEqual([
       {
-        connectionId: 'kafka-1',
+        connectionId: 1,
         destination: { type: 'TOPIC', name: 'orders' },
         startPosition: 'EARLIEST',
       },
@@ -253,7 +253,7 @@ describe('ConsumePage', () => {
         ),
       ),
     );
-    renderAppAt('/consume?connection=kafka-1');
+    renderAppAt('/consume?connection=1');
 
     await user.type(await screen.findByRole('textbox', { name: /Topic/ }), 'orders');
     await user.click(screen.getByRole('button', { name: 'Start' }));
@@ -277,7 +277,7 @@ describe('ConsumePage', () => {
         ),
       ),
     );
-    renderAppAt('/consume?connection=kafka-1');
+    renderAppAt('/consume?connection=1');
 
     await user.type(await screen.findByRole('textbox', { name: /Topic/ }), 'orders');
     await user.click(screen.getByRole('button', { name: 'Start' }));
@@ -288,7 +288,7 @@ describe('ConsumePage', () => {
   it('asks for a destination before starting', async () => {
     const user = userEvent.setup();
     const { opened } = serveASession();
-    renderAppAt('/consume?connection=kafka-1');
+    renderAppAt('/consume?connection=1');
 
     await user.click(await screen.findByRole('button', { name: 'Start' }));
 

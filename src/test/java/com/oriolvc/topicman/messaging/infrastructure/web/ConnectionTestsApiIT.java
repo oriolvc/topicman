@@ -55,7 +55,7 @@ class ConnectionTestsApiIT {
     void reportsAWorkingConnection() {
         var connection = aKafkaConnection(KAFKA.getBootstrapServers());
 
-        var result = testConnection("{\"connectionId\": \"%s\"}".formatted(connection));
+        var result = testConnection("{\"connectionId\": %s}".formatted(connection));
 
         assertThat(result).hasStatus(HttpStatus.OK);
         assertThat(result).bodyJson().extractingPath("$.status").isEqualTo("SUCCEEDED");
@@ -71,7 +71,7 @@ class ConnectionTestsApiIT {
     void reportsAnUnreachableBrokerAsAFailedTestNotAnError() {
         var connection = aKafkaConnection("localhost:1");
 
-        var result = testConnection("{\"connectionId\": \"%s\"}".formatted(connection));
+        var result = testConnection("{\"connectionId\": %s}".formatted(connection));
 
         assertThat(result).hasStatus(HttpStatus.OK);
         assertThat(result).bodyJson().extractingPath("$.status").isEqualTo("FAILED");
@@ -84,7 +84,7 @@ class ConnectionTestsApiIT {
 
     @Test
     void answersNotFoundForAnUnknownConnection() {
-        var result = testConnection("{\"connectionId\": \"%s\"}".formatted(UUID.randomUUID()));
+        var result = testConnection("{\"connectionId\": %s}".formatted(999_999_999L));
 
         assertProblem(result, HttpStatus.NOT_FOUND, "connection.not-found");
     }
@@ -96,7 +96,7 @@ class ConnectionTestsApiIT {
         assertProblem(result, HttpStatus.BAD_REQUEST, "messaging.invalid-request");
     }
 
-    private UUID aKafkaConnection(String address) {
+    private long aKafkaConnection(String address) {
         return createConnection
                 .execute(new CreateConnectionCommand(
                         new ConnectionName("Kafka " + UUID.randomUUID()),

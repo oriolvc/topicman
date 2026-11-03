@@ -13,6 +13,7 @@ import com.oriolvc.topicman.connection.domain.InvalidConnectionException;
 import com.oriolvc.topicman.connection.domain.Secret;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
@@ -91,7 +92,7 @@ class UpdateConnectionUseCaseTest {
     @Test
     void failsForAnUnknownConnection() {
         assertThatThrownBy(() -> useCase.execute(
-                        new UpdateConnectionCommand(ConnectionId.newId(), new ConnectionName("x"), null, null)))
+                        new UpdateConnectionCommand(TestConnectionIds.next(), new ConnectionName("x"), null, null)))
                 .isInstanceOf(ConnectionNotFoundException.class);
     }
 

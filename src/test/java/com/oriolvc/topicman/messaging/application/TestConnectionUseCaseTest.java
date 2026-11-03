@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
 import com.oriolvc.topicman.messaging.domain.ConnectionTestOutcome;
 import com.oriolvc.topicman.shared.domain.BrokerType;
-import com.oriolvc.topicman.shared.domain.ConnectionId;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -55,7 +55,7 @@ class TestConnectionUseCaseTest {
 
     @Test
     void failsForAnUnknownConnection() {
-        assertThatThrownBy(() -> useCase.execute(new TestConnectionCommand(ConnectionId.newId())))
+        assertThatThrownBy(() -> useCase.execute(new TestConnectionCommand(TestConnectionIds.next())))
                 .isInstanceOf(ConnectionNotFoundException.class);
     }
 }

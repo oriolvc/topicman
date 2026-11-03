@@ -13,6 +13,7 @@ import com.oriolvc.topicman.collection.domain.EnvironmentNotFoundException;
 import com.oriolvc.topicman.collection.domain.TemplateDestination;
 import com.oriolvc.topicman.collection.domain.TemplateId;
 import com.oriolvc.topicman.collection.domain.TemplateNotFoundException;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import com.oriolvc.topicman.collection.domain.UnresolvedVariablesException;
 import com.oriolvc.topicman.collection.domain.Variable;
 import com.oriolvc.topicman.collection.domain.VariableName;
@@ -58,14 +59,14 @@ class ResolveTemplateUseCaseTest {
 
     @Test
     void failsForAnUnknownEnvironment() {
-        assertThatThrownBy(
-                        () -> useCase.execute(new ResolveTemplateCommand(collection, template, EnvironmentId.newId())))
+        assertThatThrownBy(() ->
+                        useCase.execute(new ResolveTemplateCommand(collection, template, TestIds.environmentId())))
                 .isInstanceOf(EnvironmentNotFoundException.class);
     }
 
     @Test
     void failsForAnUnknownTemplate() {
-        assertThatThrownBy(() -> useCase.execute(new ResolveTemplateCommand(collection, TemplateId.newId(), null)))
+        assertThatThrownBy(() -> useCase.execute(new ResolveTemplateCommand(collection, TestIds.templateId(), null)))
                 .isInstanceOf(TemplateNotFoundException.class);
     }
 

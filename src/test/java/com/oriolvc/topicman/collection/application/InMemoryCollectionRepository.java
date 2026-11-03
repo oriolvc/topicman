@@ -5,16 +5,29 @@ import com.oriolvc.topicman.collection.domain.CollectionId;
 import com.oriolvc.topicman.collection.domain.CollectionName;
 import com.oriolvc.topicman.collection.domain.CollectionNameTakenException;
 import com.oriolvc.topicman.collection.domain.CollectionRepository;
+import com.oriolvc.topicman.collection.domain.TemplateId;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Stores rehydrated copies, so a test only sees what a use case saved. */
+/** Stores rehydrated copies, so a test only sees what a use case saved; ids come from counters. */
 class InMemoryCollectionRepository implements CollectionRepository {
 
     private final Map<CollectionId, Collection> collections = new LinkedHashMap<>();
+    private long nextId = 1;
+    private long nextTemplateId = 1;
+
+    @Override
+    public CollectionId nextId() {
+        return new CollectionId(nextId++);
+    }
+
+    @Override
+    public TemplateId nextTemplateId() {
+        return new TemplateId(nextTemplateId++);
+    }
 
     @Override
     public void save(Collection collection) {

@@ -87,7 +87,7 @@ class CredentialsCodec {
     }
 
     private static byte[] associatedData(ConnectionId connectionId) {
-        return connectionId.value().toString().getBytes(UTF_8);
+        return String.valueOf(connectionId.value()).getBytes(UTF_8);
     }
 
     private record TokenJson(String token) {}

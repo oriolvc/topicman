@@ -1,21 +1,16 @@
 package com.oriolvc.topicman.collection.domain;
 
-import java.util.Objects;
-import java.util.UUID;
-
-/** Identity of a environment. */
-public record EnvironmentId(UUID value) {
+/** Identity of a environment: a value of its table's sequence, given by the repository (ADR 0007). */
+public record EnvironmentId(long value) {
 
     public EnvironmentId {
-        Objects.requireNonNull(value, "value");
-    }
-
-    public static EnvironmentId newId() {
-        return new EnvironmentId(UUID.randomUUID());
+        if (value < 1) {
+            throw new IllegalArgumentException("Environment id must be positive, not " + value);
+        }
     }
 
     @Override
     public String toString() {
-        return value.toString();
+        return String.valueOf(value);
     }
 }

@@ -19,7 +19,7 @@ function serveConnections(initial: ConnectionResponse[]) {
     http.post(CONNECTIONS, async ({ request }) => {
       const body = (await request.json()) as { name: string; brokerType: 'KAFKA' };
       requests.push({ method: 'POST', body });
-      const created = aConnection({ id: 'new-id', name: body.name, brokerType: body.brokerType });
+      const created = aConnection({ id: 99, name: body.name, brokerType: body.brokerType });
       connections = [...connections, created];
       return HttpResponse.json(created, { status: 201 });
     }),
@@ -27,13 +27,13 @@ function serveConnections(initial: ConnectionResponse[]) {
       const body = (await request.json()) as Partial<ConnectionResponse>;
       requests.push({ method: 'PATCH', body });
       connections = connections.map((connection) =>
-        connection.id === params['connectionId'] ? { ...connection, ...body } : connection,
+        String(connection.id) === params['connectionId'] ? { ...connection, ...body } : connection,
       );
-      return HttpResponse.json(connections.find(({ id }) => id === params['connectionId']));
+      return HttpResponse.json(connections.find(({ id }) => String(id) === params['connectionId']));
     }),
     http.delete(CONNECTION, ({ params }) => {
       requests.push({ method: 'DELETE', body: params['connectionId'] });
-      connections = connections.filter(({ id }) => id !== params['connectionId']);
+      connections = connections.filter(({ id }) => String(id) !== params['connectionId']);
       return new HttpResponse(null, { status: 204 });
     }),
   );
@@ -43,9 +43,9 @@ function serveConnections(initial: ConnectionResponse[]) {
 describe('ConnectionsPage', () => {
   it('lists the connections', async () => {
     serveConnections([
-      aConnection({ id: '1', name: 'Local Kafka' }),
+      aConnection({ id: 1, name: 'Local Kafka' }),
       aConnection({
-        id: '2',
+        id: 2,
         name: 'Staging Pulsar',
         brokerType: 'PULSAR',
         address: 'pulsar://staging:6650',
@@ -153,7 +153,7 @@ describe('ConnectionsPage', () => {
 
   it('tests a connection and shows what answered', async () => {
     const user = userEvent.setup();
-    serveConnections([aConnection({ id: 'kafka-1', name: 'Local Kafka' })]);
+    serveConnections([aConnection({ id: 1, name: 'Local Kafka' })]);
     const tested: unknown[] = [];
     server.use(
       http.post('/api/v1/connection-tests', async ({ request }) => {
@@ -171,7 +171,7 @@ describe('ConnectionsPage', () => {
 
     expect(await screen.findByText('Local Kafka works')).toBeDefined();
     expect(screen.getByText('Kafka cluster abc, 1 broker (42 ms)')).toBeDefined();
-    expect(tested).toEqual([{ connectionId: 'kafka-1' }]);
+    expect(tested).toEqual([{ connectionId: 1 }]);
   });
 
   it('shows why a connection test failed', async () => {
@@ -226,7 +226,7 @@ describe('ConnectionsPage', () => {
   it('renames a connection without touching its credentials', async () => {
     const user = userEvent.setup();
     const requests = serveConnections([
-      aConnection({ id: '1', name: 'Local Kafka', credentialsType: 'USERNAME_PASSWORD' }),
+      aConnection({ id: 1, name: 'Local Kafka', credentialsType: 'USERNAME_PASSWORD' }),
     ]);
     renderAppAt('/connections');
 
@@ -244,7 +244,7 @@ describe('ConnectionsPage', () => {
 
   it('does not let the broker of a connection change', async () => {
     const user = userEvent.setup();
-    serveConnections([aConnection({ id: '1', name: 'Local Kafka' })]);
+    serveConnections([aConnection({ id: 1, name: 'Local Kafka' })]);
     renderAppAt('/connections');
 
     await user.click(await screen.findByRole('button', { name: 'Edit Local Kafka' }));
@@ -254,7 +254,7 @@ describe('ConnectionsPage', () => {
 
   it('deletes a connection after confirmation', async () => {
     const user = userEvent.setup();
-    const requests = serveConnections([aConnection({ id: '1', name: 'Local Kafka' })]);
+    const requests = serveConnections([aConnection({ id: 1, name: 'Local Kafka' })]);
     renderAppAt('/connections');
 
     await user.click(await screen.findByRole('button', { name: 'Delete Local Kafka' }));
@@ -269,7 +269,7 @@ describe('ConnectionsPage', () => {
 
   it('keeps the connection when deletion is cancelled', async () => {
     const user = userEvent.setup();
-    const requests = serveConnections([aConnection({ id: '1', name: 'Local Kafka' })]);
+    const requests = serveConnections([aConnection({ id: 1, name: 'Local Kafka' })]);
     renderAppAt('/connections');
 
     await user.click(await screen.findByRole('button', { name: 'Delete Local Kafka' }));

@@ -14,6 +14,7 @@ import com.oriolvc.topicman.collection.domain.TemplateId;
 import com.oriolvc.topicman.collection.domain.TemplateName;
 import com.oriolvc.topicman.collection.domain.TemplateNotFoundException;
 import com.oriolvc.topicman.collection.domain.TemplatePayload;
+import com.oriolvc.topicman.collection.domain.TestIds;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ class ReplaceTemplateUseCaseTest {
     @Test
     void failsForAnUnknownTemplate() {
         assertThatThrownBy(() -> useCase.execute(
-                        new ReplaceTemplateCommand(collection, TemplateId.newId(), aKafkaTemplate("Anything"))))
+                        new ReplaceTemplateCommand(collection, TestIds.templateId(), aKafkaTemplate("Anything"))))
                 .isInstanceOf(TemplateNotFoundException.class);
     }
 }

@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
+import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import org.junit.jupiter.api.Test;
 
 class GetConnectionUseCaseTest {
@@ -26,7 +27,7 @@ class GetConnectionUseCaseTest {
 
     @Test
     void failsForAnUnknownConnection() {
-        assertThatThrownBy(() -> useCase.execute(new GetConnectionCommand(ConnectionId.newId())))
+        assertThatThrownBy(() -> useCase.execute(new GetConnectionCommand(TestConnectionIds.next())))
                 .isInstanceOf(ConnectionNotFoundException.class)
                 .hasFieldOrPropertyWithValue("code", "connection.not-found");
     }

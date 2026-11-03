@@ -24,7 +24,7 @@ export function validateConsume(
 
 export function toOpenRequest(
   values: ConsumeFormValues,
-  connectionId: string,
+  connectionId: number,
   broker: Broker,
 ): OpenConsumeSessionRequest {
   return {

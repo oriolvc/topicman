@@ -20,6 +20,7 @@ class TemplateResolverTest {
         var headers = new LinkedHashMap<String, String>();
         headers.put("x-{{team}}", "{{env}}");
         var template = MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Order created"),
                 BrokerType.RABBITMQ,
                 TemplateDestination.exchange("{{team}}-events", "orders.{{env}}"),
@@ -60,6 +61,7 @@ class TemplateResolverTest {
     @Test
     void listsEveryMissingVariableAtOnce() {
         var template = MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Order created"),
                 BrokerType.KAFKA,
                 TemplateDestination.topic("orders-{{env}}"),
@@ -151,6 +153,7 @@ class TemplateResolverTest {
     @Test
     void rejectsADestinationThatResolvesToNothing() {
         var template = MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Blank topic"),
                 BrokerType.KAFKA,
                 TemplateDestination.topic("{{topic}}"),
@@ -164,6 +167,7 @@ class TemplateResolverTest {
 
     private static MessageTemplate aKafkaTemplate(@Nullable String key, String payload) {
         return MessageTemplate.create(
+                TestIds.templateId(),
                 new TemplateName("Template"),
                 BrokerType.KAFKA,
                 TemplateDestination.topic("orders"),
@@ -175,6 +179,7 @@ class TemplateResolverTest {
     private static Environment anEnvironment(Map<String, String> values) {
         var variables = new LinkedHashMap<VariableName, String>();
         values.forEach((name, value) -> variables.put(new VariableName(name), value));
-        return Environment.create(new EnvironmentName("test"), variables, Instant.parse("2026-11-03T10:00:00Z"));
+        return Environment.create(
+                TestIds.environmentId(), new EnvironmentName("test"), variables, Instant.parse("2026-11-03T10:00:00Z"));
     }
 }

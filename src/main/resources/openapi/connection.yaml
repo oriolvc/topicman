@@ -110,8 +110,9 @@ components:
       in: path
       required: true
       schema:
-        type: string
-        format: uuid
+        type: integer
+        format: int64
+        minimum: 1
   responses:
     InvalidConnection:
       description: >-
@@ -149,8 +150,9 @@ components:
       required: [id, name, brokerType, address, credentialsType, createdAt, updatedAt]
       properties:
         id:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
+          minimum: 1
         name:
           type: string
         brokerType:

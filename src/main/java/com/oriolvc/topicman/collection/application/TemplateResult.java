@@ -5,11 +5,10 @@ import com.oriolvc.topicman.collection.domain.TemplateDestination;
 import com.oriolvc.topicman.collection.domain.TemplatePayload;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.util.Map;
-import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 public record TemplateResult(
-        UUID id,
+        long id,
         String name,
         BrokerType brokerType,
         TemplateDestination destination,

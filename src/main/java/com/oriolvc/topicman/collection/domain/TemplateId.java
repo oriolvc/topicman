@@ -1,21 +1,16 @@
 package com.oriolvc.topicman.collection.domain;
 
-import java.util.Objects;
-import java.util.UUID;
-
-/** Identity of a message template. */
-public record TemplateId(UUID value) {
+/** Identity of a message template: a value of its table's sequence, given by the repository (ADR 0007). */
+public record TemplateId(long value) {
 
     public TemplateId {
-        Objects.requireNonNull(value, "value");
-    }
-
-    public static TemplateId newId() {
-        return new TemplateId(UUID.randomUUID());
+        if (value < 1) {
+            throw new IllegalArgumentException("Template id must be positive, not " + value);
+        }
     }
 
     @Override
     public String toString() {
-        return value.toString();
+        return String.valueOf(value);
     }
 }
