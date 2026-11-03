@@ -1,6 +1,8 @@
 import { Navigate, type RouteObject } from 'react-router';
+import { CollectionsPage } from '../features/collections/CollectionsPage';
 import { ConnectionsPage } from '../features/connections/ConnectionsPage';
 import { ConsumePage } from '../features/consume/ConsumePage';
+import { EnvironmentsPage } from '../features/environments/EnvironmentsPage';
 import { ProducePage } from '../features/produce/ProducePage';
 import { AppLayout } from './AppLayout';
 import { NotFoundPage } from './NotFoundPage';
@@ -14,6 +16,9 @@ export const routes: RouteObject[] = [
       { path: 'connections', element: <ConnectionsPage /> },
       { path: 'produce', element: <ProducePage /> },
       { path: 'consume', element: <ConsumePage /> },
+      { path: 'collections', element: <CollectionsPage /> },
+      { path: 'collections/:collectionId', element: <CollectionsPage /> },
+      { path: 'environments', element: <EnvironmentsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

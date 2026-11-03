@@ -1,5 +1,5 @@
 import { Alert, Code, List, ScrollArea, Stack, Text } from '@mantine/core';
-import { ApiProblem } from '../../api/problem';
+import { ApiProblem } from '../api/problem';
 
 export type ProduceOutcome =
   { kind: 'sent'; receipts: string[] } | { kind: 'failed'; error: unknown; copies: number };

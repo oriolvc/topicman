@@ -2,11 +2,14 @@ import { AppShell, Burger, Group, NavLink, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { NavLink as RouterNavLink, Outlet } from 'react-router';
 import { ColorSchemeToggle } from './ColorSchemeToggle';
+import { EnvironmentPicker } from './EnvironmentPicker';
 
 const NAVIGATION = [
   { label: 'Connections', to: '/connections' },
   { label: 'Produce', to: '/produce' },
   { label: 'Consume', to: '/consume' },
+  { label: 'Collections', to: '/collections' },
+  { label: 'Environments', to: '/environments' },
 ];
 
 export function AppLayout() {
@@ -32,7 +35,10 @@ export function AppLayout() {
               TopicMan
             </Title>
           </Group>
-          <ColorSchemeToggle />
+          <Group gap="md">
+            <EnvironmentPicker />
+            <ColorSchemeToggle />
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="xs" aria-label="Main">
