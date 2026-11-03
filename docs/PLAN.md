@@ -68,7 +68,7 @@ Out (post-MVP):
 ## Phase 3 — Pulsar and RabbitMQ
 
 - [x] Pulsar adapter (producer + Reader API) passing the contract test
-- [ ] RabbitMQ adapter (publisher confirms + temporary exclusive queue) passing the contract test
+- [x] RabbitMQ adapter (publisher confirms + temporary exclusive queue) passing the contract test
 - [ ] Broker capability model in the domain (e.g. `canReadFromBeginning`) exposed by the API
 - [ ] Test-connection use case for all three brokers, with a test action on the connections screen
 - [x] Produce to an unreachable broker fails fast with a clear problem (today Kafka blocks Send for

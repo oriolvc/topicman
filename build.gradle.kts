@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation(libs.kafka.clients)
     implementation(libs.pulsar.client)
+    implementation(libs.amqp.client)
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
     runtimeOnly(libs.postgresql)
@@ -47,6 +48,7 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.kafka)
     testImplementation(libs.testcontainers.pulsar)
+    testImplementation(libs.testcontainers.rabbitmq)
     testImplementation(libs.archunit.junit5)
     testRuntimeOnly(libs.junit.platform.launcher)
 }

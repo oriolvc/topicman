@@ -135,16 +135,6 @@ class MessagesApiIT {
         assertThat(result).bodyJson().extractingPath("$.sent").isEqualTo(0);
     }
 
-    @Test
-    void answersServiceUnavailableForABrokerWithoutAProducerYet() {
-        var connection = aConnection(BrokerType.RABBITMQ, "amqp://localhost:5672");
-
-        var result = produce(
-                aTextMessageTo(connection, "{\"type\": \"EXCHANGE\", \"name\": \"orders\", \"routingKey\": \"\"}"));
-
-        assertProblem(result, HttpStatus.SERVICE_UNAVAILABLE, "messaging.produce-failed");
-    }
-
     private UUID aConnection(BrokerType brokerType, String address) {
         return createConnection
                 .execute(new CreateConnectionCommand(
