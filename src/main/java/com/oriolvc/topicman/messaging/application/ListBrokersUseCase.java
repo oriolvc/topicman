@@ -28,6 +28,7 @@ public class ListBrokersUseCase {
         this.result = new ListBrokersResult(Arrays.stream(BrokerType.values())
                 .filter(type -> canProduce.contains(type) && canRead.contains(type))
                 .map(BrokerCapabilities::of)
+                .map(SupportedBroker::of)
                 .toList());
     }
 

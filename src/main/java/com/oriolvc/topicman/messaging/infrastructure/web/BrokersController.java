@@ -2,7 +2,7 @@ package com.oriolvc.topicman.messaging.infrastructure.web;
 
 import com.oriolvc.topicman.messaging.application.ListBrokersCommand;
 import com.oriolvc.topicman.messaging.application.ListBrokersUseCase;
-import com.oriolvc.topicman.messaging.domain.BrokerCapabilities;
+import com.oriolvc.topicman.messaging.application.SupportedBroker;
 import com.oriolvc.topicman.messaging.infrastructure.web.api.BrokersApi;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.BrokerResponse;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.BrokerType;
@@ -26,12 +26,12 @@ class BrokersController implements BrokersApi {
                 result.brokers().stream().map(BrokersController::toResponse).toList());
     }
 
-    private static BrokerResponse toResponse(BrokerCapabilities capabilities) {
+    private static BrokerResponse toResponse(SupportedBroker broker) {
         return new BrokerResponse(
-                BrokerType.fromValue(capabilities.brokerType().name()),
+                BrokerType.fromValue(broker.type().name()),
                 BrokerResponse.DestinationTypeEnum.fromValue(
-                        capabilities.destinationType().name()),
-                capabilities.canReadFromBeginning(),
-                capabilities.supportsMessageKeys());
+                        broker.destinationKind().name()),
+                broker.canReadFromBeginning(),
+                broker.supportsMessageKeys());
     }
 }

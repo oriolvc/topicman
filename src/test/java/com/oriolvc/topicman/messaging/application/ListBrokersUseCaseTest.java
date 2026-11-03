@@ -2,7 +2,6 @@ package com.oriolvc.topicman.messaging.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.oriolvc.topicman.messaging.domain.BrokerCapabilities;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,10 @@ class ListBrokersUseCaseTest {
         var result = useCase.execute(new ListBrokersCommand());
 
         assertThat(result.brokers())
-                .containsExactly(BrokerCapabilities.of(BrokerType.KAFKA), BrokerCapabilities.of(BrokerType.RABBITMQ));
+                .containsExactly(
+                        new SupportedBroker(BrokerType.KAFKA, SupportedBroker.DestinationKind.TOPIC, true, true),
+                        new SupportedBroker(
+                                BrokerType.RABBITMQ, SupportedBroker.DestinationKind.EXCHANGE, false, false));
     }
 
     @Test
@@ -29,6 +31,6 @@ class ListBrokersUseCaseTest {
 
         var result = useCase.execute(new ListBrokersCommand());
 
-        assertThat(result.brokers()).containsExactly(BrokerCapabilities.of(BrokerType.KAFKA));
+        assertThat(result.brokers()).extracting(SupportedBroker::type).containsExactly(BrokerType.KAFKA);
     }
 }
