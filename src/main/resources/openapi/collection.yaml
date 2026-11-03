@@ -15,6 +15,7 @@ tags:
   - name: Collections
   - name: Templates
   - name: Environments
+  - name: Files
 paths:
   /api/v1/collections:
     get:
@@ -105,6 +106,74 @@ paths:
           description: The collection was deleted
         '404':
           $ref: '#/components/responses/CollectionNotFound'
+  /api/v1/collections/{collectionId}/export:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+    get:
+      operationId: exportCollection
+      tags: [Files]
+      summary: Download a collection and its templates as a YAML file
+      description: >-
+        The file has no ids, so it can be imported into any TopicMan install and versioned in Git
+        (ADR 0006). Templates keep their order and their placeholders as written.
+      responses:
+        '200':
+          description: The collection file
+          headers:
+            Content-Disposition:
+              description: '`attachment`, with a file name made from the collection name.'
+              schema:
+                type: string
+          content:
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/CollectionFile'
+        '404':
+          $ref: '#/components/responses/CollectionNotFound'
+  /api/v1/collections/import:
+    post:
+      operationId: importCollection
+      tags: [Files]
+      summary: Create a collection and its templates from a YAML file
+      description: >-
+        Creates a new collection; it never changes an existing one. Every template is checked as
+        if it were added one by one, and nothing is created if one is rejected.
+      parameters:
+        - name: name
+          in: query
+          description: The new collection's name, instead of the one in the file, such as when it is taken.
+          schema:
+            $ref: '#/components/schemas/Name'
+      requestBody:
+        required: true
+        content:
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/CollectionFile'
+      responses:
+        '201':
+          description: The collection was created
+          headers:
+            Location:
+              description: URL of the new collection
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        '400':
+          description: >-
+            The file is not valid YAML, is not a collection file of a supported version, or misses
+            a property (`collection.invalid-request`); or a template breaks a rule, such as two
+            templates with the same name (`collection.invalid-template`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          $ref: '#/components/responses/CollectionNameTaken'
   /api/v1/collections/{collectionId}/templates:
     parameters:
       - $ref: '#/components/parameters/CollectionId'
@@ -318,6 +387,69 @@ paths:
           description: The environment was deleted
         '404':
           $ref: '#/components/responses/EnvironmentNotFound'
+  /api/v1/environments/{environmentId}/export:
+    parameters:
+      - $ref: '#/components/parameters/EnvironmentId'
+    get:
+      operationId: exportEnvironment
+      tags: [Files]
+      summary: Download an environment and its variables as a YAML file
+      responses:
+        '200':
+          description: The environment file
+          headers:
+            Content-Disposition:
+              description: '`attachment`, with a file name made from the environment name.'
+              schema:
+                type: string
+          content:
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/EnvironmentFile'
+        '404':
+          $ref: '#/components/responses/EnvironmentNotFound'
+  /api/v1/environments/import:
+    post:
+      operationId: importEnvironment
+      tags: [Files]
+      summary: Create an environment from a YAML file
+      description: Creates a new environment; it never changes an existing one.
+      parameters:
+        - name: name
+          in: query
+          description: The new environment's name, instead of the one in the file, such as when it is taken.
+          schema:
+            $ref: '#/components/schemas/Name'
+      requestBody:
+        required: true
+        content:
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/EnvironmentFile'
+      responses:
+        '201':
+          description: The environment was created
+          headers:
+            Location:
+              description: URL of the new environment
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          description: >-
+            The file is not valid YAML, is not an environment file of a supported version, or
+            misses a property (`collection.invalid-request`); or a variable breaks a rule
+            (`collection.invalid-environment`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          $ref: '#/components/responses/EnvironmentNameTaken'
 components:
   parameters:
     CollectionId:
@@ -642,3 +774,60 @@ components:
         updatedAt:
           type: string
           format: date-time
+    CollectionFile:
+      description: >-
+        A collection as a portable YAML file: no ids, templates in order, placeholders as written.
+      type: object
+      required: [topicman, kind, name, templates]
+      properties:
+        topicman:
+          type: integer
+          format: int32
+          enum: [1]
+          description: The file format version. Version 1 is the only one so far.
+        kind:
+          type: string
+          enum: [collection]
+        name:
+          $ref: '#/components/schemas/Name'
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateFile'
+    TemplateFile:
+      type: object
+      required: [name, brokerType, destination, payload]
+      properties:
+        name:
+          $ref: '#/components/schemas/Name'
+        brokerType:
+          $ref: '#/components/schemas/BrokerType'
+        destination:
+          $ref: '#/components/schemas/Destination'
+        key:
+          type: string
+          minLength: 1
+        headers:
+          $ref: '#/components/schemas/Headers'
+        payload:
+          $ref: '#/components/schemas/Payload'
+    EnvironmentFile:
+      description: An environment as a portable YAML file, with its variables in order.
+      type: object
+      required: [topicman, kind, name, variables]
+      properties:
+        topicman:
+          type: integer
+          format: int32
+          enum: [1]
+          description: The file format version. Version 1 is the only one so far.
+        kind:
+          type: string
+          enum: [environment]
+        name:
+          $ref: '#/components/schemas/Name'
+        variables:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variable'
+

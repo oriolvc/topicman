@@ -13,6 +13,8 @@ export type UnresolvedVariablesProblem = Schemas['UnresolvedVariablesProblem'];
 export type EnvironmentRequest = Schemas['EnvironmentRequest'];
 export type EnvironmentResponse = Schemas['EnvironmentResponse'];
 export type Variable = Schemas['Variable'];
+export type CollectionFile = Schemas['CollectionFile'];
+export type EnvironmentFile = Schemas['EnvironmentFile'];
 
 /** Typed client for the collections and environments API (`collection.yaml`). */
 export const collectionApi = createClient<paths>(clientOptions);

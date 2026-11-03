@@ -2,6 +2,7 @@ import {
   Alert,
   Button,
   Center,
+  FileButton,
   Group,
   Loader,
   Stack,
@@ -10,16 +11,21 @@ import {
   Title,
   VisuallyHidden,
 } from '@mantine/core';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { notifications } from '@mantine/notifications';
 import type { EnvironmentResponse } from '../../api/collection';
 import { ApiProblem } from '../../api/problem';
 import { useEnvironments } from '../../shared/environments';
+import { ImportNameModal } from '../../shared/ImportNameModal';
+import { showProblem } from '../../shared/showProblem';
+import { useExportEnvironment, useImportEnvironment } from './environmentQueries';
 import { DeleteEnvironmentModal } from './DeleteEnvironmentModal';
 import { EnvironmentFormModal } from './EnvironmentFormModal';
 
 type Dialog =
   | { kind: 'closed' }
   | { kind: 'create' }
+  | { kind: 'importName'; text: string; reason: string }
   | { kind: 'edit'; environment: EnvironmentResponse }
   | { kind: 'delete'; environment: EnvironmentResponse };
 
@@ -37,18 +43,57 @@ export function EnvironmentsPage() {
   const close = () => {
     setDialog({ kind: 'closed' });
   };
+  const importEnvironment = useImportEnvironment();
+  const exportEnvironment = useExportEnvironment();
+  const resetFileInput = useRef<() => void>(null);
+
+  const imported = (created: EnvironmentResponse) => {
+    notifications.show({ color: 'green', message: `Environment ${created.name} imported` });
+    close();
+  };
+
+  const importFile = async (file: File | null) => {
+    resetFileInput.current?.();
+    if (file === null) {
+      return;
+    }
+    const text = await file.text();
+    try {
+      imported(await importEnvironment.mutateAsync({ text }));
+    } catch (error) {
+      if (error instanceof ApiProblem && error.code === 'collection.environment-name-taken') {
+        setDialog({ kind: 'importName', text, reason: error.message });
+      } else {
+        showProblem(error, 'The file could not be imported');
+      }
+    }
+  };
 
   return (
     <Stack>
       <Group justify="space-between">
         <Title order={2}>Environments</Title>
-        <Button
-          onClick={() => {
-            setDialog({ kind: 'create' });
-          }}
-        >
-          New environment
-        </Button>
+        <Group gap="xs">
+          <FileButton
+            onChange={(file) => void importFile(file)}
+            accept=".yaml,.yml,application/yaml"
+            resetRef={resetFileInput}
+            inputProps={{ 'aria-label': 'Environment file' }}
+          >
+            {(props) => (
+              <Button variant="default" loading={importEnvironment.isPending} {...props}>
+                Import
+              </Button>
+            )}
+          </FileButton>
+          <Button
+            onClick={() => {
+              setDialog({ kind: 'create' });
+            }}
+          >
+            New environment
+          </Button>
+        </Group>
       </Group>
       <Text c="dimmed" size="sm">
         Each environment gives values to the {'{{variables}}'} of templates. Choose the active one
@@ -92,6 +137,20 @@ export function EnvironmentsPage() {
                     <Button
                       size="xs"
                       variant="default"
+                      aria-label={`Export ${environment.name}`}
+                      onClick={() => {
+                        exportEnvironment.mutate(environment, {
+                          onError: (error) => {
+                            showProblem(error, 'The environment could not be exported');
+                          },
+                        });
+                      }}
+                    >
+                      Export
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="default"
                       aria-label={`Edit ${environment.name}`}
                       onClick={() => {
                         setDialog({ kind: 'edit', environment });
@@ -116,6 +175,28 @@ export function EnvironmentsPage() {
             ))}
           </Table.Tbody>
         </Table>
+      )}
+      {dialog.kind === 'importName' && (
+        <ImportNameModal
+          title="Import environment"
+          reason={dialog.reason}
+          saving={importEnvironment.isPending}
+          onClose={close}
+          onSubmit={async (name) => {
+            try {
+              imported(await importEnvironment.mutateAsync({ text: dialog.text, name }));
+            } catch (error) {
+              if (
+                error instanceof ApiProblem &&
+                error.code === 'collection.environment-name-taken'
+              ) {
+                throw error;
+              }
+              showProblem(error, 'The file could not be imported');
+              close();
+            }
+          }}
+        />
       )}
       {dialog.kind === 'create' && <EnvironmentFormModal environment={undefined} onClose={close} />}
       {dialog.kind === 'edit' && (

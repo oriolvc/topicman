@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import { collectionApi } from '../../api/collection';
+import { collectionApi, type CollectionFile } from '../../api/collection';
 import { unwrap } from '../../api/problem';
 import { useInvalidateCollections } from '../../shared/collections';
+import { fileNameOf, saveFile, yamlBody } from '../../shared/files';
 
 export function useRenameCollection() {
   const invalidate = useInvalidateCollections();
@@ -72,5 +73,33 @@ export function useResolveTemplate() {
           },
         ),
       ),
+  });
+}
+
+/** Creates a collection from a YAML file's text, under another name when `name` is given. */
+export function useImportCollection() {
+  const invalidate = useInvalidateCollections();
+  return useMutation({
+    mutationFn: async ({ text, name }: { text: string; name?: string }) =>
+      unwrap(
+        await collectionApi.POST('/api/v1/collections/import', {
+          params: { query: name === undefined ? {} : { name } },
+          ...yamlBody<CollectionFile>(text),
+        }),
+      ),
+    onSuccess: invalidate,
+  });
+}
+
+/** Downloads a collection as the YAML file the server writes. */
+export function useExportCollection() {
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: number; name: string }) => {
+      const result = await collectionApi.GET('/api/v1/collections/{collectionId}/export', {
+        params: { path: { collectionId: id } },
+        parseAs: 'text',
+      });
+      saveFile(fileNameOf(result.response, `${name}.topicman.yaml`), unwrap(result));
+    },
   });
 }

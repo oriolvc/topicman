@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.kafka.clients)
     implementation(libs.pulsar.client)
     implementation(libs.amqp.client)
+    implementation(libs.jackson.dataformat.yaml)
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
     runtimeOnly(libs.postgresql)

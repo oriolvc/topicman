@@ -50,3 +50,7 @@ Object.defineProperty(document, 'fonts', {
 
 // jsdom has no EventSource. This one reads the stream with fetch, so MSW's `sse()` handlers serve it.
 globalThis.EventSource = FetchEventSource;
+
+// jsdom has no object URLs; downloads only need one to exist.
+URL.createObjectURL = () => 'blob:topicman-test';
+URL.revokeObjectURL = () => undefined;

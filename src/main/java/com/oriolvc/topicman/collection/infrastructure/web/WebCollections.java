@@ -18,6 +18,7 @@ import com.oriolvc.topicman.collection.infrastructure.web.model.EnvironmentRespo
 import com.oriolvc.topicman.collection.infrastructure.web.model.ExchangeDestination;
 import com.oriolvc.topicman.collection.infrastructure.web.model.Payload;
 import com.oriolvc.topicman.collection.infrastructure.web.model.ResolvedMessageResponse;
+import com.oriolvc.topicman.collection.infrastructure.web.model.TemplateFile;
 import com.oriolvc.topicman.collection.infrastructure.web.model.TemplateRequest;
 import com.oriolvc.topicman.collection.infrastructure.web.model.TemplateResponse;
 import com.oriolvc.topicman.collection.infrastructure.web.model.TopicDestination;
@@ -26,6 +27,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 /** Maps between the generated collection DTOs and the application layer. */
 final class WebCollections {
@@ -33,16 +36,50 @@ final class WebCollections {
     private WebCollections() {}
 
     static TemplateContent toContent(TemplateRequest request) {
-        return new TemplateContent(
-                new TemplateName(request.getName()),
-                com.oriolvc.topicman.shared.domain.BrokerType.valueOf(
-                        request.getBrokerType().getValue()),
-                toDestination(request.getDestination()),
+        return toContent(
+                request.getName(),
+                request.getBrokerType(),
+                request.getDestination(),
                 request.getKey(),
                 request.getHeaders(),
-                new TemplatePayload(
-                        PayloadFormat.valueOf(request.getPayload().getFormat().getValue()),
-                        request.getPayload().getContent()));
+                request.getPayload());
+    }
+
+    static TemplateContent toContent(TemplateFile file) {
+        return toContent(
+                file.getName(),
+                file.getBrokerType(),
+                file.getDestination(),
+                file.getKey(),
+                file.getHeaders(),
+                file.getPayload());
+    }
+
+    private static TemplateContent toContent(
+            String name,
+            BrokerType brokerType,
+            Destination destination,
+            @Nullable String key,
+            Map<String, String> headers,
+            Payload payload) {
+        return new TemplateContent(
+                new TemplateName(name),
+                com.oriolvc.topicman.shared.domain.BrokerType.valueOf(brokerType.getValue()),
+                toDestination(destination),
+                key,
+                headers,
+                new TemplatePayload(PayloadFormat.valueOf(payload.getFormat().getValue()), payload.getContent()));
+    }
+
+    /** A template as it is written to a file: everything but its id. */
+    static TemplateFile toFile(TemplateResult result) {
+        return new TemplateFile(
+                        result.name(),
+                        BrokerType.fromValue(result.brokerType().name()),
+                        toDestinationDto(result.destination()),
+                        toPayloadDto(result.payload()))
+                .key(result.key())
+                .headers(new LinkedHashMap<>(result.headers()));
     }
 
     static List<Variable> toVariables(

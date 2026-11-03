@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -108,6 +109,28 @@ class CollectionTest {
 
         assertThat(collection.templates()).isEmpty();
         assertThat(collection.updatedAt()).isEqualTo(LATER);
+    }
+
+    @Test
+    void createsACollectionWithTemplatesFromAFile() {
+        var created = aTemplate("Order created");
+        var shipped = aTemplate("Order shipped");
+
+        var collection = Collection.fromFile(
+                TestIds.collectionId(), new CollectionName("Orders"), List.of(created, shipped), CREATED_AT);
+
+        assertThat(collection.templates()).containsExactly(created, shipped);
+        assertThat(collection.createdAt()).isEqualTo(CREATED_AT);
+    }
+
+    @Test
+    void rejectsAFileWithTwoTemplatesOfTheSameNameAsInvalid() {
+        var twice = List.of(aTemplate("Order created"), aTemplate("Order created"));
+
+        assertThatThrownBy(() ->
+                        Collection.fromFile(TestIds.collectionId(), new CollectionName("Orders"), twice, CREATED_AT))
+                .isInstanceOf(InvalidTemplateException.class)
+                .hasMessageContaining("Order created");
     }
 
     @Test

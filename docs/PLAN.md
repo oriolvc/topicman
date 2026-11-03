@@ -80,7 +80,7 @@ Out (post-MVP):
 - [x] OpenAPI spec for collections and environments, reviewed before coding
 - [x] Persistence and REST API for collections and environments
 - [x] UI: save from the produce screen, browse collections, switch environment
-- [ ] YAML export and import
+- [x] YAML export and import
 
 ## Phase 5 — Security and packaging
 

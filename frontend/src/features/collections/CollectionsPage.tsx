@@ -3,6 +3,7 @@ import {
   Anchor,
   Button,
   Center,
+  FileButton,
   Grid,
   Group,
   Loader,
@@ -13,14 +14,21 @@ import {
   Title,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, NavLink as RouterNavLink, useNavigate, useParams } from 'react-router';
 import type { CollectionResponse, TemplateResponse } from '../../api/collection';
 import { ApiProblem } from '../../api/problem';
 import { useCollection, useCollections, useCreateCollection } from '../../shared/collections';
+import { ImportNameModal } from '../../shared/ImportNameModal';
 import { showProblem } from '../../shared/showProblem';
 import { CollectionNameModal } from './CollectionNameModal';
-import { useDeleteCollection, useDeleteTemplate, useRenameCollection } from './collectionQueries';
+import {
+  useDeleteCollection,
+  useDeleteTemplate,
+  useExportCollection,
+  useImportCollection,
+  useRenameCollection,
+} from './collectionQueries';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { SendTemplateModal } from './SendTemplateModal';
 import { TemplatesTable } from './TemplatesTable';
@@ -28,6 +36,7 @@ import { TemplatesTable } from './TemplatesTable';
 type Dialog =
   | { kind: 'closed' }
   | { kind: 'create' }
+  | { kind: 'importName'; text: string; reason: string }
   | { kind: 'rename'; collection: CollectionResponse }
   | { kind: 'deleteCollection'; collection: CollectionResponse }
   | { kind: 'send'; collection: CollectionResponse; template: TemplateResponse }
@@ -51,9 +60,35 @@ export function CollectionsPage() {
   const rename = useRenameCollection();
   const removeCollection = useDeleteCollection();
   const removeTemplate = useDeleteTemplate();
+  const importCollection = useImportCollection();
+  const exportCollection = useExportCollection();
+  const resetFileInput = useRef<() => void>(null);
   const [dialog, setDialog] = useState<Dialog>({ kind: 'closed' });
   const close = () => {
     setDialog({ kind: 'closed' });
+  };
+
+  const imported = async (created: CollectionResponse) => {
+    notifications.show({ color: 'green', message: `Collection ${created.name} imported` });
+    close();
+    await navigate(`/collections/${String(created.id)}`);
+  };
+
+  const importFile = async (file: File | null) => {
+    resetFileInput.current?.();
+    if (file === null) {
+      return;
+    }
+    const text = await file.text();
+    try {
+      await imported(await importCollection.mutateAsync({ text }));
+    } catch (error) {
+      if (error instanceof ApiProblem && error.code === 'collection.name-taken') {
+        setDialog({ kind: 'importName', text, reason: error.message });
+      } else {
+        showProblem(error, 'The file could not be imported');
+      }
+    }
   };
 
   const deleteCollection = (target: CollectionResponse) => {
@@ -88,13 +123,27 @@ export function CollectionsPage() {
     <Stack>
       <Group justify="space-between">
         <Title order={2}>Collections</Title>
-        <Button
-          onClick={() => {
-            setDialog({ kind: 'create' });
-          }}
-        >
-          New collection
-        </Button>
+        <Group gap="xs">
+          <FileButton
+            onChange={(file) => void importFile(file)}
+            accept=".yaml,.yml,application/yaml"
+            resetRef={resetFileInput}
+            inputProps={{ 'aria-label': 'Collection file' }}
+          >
+            {(props) => (
+              <Button variant="default" loading={importCollection.isPending} {...props}>
+                Import
+              </Button>
+            )}
+          </FileButton>
+          <Button
+            onClick={() => {
+              setDialog({ kind: 'create' });
+            }}
+          >
+            New collection
+          </Button>
+        </Group>
       </Group>
       {collections.isError && (
         <Alert color="red" title="The collections could not be loaded">
@@ -153,6 +202,20 @@ export function CollectionsPage() {
                   <Button
                     variant="default"
                     size="xs"
+                    loading={exportCollection.isPending}
+                    onClick={() => {
+                      exportCollection.mutate(collection.data, {
+                        onError: (error) => {
+                          showProblem(error, 'The collection could not be exported');
+                        },
+                      });
+                    }}
+                  >
+                    Export
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="xs"
                     onClick={() => {
                       setDialog({ kind: 'rename', collection: collection.data });
                     }}
@@ -207,6 +270,25 @@ export function CollectionsPage() {
             notifications.show({ color: 'green', message: `Collection ${created.name} created` });
             close();
             await navigate(`/collections/${String(created.id)}`);
+          }}
+        />
+      )}
+      {dialog.kind === 'importName' && (
+        <ImportNameModal
+          title="Import collection"
+          reason={dialog.reason}
+          saving={importCollection.isPending}
+          onClose={close}
+          onSubmit={async (name) => {
+            try {
+              await imported(await importCollection.mutateAsync({ text: dialog.text, name }));
+            } catch (error) {
+              if (error instanceof ApiProblem && error.code === 'collection.name-taken') {
+                throw error;
+              }
+              showProblem(error, 'The file could not be imported');
+              close();
+            }
           }}
         />
       )}

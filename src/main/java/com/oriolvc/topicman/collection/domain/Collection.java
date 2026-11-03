@@ -40,6 +40,27 @@ public final class Collection {
         return new Collection(id, name, List.of(), now, now);
     }
 
+    /**
+     * A new collection with the templates of an imported file, in order. Two templates with the
+     * same name make the file invalid, rather than one taking the other's name.
+     *
+     * @param id a new id, from {@link CollectionRepository#nextId()}
+     * @throws InvalidTemplateException if two templates have the same name
+     */
+    public static Collection fromFile(
+            CollectionId id, CollectionName name, List<MessageTemplate> templates, Instant now) {
+        var collection = create(id, name, now);
+        for (var template : templates) {
+            try {
+                collection.addTemplate(template, now);
+            } catch (TemplateNameTakenException e) {
+                throw new InvalidTemplateException("The file has more than one template named '"
+                        + template.name().value() + "'");
+            }
+        }
+        return collection;
+    }
+
     public static Collection rehydrate(
             CollectionId id,
             CollectionName name,
