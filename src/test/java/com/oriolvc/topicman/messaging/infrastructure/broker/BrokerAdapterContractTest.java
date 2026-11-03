@@ -38,6 +38,9 @@ public abstract class BrokerAdapterContractTest {
 
     private static final Duration READ_TIMEOUT = Duration.ofSeconds(15);
 
+    // Well below any adapter's send timeout, so waiting it out cannot pass.
+    private static final Duration UNREACHABLE_TIMEOUT = Duration.ofSeconds(1);
+
     // AMQP timestamps have a resolution of one second.
     private static final Duration CLOCK_TOLERANCE = Duration.ofSeconds(1);
 
@@ -199,9 +202,16 @@ public abstract class BrokerAdapterContractTest {
     }
 
     @Test
-    void failsToProduceToAnUnreachableBroker() {
-        assertThatThrownBy(() -> producer.send(unreachableEndpoint(), newDestination(), Message.of(Payload.text("x"))))
+    void failsFastToProduceToAnUnreachableBroker() {
+        var destination = newDestination();
+        var start = Instant.now();
+
+        assertThatThrownBy(() -> producer.send(unreachableEndpoint(), destination, Message.of(Payload.text("x"))))
                 .isInstanceOf(ProduceFailedException.class);
+
+        assertThat(Duration.between(start, Instant.now()))
+                .as("a refused connection fails the send without waiting for the send timeout")
+                .isLessThan(UNREACHABLE_TIMEOUT);
     }
 
     @Test

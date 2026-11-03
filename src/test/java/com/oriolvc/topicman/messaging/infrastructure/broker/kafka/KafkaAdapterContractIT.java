@@ -43,7 +43,8 @@ class KafkaAdapterContractIT extends BrokerAdapterContractTest {
     @Container
     private static final KafkaContainer KAFKA = new KafkaContainer("apache/kafka:4.2.1");
 
-    private static final KafkaProperties PROPERTIES = new KafkaProperties(Duration.ofSeconds(3), Duration.ofSeconds(3));
+    private static final KafkaProperties PROPERTIES =
+            new KafkaProperties(Duration.ofSeconds(3), Duration.ofSeconds(3), Duration.ofSeconds(3));
 
     private static Admin admin;
 
@@ -198,6 +199,15 @@ class KafkaAdapterContractIT extends BrokerAdapterContractTest {
                 .isInstanceOf(ProduceFailedException.class);
         assertThatThrownBy(() -> reader.open(invalid, Destination.topic("orders"), StartPosition.LATEST))
                 .isInstanceOf(ReadFailedException.class);
+    }
+
+    @Test
+    void namesTheBootstrapServersItCannotReach() {
+        var endpoint = new BrokerEndpoint(BrokerType.KAFKA, "localhost:1,localhost:2");
+
+        assertThatThrownBy(() -> producer.send(endpoint, newDestination(), Message.of(Payload.text("x"))))
+                .isInstanceOf(ProduceFailedException.class)
+                .hasMessageStartingWith("Cannot reach the Kafka broker at localhost:1,localhost:2: ");
     }
 
     @Test

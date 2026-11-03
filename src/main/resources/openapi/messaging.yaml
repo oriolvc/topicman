@@ -48,7 +48,8 @@ paths:
           $ref: '#/components/responses/ConnectionNotFound'
         '503':
           description: >-
-            The broker rejected a copy or did not acknowledge it in time (`messaging.produce-failed`).
+            The broker cannot be reached, rejected a copy or did not acknowledge it in time
+            (`messaging.produce-failed`).
             The problem's `sent` property is the number of copies acknowledged before the failure.
           content:
             application/problem+json:

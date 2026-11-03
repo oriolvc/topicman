@@ -71,7 +71,7 @@ Out (post-MVP):
 - [ ] RabbitMQ adapter (publisher confirms + temporary exclusive queue) passing the contract test
 - [ ] Broker capability model in the domain (e.g. `canReadFromBeginning`) exposed by the API
 - [ ] Test-connection use case for all three brokers, with a test action on the connections screen
-- [ ] Produce to an unreachable broker fails fast with a clear problem (today Kafka blocks Send for
+- [x] Produce to an unreachable broker fails fast with a clear problem (today Kafka blocks Send for
       about 10s, then reports "Topic not present in metadata")
 
 ## Phase 4 — Collections and environments

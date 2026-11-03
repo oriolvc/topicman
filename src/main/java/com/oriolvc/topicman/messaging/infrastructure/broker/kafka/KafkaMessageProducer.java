@@ -28,15 +28,19 @@ import org.apache.kafka.common.serialization.StringSerializer;
  * Produces to Kafka and waits for the acknowledgement of all in-sync replicas. One producer is
  * kept per endpoint, because creating one fetches cluster metadata and producing N copies would
  * otherwise pay that N times. A producer is discarded after a failed send, so an endpoint that
- * stopped working does not keep a client retrying in the background.
+ * stopped working does not keep a client retrying in the background. Before a producer is created,
+ * the bootstrap servers are probed, so an unreachable broker fails at once instead of at the send
+ * timeout.
  */
 final class KafkaMessageProducer implements MessageProducer, AutoCloseable {
 
     private final Duration sendTimeout;
+    private final Duration connectTimeout;
     private final Map<BrokerEndpoint, Producer<String, byte[]>> producers = new ConcurrentHashMap<>();
 
     KafkaMessageProducer(KafkaProperties properties) {
         this.sendTimeout = properties.sendTimeout();
+        this.connectTimeout = properties.connectTimeout();
     }
 
     @Override
@@ -48,6 +52,13 @@ final class KafkaMessageProducer implements MessageProducer, AutoCloseable {
     public SendReceipt send(BrokerEndpoint endpoint, Destination destination, Message message) {
         if (!(destination instanceof Destination.Topic(var topic))) {
             throw new InvalidDestinationException("Kafka produces to topics, not to " + destination);
+        }
+        if (!producers.containsKey(endpoint)) {
+            var unreachable = KafkaBootstrapProbe.unreachableReason(endpoint.address(), connectTimeout);
+            if (unreachable.isPresent()) {
+                throw new ProduceFailedException(
+                        "Cannot reach the Kafka broker at " + endpoint.address() + ": " + unreachable.get());
+            }
         }
         Producer<String, byte[]> producer;
         try {
