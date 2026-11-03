@@ -88,7 +88,7 @@ Out (post-MVP):
 - [ ] Mask credentials in the `toString()` of the generated request DTOs, so logging a request
       never prints a password or token
 - [ ] Production Docker image published to GHCR on release
-- [ ] `compose.demo.yaml` with PostgreSQL, Pulsar, Kafka and RabbitMQ
+- [x] `compose.demo.yaml` with PostgreSQL, Pulsar, Kafka and RabbitMQ
 - [ ] App binds to localhost by default; documented way to expose it
 
 ## Phase 6 — Launch

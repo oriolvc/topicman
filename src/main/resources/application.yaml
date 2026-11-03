@@ -37,3 +37,6 @@ logging:
     org.apache.kafka: warn
     # Pulsar clients log every connection and producer or reader lifecycle step at INFO
     org.apache.pulsar: warn
+    # Logs every lookup of a missing topic with a stack trace, including each connection test's
+    # deliberate one; the adapter reports lookup failures itself.
+    org.apache.pulsar.client.impl.BinaryProtoLookupService: error

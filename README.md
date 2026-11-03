@@ -56,14 +56,23 @@ npm ci
 npm run dev            # http://localhost:5173
 ```
 
-Run every check before pushing. The integration tests start PostgreSQL and Kafka with
-Testcontainers, so they need Docker even when you develop with the `local` profile:
+Run every check before pushing. The integration tests start PostgreSQL, Kafka, Pulsar and RabbitMQ
+with Testcontainers, so they need Docker even when you develop with the `local` profile:
 
 ```bash
 ./gradlew check        # format check, tests and architecture rules, frontend checks
 ```
 
-Producing and consuming need a running broker. For a throwaway Kafka on `localhost:9092`:
+Producing and consuming need a running broker. To try all three, start the app with the `demo`
+profile: it runs PostgreSQL, Kafka, Pulsar and RabbitMQ from
+[`compose.demo.yaml`](compose.demo.yaml) and removes them when the app stops. That file lists the
+address of each broker to enter in the UI:
+
+```bash
+SPRING_PROFILES_ACTIVE=demo ./gradlew bootRun
+```
+
+For a throwaway Kafka on `localhost:9092` alongside the default setup:
 
 ```bash
 docker compose -f compose.kafka.yaml up -d     # stop it with `down`; its data is discarded

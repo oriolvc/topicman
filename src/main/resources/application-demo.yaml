@@ -1,0 +1,11 @@
+# Profile `demo`: runs TopicMan against PostgreSQL and one broker of each kind (compose.demo.yaml).
+#
+#   SPRING_PROFILES_ACTIVE=demo ./gradlew bootRun
+spring:
+  docker:
+    compose:
+      file: compose.demo.yaml
+      stop:
+        # Remove the containers, not just stop them: every run starts empty, and Pulsar standalone
+        # cannot start again from a stopped container's state.
+        command: down
