@@ -101,6 +101,7 @@ class ConsumeSessionsApiIT {
         assertThat(JsonPath.<String>read(data, "$.payload.format")).isEqualTo("JSON");
         assertThat(JsonPath.<String>read(data, "$.payload.content")).isEqualTo("{\"id\": 42}");
         assertThat(JsonPath.<String>read(data, "$.position")).isEqualTo(topic + "-0@1");
+        assertThat(data).as("a message without a key has no key property").doesNotContain("\"key\"");
         assertThat(events.lines()).noneMatch(line -> line.contains("\"before\""));
     }
 

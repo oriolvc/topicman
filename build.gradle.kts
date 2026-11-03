@@ -109,6 +109,9 @@ val openApiGenerateTasks = openApiContexts.map { context ->
             "documentationProvider" to "none",
             "annotationLibrary" to "none",
             "hideGenerationTimestamp" to "true",
+            // The specs leave optional properties out rather than set them to null.
+            "additionalModelTypeAnnotations" to
+                "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)",
             "sourceFolder" to "src/main/java",
         ))
     }
