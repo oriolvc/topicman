@@ -35,3 +35,5 @@ logging:
   level:
     # Kafka clients log every config and connection attempt at INFO
     org.apache.kafka: warn
+    # Pulsar clients log every connection and producer or reader lifecycle step at INFO
+    org.apache.pulsar: warn

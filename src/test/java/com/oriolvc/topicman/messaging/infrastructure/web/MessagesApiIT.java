@@ -137,9 +137,10 @@ class MessagesApiIT {
 
     @Test
     void answersServiceUnavailableForABrokerWithoutAProducerYet() {
-        var connection = aConnection(BrokerType.PULSAR, "pulsar://localhost:6650");
+        var connection = aConnection(BrokerType.RABBITMQ, "amqp://localhost:5672");
 
-        var result = produce(aTextMessageTo(connection, "{\"type\": \"TOPIC\", \"name\": \"orders\"}"));
+        var result = produce(
+                aTextMessageTo(connection, "{\"type\": \"EXCHANGE\", \"name\": \"orders\", \"routingKey\": \"\"}"));
 
         assertProblem(result, HttpStatus.SERVICE_UNAVAILABLE, "messaging.produce-failed");
     }
