@@ -1,5 +1,6 @@
-# Single-node Kafka (KRaft, no ZooKeeper) for manual testing on the host.
+# Single-node Kafka (KRaft, no ZooKeeper) and Kafka UI for manual testing on the host.
 # Bootstrap server: localhost:9092 (plaintext, no auth). Topics are auto-created on first produce.
+# Kafka UI: http://localhost:8081 (TopicMan itself uses 8080).
 #
 #   docker compose -f compose.kafka.yaml up -d
 #   docker compose -f compose.kafka.yaml down     # stops it; no volume, so all data is discarded
@@ -11,3 +12,31 @@ services:
     container_name: topicman-kafka
     ports:
       - '9092:9092'
+    environment:
+      # Setting any KAFKA_ variable replaces the image's defaults, so the whole config is here.
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # HOST for clients on this machine (TopicMan), INTERNAL for containers (Kafka UI).
+      KAFKA_LISTENERS: HOST://:9092,INTERNAL://:19092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: HOST:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  kafka-ui:
+    image: 'ghcr.io/kafbat/kafka-ui:v1.5.0'
+    container_name: topicman-kafka-ui
+    ports:
+      - '8081:8080'
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:19092
+    depends_on:
+      - kafka
