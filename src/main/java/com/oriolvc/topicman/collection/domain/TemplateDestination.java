@@ -9,6 +9,8 @@ import java.util.Objects;
  */
 public sealed interface TemplateDestination permits TemplateDestination.Topic, TemplateDestination.Exchange {
 
+    DestinationKind kind();
+
     static Topic topic(String name) {
         return new Topic(name);
     }
@@ -25,6 +27,11 @@ public sealed interface TemplateDestination permits TemplateDestination.Topic, T
                 throw new InvalidTemplateException("Topic name must not be blank");
             }
         }
+
+        @Override
+        public DestinationKind kind() {
+            return DestinationKind.TOPIC;
+        }
     }
 
     /** The routing key may be empty, as fanout exchanges ignore it. */
@@ -36,6 +43,11 @@ public sealed interface TemplateDestination permits TemplateDestination.Topic, T
             if (name.isBlank()) {
                 throw new InvalidTemplateException("Exchange name must not be blank");
             }
+        }
+
+        @Override
+        public DestinationKind kind() {
+            return DestinationKind.EXCHANGE;
         }
     }
 }

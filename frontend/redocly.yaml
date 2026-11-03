@@ -8,3 +8,7 @@ apis:
     root: ../src/main/resources/openapi/messaging.yaml
     x-openapi-ts:
       output: ./src/api/generated/messaging.ts
+  collection:
+    root: ../src/main/resources/openapi/collection.yaml
+    x-openapi-ts:
+      output: ./src/api/generated/collection.ts

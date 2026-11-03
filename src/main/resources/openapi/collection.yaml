@@ -1,0 +1,636 @@
+openapi: 3.1.0
+info:
+  title: TopicMan collections
+  version: v1
+  description: >-
+    Saved message templates grouped in collections, and global environments of variable values
+    (ADR 0006). A template targets a broker type, not a connection, and its texts may hold
+    `{{variable}}` placeholders. Resolving a template against an environment gives a message in the
+    shape the produce API takes; the client then produces it through a connection of that broker
+    type.
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+tags:
+  - name: Collections
+  - name: Templates
+  - name: Environments
+paths:
+  /api/v1/collections:
+    get:
+      operationId: listCollections
+      tags: [Collections]
+      summary: List collections, ordered by name, without their templates
+      responses:
+        '200':
+          description: All collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionSummaryResponse'
+    post:
+      operationId: createCollection
+      tags: [Collections]
+      summary: Create an empty collection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionRequest'
+      responses:
+        '201':
+          description: The collection was created
+          headers:
+            Location:
+              description: URL of the new collection
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        '400':
+          $ref: '#/components/responses/InvalidCollection'
+        '409':
+          $ref: '#/components/responses/CollectionNameTaken'
+  /api/v1/collections/{collectionId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+    get:
+      operationId: getCollection
+      tags: [Collections]
+      summary: Get a collection with its templates, in order
+      responses:
+        '200':
+          description: The collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        '404':
+          $ref: '#/components/responses/CollectionNotFound'
+    patch:
+      operationId: renameCollection
+      tags: [Collections]
+      summary: Rename a collection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionRequest'
+      responses:
+        '200':
+          description: The renamed collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        '400':
+          $ref: '#/components/responses/InvalidCollection'
+        '404':
+          $ref: '#/components/responses/CollectionNotFound'
+        '409':
+          $ref: '#/components/responses/CollectionNameTaken'
+    delete:
+      operationId: deleteCollection
+      tags: [Collections]
+      summary: Delete a collection and its templates
+      responses:
+        '204':
+          description: The collection was deleted
+        '404':
+          $ref: '#/components/responses/CollectionNotFound'
+  /api/v1/collections/{collectionId}/templates:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+    post:
+      operationId: addTemplate
+      tags: [Templates]
+      summary: Add a template at the end of a collection
+      description: >-
+        The broker type decides which destination kind and whether a key are allowed, as
+        `GET /api/v1/brokers` describes: a template that does not fit its broker is rejected with
+        `collection.invalid-template`. Placeholders are not checked when saving.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+      responses:
+        '201':
+          description: The template was added
+          headers:
+            Location:
+              description: URL of the new template
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidTemplate'
+        '404':
+          $ref: '#/components/responses/CollectionNotFound'
+        '409':
+          $ref: '#/components/responses/TemplateNameTaken'
+  /api/v1/collections/{collectionId}/templates/{templateId}:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+      - $ref: '#/components/parameters/TemplateId'
+    put:
+      operationId: replaceTemplate
+      tags: [Templates]
+      summary: Replace a template, keeping its id and its place in the collection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateRequest'
+      responses:
+        '200':
+          description: The replaced template
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+          $ref: '#/components/responses/InvalidTemplate'
+        '404':
+          $ref: '#/components/responses/CollectionOrTemplateNotFound'
+        '409':
+          $ref: '#/components/responses/TemplateNameTaken'
+    delete:
+      operationId: deleteTemplate
+      tags: [Templates]
+      summary: Delete a template
+      responses:
+        '204':
+          description: The template was deleted
+        '404':
+          $ref: '#/components/responses/CollectionOrTemplateNotFound'
+  /api/v1/collections/{collectionId}/templates/{templateId}/resolution:
+    parameters:
+      - $ref: '#/components/parameters/CollectionId'
+      - $ref: '#/components/parameters/TemplateId'
+    post:
+      operationId: resolveTemplate
+      tags: [Templates]
+      summary: Resolve a template's placeholders against an environment
+      description: >-
+        Replaces every `{{variable}}` with the environment's value and every built-in variable
+        (`{{$uuid}}`, `{{$timestamp}}`, `{{$isoTimestamp}}`, `{{$randomInt}}`) with a fresh value,
+        one per variable for the whole message. Nothing is produced: the response has the
+        `destination`, `key`, `headers` and `payload` of a `POST /api/v1/messages` request, to send
+        with a connection of the same broker type. A POST, because built-in variables make each
+        resolution different.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveTemplateRequest'
+      responses:
+        '200':
+          description: The resolved message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolvedMessageResponse'
+        '400':
+          description: >-
+            The request is malformed (`collection.invalid-request`), or the destination or a header
+            name resolves to nothing (`collection.invalid-template`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: >-
+            No collection, template or environment has this id (`collection.not-found`,
+            `collection.template-not-found` or `collection.environment-not-found`).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '422':
+          description: >-
+            Some placeholders have no value, or name a built-in variable that does not exist
+            (`collection.unresolved-variables`). Every one is listed at once.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/UnresolvedVariablesProblem'
+  /api/v1/environments:
+    get:
+      operationId: listEnvironments
+      tags: [Environments]
+      summary: List environments, ordered by name, with their variables
+      responses:
+        '200':
+          description: All environments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnvironmentResponse'
+    post:
+      operationId: createEnvironment
+      tags: [Environments]
+      summary: Create an environment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentRequest'
+      responses:
+        '201':
+          description: The environment was created
+          headers:
+            Location:
+              description: URL of the new environment
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          $ref: '#/components/responses/InvalidEnvironment'
+        '409':
+          $ref: '#/components/responses/EnvironmentNameTaken'
+  /api/v1/environments/{environmentId}:
+    parameters:
+      - $ref: '#/components/parameters/EnvironmentId'
+    get:
+      operationId: getEnvironment
+      tags: [Environments]
+      summary: Get an environment
+      responses:
+        '200':
+          description: The environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '404':
+          $ref: '#/components/responses/EnvironmentNotFound'
+    put:
+      operationId: replaceEnvironment
+      tags: [Environments]
+      summary: Replace an environment's name and variables
+      responses:
+        '200':
+          description: The replaced environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          $ref: '#/components/responses/InvalidEnvironment'
+        '404':
+          $ref: '#/components/responses/EnvironmentNotFound'
+        '409':
+          $ref: '#/components/responses/EnvironmentNameTaken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentRequest'
+    delete:
+      operationId: deleteEnvironment
+      tags: [Environments]
+      summary: Delete an environment
+      responses:
+        '204':
+          description: The environment was deleted
+        '404':
+          $ref: '#/components/responses/EnvironmentNotFound'
+components:
+  parameters:
+    CollectionId:
+      name: collectionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TemplateId:
+      name: templateId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EnvironmentId:
+      name: environmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    InvalidCollection:
+      description: >-
+        The request is malformed (`collection.invalid-request`) or the name is blank or too long
+        (`collection.invalid-collection`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    InvalidTemplate:
+      description: >-
+        The request is malformed (`collection.invalid-request`) or breaks a template rule, such as
+        a destination kind or a key the broker does not support (`collection.invalid-template`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    InvalidEnvironment:
+      description: >-
+        The request is malformed (`collection.invalid-request`) or breaks an environment rule,
+        such as a variable name that cannot appear in a placeholder, a name starting with `$` or the
+        same variable twice (`collection.invalid-environment`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    CollectionNotFound:
+      description: 'No collection has this id (`collection.not-found`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    CollectionOrTemplateNotFound:
+      description: >-
+        No collection has this id (`collection.not-found`), or it has no template with this id
+        (`collection.template-not-found`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    EnvironmentNotFound:
+      description: 'No environment has this id (`collection.environment-not-found`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    CollectionNameTaken:
+      description: 'Another collection already has this name (`collection.name-taken`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    TemplateNameTaken:
+      description: >-
+        Another template in the collection already has this name
+        (`collection.template-name-taken`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    EnvironmentNameTaken:
+      description: 'Another environment already has this name (`collection.environment-name-taken`).'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+  schemas:
+    ProblemDetail:
+      $ref: 'common.yaml#/components/schemas/ProblemDetail'
+    BrokerType:
+      $ref: 'common.yaml#/components/schemas/BrokerType'
+    UnresolvedVariablesProblem:
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetail'
+        - type: object
+          required: [missing, unknownBuiltIns]
+          properties:
+            missing:
+              type: array
+              description: Variables without a value, in the order they first appear.
+              items:
+                type: string
+            unknownBuiltIns:
+              type: array
+              description: '`$` names that are not built-in variables, such as `$guid`.'
+              items:
+                type: string
+    Name:
+      type: string
+      minLength: 1
+      maxLength: 100
+      description: Surrounding whitespace is removed.
+    CollectionRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          $ref: '#/components/schemas/Name'
+    CollectionSummaryResponse:
+      type: object
+      required: [id, name, templateCount, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        templateCount:
+          type: integer
+          format: int32
+          minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CollectionResponse:
+      type: object
+      required: [id, name, templates, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        templates:
+          type: array
+          description: In the collection's order.
+          items:
+            $ref: '#/components/schemas/TemplateResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TemplateRequest:
+      type: object
+      required: [name, brokerType, destination, payload]
+      properties:
+        name:
+          $ref: '#/components/schemas/Name'
+        brokerType:
+          $ref: '#/components/schemas/BrokerType'
+        destination:
+          $ref: '#/components/schemas/Destination'
+        key:
+          type: string
+          minLength: 1
+          description: Omit it for no key. Rejected for brokers without message keys.
+        headers:
+          $ref: '#/components/schemas/Headers'
+        payload:
+          $ref: '#/components/schemas/Payload'
+    TemplateResponse:
+      type: object
+      required: [id, name, brokerType, destination, headers, payload]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        brokerType:
+          $ref: '#/components/schemas/BrokerType'
+        destination:
+          $ref: '#/components/schemas/Destination'
+        key:
+          type: string
+          description: Absent when the template has no key.
+        headers:
+          $ref: '#/components/schemas/Headers'
+        payload:
+          $ref: '#/components/schemas/Payload'
+    ResolveTemplateRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+          format: uuid
+          description: Omit it to resolve built-in variables only.
+    ResolvedMessageResponse:
+      type: object
+      description: >-
+        The message to produce, in the shape of the matching `POST /api/v1/messages` request
+        properties.
+      required: [brokerType, destination, headers, payload]
+      properties:
+        brokerType:
+          $ref: '#/components/schemas/BrokerType'
+        destination:
+          $ref: '#/components/schemas/Destination'
+        key:
+          type: string
+          description: Absent when the template has no key or it resolved to nothing.
+        headers:
+          $ref: '#/components/schemas/Headers'
+        payload:
+          $ref: '#/components/schemas/Payload'
+    Destination:
+      description: >-
+        A topic, or an exchange and routing key, with the same shape as the messaging API's
+        destination. In a template, the texts may hold placeholders.
+      oneOf:
+        - $ref: '#/components/schemas/TopicDestination'
+        - $ref: '#/components/schemas/ExchangeDestination'
+      discriminator:
+        propertyName: type
+        mapping:
+          TOPIC: '#/components/schemas/TopicDestination'
+          EXCHANGE: '#/components/schemas/ExchangeDestination'
+    TopicDestination:
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          type: string
+          const: TOPIC
+        name:
+          type: string
+          minLength: 1
+    ExchangeDestination:
+      type: object
+      required: [type, name, routingKey]
+      properties:
+        type:
+          type: string
+          const: EXCHANGE
+        name:
+          type: string
+          minLength: 1
+        routingKey:
+          type: string
+          description: May be empty, as fanout exchanges ignore it.
+    Headers:
+      type: object
+      description: Header names and values, in order. In a template, both may hold placeholders.
+      propertyNames:
+        minLength: 1
+      additionalProperties:
+        type: string
+    Payload:
+      type: object
+      required: [format, content]
+      properties:
+        format:
+          type: string
+          enum: [JSON, TEXT]
+          description: '`JSON` payloads are checked for well-formedness when produced, not when saved.'
+        content:
+          type: string
+    Variable:
+      type: object
+      required: [name, value]
+      properties:
+        name:
+          type: string
+          pattern: '^[A-Za-z_][A-Za-z0-9_.-]*$'
+          description: As written in a `{{name}}` placeholder. Names starting with `$` are reserved.
+        value:
+          type: string
+          description: May be empty. Inserted as written; a value is never resolved again.
+    EnvironmentRequest:
+      type: object
+      required: [name, variables]
+      properties:
+        name:
+          $ref: '#/components/schemas/Name'
+        variables:
+          type: array
+          description: In the order to show them; each name at most once.
+          items:
+            $ref: '#/components/schemas/Variable'
+    EnvironmentResponse:
+      type: object
+      required: [id, name, variables, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        variables:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variable'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

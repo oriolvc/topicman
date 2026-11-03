@@ -1,0 +1,62 @@
+package com.oriolvc.topicman.collection.application;
+
+import com.oriolvc.topicman.collection.domain.Environment;
+import com.oriolvc.topicman.collection.domain.EnvironmentId;
+import com.oriolvc.topicman.collection.domain.EnvironmentName;
+import com.oriolvc.topicman.collection.domain.EnvironmentNameTakenException;
+import com.oriolvc.topicman.collection.domain.EnvironmentRepository;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/** Stores rehydrated copies, so a test only sees what a use case saved. */
+class InMemoryEnvironmentRepository implements EnvironmentRepository {
+
+    private final Map<EnvironmentId, Environment> environments = new LinkedHashMap<>();
+
+    @Override
+    public void save(Environment environment) {
+        var taken = environments.values().stream()
+                .anyMatch(other ->
+                        other.name().equals(environment.name()) && !other.id().equals(environment.id()));
+        if (taken) {
+            throw new EnvironmentNameTakenException(environment.name());
+        }
+        environments.put(environment.id(), copyOf(environment));
+    }
+
+    @Override
+    public Optional<Environment> findById(EnvironmentId id) {
+        return Optional.ofNullable(environments.get(id)).map(InMemoryEnvironmentRepository::copyOf);
+    }
+
+    @Override
+    public List<Environment> findAll() {
+        return environments.values().stream()
+                .sorted(Comparator.comparing(environment -> environment.name().value()))
+                .map(InMemoryEnvironmentRepository::copyOf)
+                .toList();
+    }
+
+    @Override
+    public boolean existsByName(EnvironmentName name) {
+        return environments.values().stream()
+                .anyMatch(environment -> environment.name().equals(name));
+    }
+
+    @Override
+    public void deleteById(EnvironmentId id) {
+        environments.remove(id);
+    }
+
+    private static Environment copyOf(Environment environment) {
+        return Environment.rehydrate(
+                environment.id(),
+                environment.name(),
+                environment.variables(),
+                environment.createdAt(),
+                environment.updatedAt());
+    }
+}

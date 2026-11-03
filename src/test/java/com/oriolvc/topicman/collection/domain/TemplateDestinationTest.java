@@ -15,6 +15,12 @@ class TemplateDestinationTest {
     }
 
     @Test
+    void tellsItsKind() {
+        assertThat(TemplateDestination.topic("orders").kind()).isEqualTo(DestinationKind.TOPIC);
+        assertThat(TemplateDestination.exchange("events", "").kind()).isEqualTo(DestinationKind.EXCHANGE);
+    }
+
+    @Test
     void rejectsABlankTopicName() {
         assertThatThrownBy(() -> TemplateDestination.topic(" ")).isInstanceOf(InvalidTemplateException.class);
     }

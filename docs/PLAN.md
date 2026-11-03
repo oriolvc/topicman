@@ -77,8 +77,8 @@ Out (post-MVP):
 ## Phase 4 — Collections and environments
 
 - [x] `collection` domain: `MessageTemplate`, `Collection`, `Environment`, variable resolution
-- [ ] OpenAPI spec for collections and environments, reviewed before coding
-- [ ] Persistence and REST API for collections and environments
+- [x] OpenAPI spec for collections and environments, reviewed before coding
+- [x] Persistence and REST API for collections and environments
 - [ ] UI: save from the produce screen, browse collections, switch environment
 - [ ] YAML export and import
 

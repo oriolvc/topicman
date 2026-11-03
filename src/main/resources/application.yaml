@@ -30,6 +30,8 @@ springdoc:
         url: /openapi/connection.yaml
       - name: Messaging
         url: /openapi/messaging.yaml
+      - name: Collections
+        url: /openapi/collection.yaml
 
 logging:
   level:
