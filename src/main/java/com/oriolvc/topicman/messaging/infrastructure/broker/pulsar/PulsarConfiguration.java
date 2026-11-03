@@ -19,6 +19,11 @@ class PulsarConfiguration {
     }
 
     @Bean
+    PulsarConnectionTester pulsarConnectionTester(PulsarClients clients, PulsarProperties properties) {
+        return new PulsarConnectionTester(clients, properties);
+    }
+
+    @Bean
     PulsarMessageReader pulsarMessageReader(PulsarClients clients, PulsarProperties properties) {
         return new PulsarMessageReader(clients, properties);
     }

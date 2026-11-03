@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.ConnectionTester;
 import com.oriolvc.topicman.messaging.domain.Destination;
 import com.oriolvc.topicman.messaging.domain.Message;
 import com.oriolvc.topicman.messaging.domain.MessageProducer;
@@ -85,6 +86,11 @@ class RabbitMqAdapterContractIT extends BrokerAdapterContractTest {
     @Override
     protected MessageReader createReader() {
         return new RabbitMqMessageReader(connections);
+    }
+
+    @Override
+    protected ConnectionTester createTester() {
+        return new RabbitMqConnectionTester(connections);
     }
 
     @Override
@@ -190,6 +196,23 @@ class RabbitMqAdapterContractIT extends BrokerAdapterContractTest {
         assertThat(producer.send(endpoint(), newDestination(), Message.of(Payload.text("ok")))
                         .reference())
                 .isNotBlank();
+    }
+
+    @Test
+    void namesTheBrokerVersionWhenTheTestPasses() {
+        var outcome = tester.test(endpoint());
+
+        assertThat(outcome.detail()).matches("RabbitMQ 4\\.2\\.\\d+ at .+");
+    }
+
+    @Test
+    void failsTheTestWithWrongCredentialsWithoutShowingThem() {
+        var address = RABBITMQ.getAmqpUrl().replace("amqp://", "amqp://intruder:not-the-password@");
+
+        var outcome = tester.test(new BrokerEndpoint(BrokerType.RABBITMQ, address));
+
+        assertThat(outcome.succeeded()).isFalse();
+        assertThat(outcome.detail()).doesNotContain("not-the-password");
     }
 
     @Test

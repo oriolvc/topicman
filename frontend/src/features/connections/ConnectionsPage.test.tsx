@@ -151,6 +151,51 @@ describe('ConnectionsPage', () => {
     expect(screen.getByRole('dialog', { name: 'New connection' })).toBeDefined();
   });
 
+  it('tests a connection and shows what answered', async () => {
+    const user = userEvent.setup();
+    serveConnections([aConnection({ id: 'kafka-1', name: 'Local Kafka' })]);
+    const tested: unknown[] = [];
+    server.use(
+      http.post('/api/v1/connection-tests', async ({ request }) => {
+        tested.push(await request.json());
+        return HttpResponse.json({
+          status: 'SUCCEEDED',
+          detail: 'Kafka cluster abc, 1 broker',
+          durationMs: 42,
+        });
+      }),
+    );
+    renderAppAt('/connections');
+
+    await user.click(await screen.findByRole('button', { name: 'Test Local Kafka' }));
+
+    expect(await screen.findByText('Local Kafka works')).toBeDefined();
+    expect(screen.getByText('Kafka cluster abc, 1 broker (42 ms)')).toBeDefined();
+    expect(tested).toEqual([{ connectionId: 'kafka-1' }]);
+  });
+
+  it('shows why a connection test failed', async () => {
+    const user = userEvent.setup();
+    serveConnections([aConnection({ name: 'Local Kafka' })]);
+    server.use(
+      http.post('/api/v1/connection-tests', () =>
+        HttpResponse.json({
+          status: 'FAILED',
+          detail: 'Cannot reach the Kafka broker at localhost:9092: Connection refused',
+          durationMs: 3,
+        }),
+      ),
+    );
+    renderAppAt('/connections');
+
+    await user.click(await screen.findByRole('button', { name: 'Test Local Kafka' }));
+
+    expect(await screen.findByText('Local Kafka failed the test')).toBeDefined();
+    expect(
+      screen.getByText('Cannot reach the Kafka broker at localhost:9092: Connection refused'),
+    ).toBeDefined();
+  });
+
   it('notifies other failures with the problem detail', async () => {
     const user = userEvent.setup();
     serveConnections([]);

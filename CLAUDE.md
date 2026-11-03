@@ -48,8 +48,9 @@ Hexagonal architecture, packaged by bounded context, then by layer.
   ArchUnit tests enforce this; never weaken or skip them.
 - Contexts talk through application-layer APIs or domain events, never through another context's
   `domain` or `infrastructure` internals.
-- Each broker is one outbound adapter implementing `MessageProducer` and `MessageReader`. Adding a
-  broker must not change `domain` or `application` code.
+- Each broker is one outbound adapter implementing `MessageProducer`, `MessageReader` and
+  `ConnectionTester`. Adding a broker must not change `application` code; in `domain`, only its
+  `BrokerType` and `BrokerCapabilities`.
 
 ## Core domain rules
 

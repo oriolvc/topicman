@@ -19,6 +19,11 @@ class RabbitMqConfiguration {
     }
 
     @Bean
+    RabbitMqConnectionTester rabbitMqConnectionTester(RabbitMqConnections connections) {
+        return new RabbitMqConnectionTester(connections);
+    }
+
+    @Bean
     RabbitMqMessageReader rabbitMqMessageReader(RabbitMqConnections connections) {
         return new RabbitMqMessageReader(connections);
     }

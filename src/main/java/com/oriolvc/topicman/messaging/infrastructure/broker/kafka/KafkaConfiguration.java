@@ -14,6 +14,11 @@ class KafkaConfiguration {
     }
 
     @Bean
+    KafkaConnectionTester kafkaConnectionTester(KafkaProperties properties) {
+        return new KafkaConnectionTester(properties);
+    }
+
+    @Bean
     KafkaMessageReader kafkaMessageReader(KafkaProperties properties) {
         return new KafkaMessageReader(properties);
     }

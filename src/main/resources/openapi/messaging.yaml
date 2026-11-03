@@ -13,6 +13,7 @@ tags:
   - name: Messages
   - name: Consume sessions
   - name: Brokers
+  - name: Connection tests
 paths:
   /api/v1/messages:
     post:
@@ -74,6 +75,50 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/BrokerResponse'
+  /api/v1/connection-tests:
+    post:
+      operationId: testConnection
+      tags: [Connection tests]
+      summary: Check that a saved connection reaches its broker
+      description: >-
+        Talks to the broker the way producing and consuming will, without producing, consuming or
+        creating anything:
+
+
+        - Kafka: describes the cluster through the bootstrap servers, then checks that every broker
+          the cluster advertises accepts a connection from this server. A broker that advertises an
+          address this server cannot reach, a common Docker setup mistake, fails the test.
+
+        - Pulsar: looks up a topic with automatic topic creation off, which proves the service URL
+          answers; no topic is created.
+
+        - RabbitMQ: opens an AMQP connection (TCP, handshake, authentication and virtual host) and
+          closes it.
+
+
+        A broker that cannot be reached is a test result, not an error: the answer is `200` with
+        `status: FAILED`. The test takes at most the broker's connect and open timeouts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestConnectionRequest'
+      responses:
+        '200':
+          description: The test ran; `status` says whether the broker answered as expected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionTestResponse'
+        '400':
+          description: 'The request is malformed (`messaging.invalid-request`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          $ref: '#/components/responses/ConnectionNotFound'
   /api/v1/consume-sessions:
     post:
       operationId: openConsumeSession
@@ -331,6 +376,31 @@ components:
           description: >-
             Whether a produced message may have a `key`. When false, a key is rejected with
             `messaging.invalid-message`.
+    TestConnectionRequest:
+      type: object
+      required: [connectionId]
+      properties:
+        connectionId:
+          type: string
+          format: uuid
+    ConnectionTestResponse:
+      type: object
+      required: [status, detail, durationMs]
+      properties:
+        status:
+          type: string
+          enum: [SUCCEEDED, FAILED]
+        detail:
+          type: string
+          description: >-
+            What the test found, for people: on success what answered (such as `Kafka cluster
+            q1Sh-9_ISia_zwGINzRvyQ, 3 brokers` or `RabbitMQ 4.2.0`), on failure why it failed. Never
+            contains credentials.
+        durationMs:
+          type: integer
+          format: int64
+          minimum: 0
+          description: How long the test took, in milliseconds.
     StartPosition:
       type: string
       enum: [LATEST, EARLIEST]

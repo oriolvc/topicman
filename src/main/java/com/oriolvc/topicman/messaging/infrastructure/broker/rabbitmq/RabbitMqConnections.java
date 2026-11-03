@@ -52,13 +52,14 @@ final class RabbitMqConnections implements AutoCloseable {
 
     private Connection openUnchecked(BrokerEndpoint endpoint) {
         try {
-            return open(endpoint);
+            return openNew(endpoint);
         } catch (ConnectionFailedException e) {
             throw new UncheckedConnectionFailure(e);
         }
     }
 
-    private Connection open(BrokerEndpoint endpoint) throws ConnectionFailedException {
+    /** A new connection that the caller owns and closes; not shared. */
+    Connection openNew(BrokerEndpoint endpoint) throws ConnectionFailedException {
         var factory = new ConnectionFactory();
         try {
             factory.setUri(endpoint.address());

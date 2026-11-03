@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.ConnectionTester;
 import com.oriolvc.topicman.messaging.domain.Destination;
 import com.oriolvc.topicman.messaging.domain.Message;
 import com.oriolvc.topicman.messaging.domain.MessageProducer;
@@ -70,6 +71,11 @@ class PulsarAdapterContractIT extends BrokerAdapterContractTest {
     @Override
     protected MessageReader createReader() {
         return new PulsarMessageReader(clients, PROPERTIES);
+    }
+
+    @Override
+    protected ConnectionTester createTester() {
+        return new PulsarConnectionTester(clients, PROPERTIES);
     }
 
     @Override
@@ -177,6 +183,15 @@ class PulsarAdapterContractIT extends BrokerAdapterContractTest {
         assertThatThrownBy(() -> reader.open(endpoint, newDestination(), StartPosition.LATEST))
                 .isInstanceOf(ReadFailedException.class)
                 .hasMessageStartingWith("Cannot reach the Pulsar broker at pulsar://localhost:1,localhost:2: ");
+    }
+
+    @Test
+    void createsNoTopicWhenTestingTheConnection() {
+        var topicsBefore = admin("GET", "", null);
+
+        tester.test(endpoint());
+
+        assertThat(admin("GET", "", null)).isEqualTo(topicsBefore);
     }
 
     @Test

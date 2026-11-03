@@ -6,6 +6,7 @@ import static org.awaitility.Awaitility.await;
 
 import com.oriolvc.topicman.messaging.domain.BrokerCapabilities;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.ConnectionTester;
 import com.oriolvc.topicman.messaging.domain.Destination;
 import com.oriolvc.topicman.messaging.domain.Headers;
 import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
@@ -47,12 +48,15 @@ public abstract class BrokerAdapterContractTest {
 
     protected MessageProducer producer;
     protected MessageReader reader;
+    protected ConnectionTester tester;
 
     protected abstract BrokerType brokerType();
 
     protected abstract MessageProducer createProducer();
 
     protected abstract MessageReader createReader();
+
+    protected abstract ConnectionTester createTester();
 
     protected abstract BrokerEndpoint endpoint();
 
@@ -83,6 +87,7 @@ public abstract class BrokerAdapterContractTest {
     void createAdapters() {
         producer = createProducer();
         reader = createReader();
+        tester = createTester();
     }
 
     @AfterEach
@@ -99,6 +104,7 @@ public abstract class BrokerAdapterContractTest {
     void reportsItsBrokerType() {
         assertThat(producer.brokerType()).isEqualTo(brokerType());
         assertThat(reader.brokerType()).isEqualTo(brokerType());
+        assertThat(tester.brokerType()).isEqualTo(brokerType());
     }
 
     @Test
@@ -230,6 +236,23 @@ public abstract class BrokerAdapterContractTest {
         assertThat(Duration.between(start, Instant.now()))
                 .as("a refused connection fails opening the reader without waiting for the open timeout")
                 .isLessThan(UNREACHABLE_TIMEOUT);
+    }
+
+    @Test
+    void passesTheConnectionTestOfAReachableBroker() {
+        var outcome = tester.test(endpoint());
+
+        assertThat(outcome.succeeded()).as(outcome.detail()).isTrue();
+    }
+
+    @Test
+    void failsFastTheConnectionTestOfAnUnreachableBroker() {
+        var start = Instant.now();
+
+        var outcome = tester.test(unreachableEndpoint());
+
+        assertThat(outcome.succeeded()).isFalse();
+        assertThat(Duration.between(start, Instant.now())).isLessThan(UNREACHABLE_TIMEOUT);
     }
 
     @Test

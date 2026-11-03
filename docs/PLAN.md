@@ -70,7 +70,7 @@ Out (post-MVP):
 - [x] Pulsar adapter (producer + Reader API) passing the contract test
 - [x] RabbitMQ adapter (publisher confirms + temporary exclusive queue) passing the contract test
 - [x] Broker capability model in the domain (e.g. `canReadFromBeginning`) exposed by the API
-- [ ] Test-connection use case for all three brokers, with a test action on the connections screen
+- [x] Test-connection use case for all three brokers, with a test action on the connections screen
 - [x] Produce to an unreachable broker fails fast with a clear problem (today Kafka blocks Send for
       about 10s, then reports "Topic not present in metadata")
 

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.ConnectionTester;
 import com.oriolvc.topicman.messaging.domain.Destination;
 import com.oriolvc.topicman.messaging.domain.Headers;
 import com.oriolvc.topicman.messaging.domain.Message;
@@ -33,6 +34,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.KafkaContainer;
@@ -79,6 +82,11 @@ class KafkaAdapterContractIT extends BrokerAdapterContractTest {
     @Override
     protected MessageReader createReader() {
         return new KafkaMessageReader(PROPERTIES);
+    }
+
+    @Override
+    protected ConnectionTester createTester() {
+        return new KafkaConnectionTester(PROPERTIES);
     }
 
     @Override
@@ -207,6 +215,38 @@ class KafkaAdapterContractIT extends BrokerAdapterContractTest {
         assertThatThrownBy(() -> reader.open(endpoint, newDestination(), StartPosition.LATEST))
                 .isInstanceOf(ReadFailedException.class)
                 .hasMessageStartingWith("Cannot reach the Kafka broker at localhost:1,localhost:2: ");
+    }
+
+    @Test
+    void namesTheClusterAndItsBrokersWhenTheTestPasses() {
+        var outcome = tester.test(endpoint());
+
+        assertThat(outcome.detail()).matches("Kafka cluster \\S+, 1 broker");
+    }
+
+    @Test
+    void failsTheTestWhenTheBrokerAdvertisesAnAddressThisServerCannotReach() {
+        try (var misconfigured = new GenericContainer<>("apache/kafka:4.2.1")
+                .withExposedPorts(9092)
+                .withEnv(Map.of(
+                        "KAFKA_NODE_ID", "1",
+                        "KAFKA_PROCESS_ROLES", "broker,controller",
+                        "KAFKA_CONTROLLER_QUORUM_VOTERS", "1@localhost:9093",
+                        "KAFKA_CONTROLLER_LISTENER_NAMES", "CONTROLLER",
+                        "KAFKA_LISTENERS", "PLAINTEXT://:9092,CONTROLLER://:9093",
+                        // The mistake: clients are told to use an address only containers resolve.
+                        "KAFKA_ADVERTISED_LISTENERS", "PLAINTEXT://unreachable.invalid:9092",
+                        "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1"))
+                .waitingFor(Wait.forLogMessage(".*Kafka Server started.*", 1))) {
+            misconfigured.start();
+            var endpoint = new BrokerEndpoint(
+                    BrokerType.KAFKA, misconfigured.getHost() + ":" + misconfigured.getMappedPort(9092));
+
+            var outcome = tester.test(endpoint);
+
+            assertThat(outcome.succeeded()).isFalse();
+            assertThat(outcome.detail()).contains("advertised");
+        }
     }
 
     @Test

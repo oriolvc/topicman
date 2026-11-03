@@ -4,6 +4,7 @@ import {
   type CreateConnectionRequest,
   type UpdateConnectionRequest,
 } from '../../api/connection';
+import { messagingApi } from '../../api/messaging';
 import { unwrap } from '../../api/problem';
 import { connectionKeys } from '../../shared/connections';
 
@@ -46,5 +47,13 @@ export function useDeleteConnection() {
       );
     },
     onSuccess: invalidate,
+  });
+}
+
+/** Checks that a saved connection reaches its broker; a failed check is a result, not an error. */
+export function useTestConnection() {
+  return useMutation({
+    mutationFn: async (connectionId: string) =>
+      unwrap(await messagingApi.POST('/api/v1/connection-tests', { body: { connectionId } })),
   });
 }
