@@ -202,11 +202,20 @@ class KafkaAdapterContractIT extends BrokerAdapterContractTest {
     }
 
     @Test
-    void namesTheBootstrapServersItCannotReach() {
+    void namesTheBootstrapServersItCannotProduceTo() {
         var endpoint = new BrokerEndpoint(BrokerType.KAFKA, "localhost:1,localhost:2");
 
         assertThatThrownBy(() -> producer.send(endpoint, newDestination(), Message.of(Payload.text("x"))))
                 .isInstanceOf(ProduceFailedException.class)
+                .hasMessageStartingWith("Cannot reach the Kafka broker at localhost:1,localhost:2: ");
+    }
+
+    @Test
+    void namesTheBootstrapServersItCannotReadFrom() {
+        var endpoint = new BrokerEndpoint(BrokerType.KAFKA, "localhost:1,localhost:2");
+
+        assertThatThrownBy(() -> reader.open(endpoint, newDestination(), StartPosition.LATEST))
+                .isInstanceOf(ReadFailedException.class)
                 .hasMessageStartingWith("Cannot reach the Kafka broker at localhost:1,localhost:2: ");
     }
 

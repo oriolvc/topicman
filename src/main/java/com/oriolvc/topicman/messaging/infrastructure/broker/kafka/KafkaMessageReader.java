@@ -22,13 +22,17 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 /**
  * Reads Kafka topics without affecting real consumers (ADR 0003): no {@code group.id}, partitions
  * are assigned rather than subscribed, offsets are never committed and topics are never created.
+ * The bootstrap servers are probed first, so an unreachable broker fails at once instead of at the
+ * open timeout.
  */
 final class KafkaMessageReader implements MessageReader {
 
     private final Duration openTimeout;
+    private final Duration connectTimeout;
 
     KafkaMessageReader(KafkaProperties properties) {
         this.openTimeout = properties.openTimeout();
+        this.connectTimeout = properties.connectTimeout();
     }
 
     @Override
@@ -40,6 +44,10 @@ final class KafkaMessageReader implements MessageReader {
     public MessageStream open(BrokerEndpoint endpoint, Destination destination, StartPosition startPosition) {
         if (!(destination instanceof Destination.Topic(var topic))) {
             throw new InvalidDestinationException("Kafka reads from topics, not from " + destination);
+        }
+        var unreachable = KafkaBootstrapProbe.unreachableMessage(endpoint.address(), connectTimeout);
+        if (unreachable.isPresent()) {
+            throw new ReadFailedException(unreachable.get());
         }
         Consumer<String, byte[]> consumer;
         try {

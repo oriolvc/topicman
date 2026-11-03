@@ -19,9 +19,10 @@ final class KafkaBootstrapProbe {
 
     /**
      * @param bootstrapServers comma-separated {@code host:port} list, IPv6 hosts in brackets
-     * @return why none of the servers could be reached, or empty if one of them accepted a connection
+     * @return a message saying why none of the servers could be reached, or empty if one of them
+     *     accepted a connection
      */
-    static Optional<String> unreachableReason(String bootstrapServers, Duration connectTimeout) {
+    static Optional<String> unreachableMessage(String bootstrapServers, Duration connectTimeout) {
         var reasons = new ArrayList<String>();
         for (var server : servers(bootstrapServers)) {
             try (var socket = new Socket()) {
@@ -31,7 +32,7 @@ final class KafkaBootstrapProbe {
                 reasons.add(server + " (" + describe(e) + ")");
             }
         }
-        return Optional.of(String.join(", ", reasons));
+        return Optional.of("Cannot reach the Kafka broker at " + bootstrapServers + ": " + String.join(", ", reasons));
     }
 
     private static List<String> servers(String bootstrapServers) {

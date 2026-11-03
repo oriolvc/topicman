@@ -54,10 +54,9 @@ final class KafkaMessageProducer implements MessageProducer, AutoCloseable {
             throw new InvalidDestinationException("Kafka produces to topics, not to " + destination);
         }
         if (!producers.containsKey(endpoint)) {
-            var unreachable = KafkaBootstrapProbe.unreachableReason(endpoint.address(), connectTimeout);
+            var unreachable = KafkaBootstrapProbe.unreachableMessage(endpoint.address(), connectTimeout);
             if (unreachable.isPresent()) {
-                throw new ProduceFailedException(
-                        "Cannot reach the Kafka broker at " + endpoint.address() + ": " + unreachable.get());
+                throw new ProduceFailedException(unreachable.get());
             }
         }
         Producer<String, byte[]> producer;

@@ -215,9 +215,16 @@ public abstract class BrokerAdapterContractTest {
     }
 
     @Test
-    void failsToReadFromAnUnreachableBroker() {
-        assertThatThrownBy(() -> reader.open(unreachableEndpoint(), newDestination(), StartPosition.LATEST))
+    void failsFastToReadFromAnUnreachableBroker() {
+        var destination = newDestination();
+        var start = Instant.now();
+
+        assertThatThrownBy(() -> reader.open(unreachableEndpoint(), destination, StartPosition.LATEST))
                 .isInstanceOf(ReadFailedException.class);
+
+        assertThat(Duration.between(start, Instant.now()))
+                .as("a refused connection fails opening the reader without waiting for the open timeout")
+                .isLessThan(UNREACHABLE_TIMEOUT);
     }
 
     @Test
