@@ -1,6 +1,4 @@
-import type { BrokerType } from '../api/connection';
-import type { Destination } from '../api/messaging';
-import { DESTINATION_TYPES } from './brokers';
+import type { Broker, Destination } from '../api/messaging';
 
 /** The destination fields of a form that produces to or consumes from a destination. */
 export type DestinationValues = {
@@ -9,19 +7,16 @@ export type DestinationValues = {
   routingKey: string;
 };
 
-export function destinationError(
-  values: DestinationValues,
-  brokerType: BrokerType,
-): string | undefined {
+export function destinationError(values: DestinationValues, broker: Broker): string | undefined {
   if (values.destinationName.trim() !== '') {
     return undefined;
   }
-  return DESTINATION_TYPES[brokerType] === 'TOPIC' ? 'Enter a topic' : 'Enter an exchange';
+  return broker.destinationType === 'TOPIC' ? 'Enter a topic' : 'Enter an exchange';
 }
 
-export function toDestination(values: DestinationValues, brokerType: BrokerType): Destination {
+export function toDestination(values: DestinationValues, broker: Broker): Destination {
   const name = values.destinationName.trim();
-  return DESTINATION_TYPES[brokerType] === 'TOPIC'
+  return broker.destinationType === 'TOPIC'
     ? { type: 'TOPIC', name }
     : { type: 'EXCHANGE', name, routingKey: values.routingKey };
 }

@@ -107,6 +107,18 @@ class MessagesApiIT {
     }
 
     @Test
+    void rejectsAKeyForABrokerWithoutMessageKeys() {
+        var connection = aConnection(BrokerType.RABBITMQ, "amqp://localhost:5672");
+
+        var result = produce("""
+                {"connectionId": "%s", "destination": {"type": "EXCHANGE", "name": "orders", "routingKey": ""},
+                 "key": "order-42", "payload": {"format": "TEXT", "content": "hi"}}
+                """.formatted(connection));
+
+        assertProblem(result, HttpStatus.BAD_REQUEST, "messaging.invalid-message");
+    }
+
+    @Test
     void rejectsARequestThatBreaksTheSchema() {
         var connection = aConnection(BrokerType.KAFKA, KAFKA.getBootstrapServers());
 

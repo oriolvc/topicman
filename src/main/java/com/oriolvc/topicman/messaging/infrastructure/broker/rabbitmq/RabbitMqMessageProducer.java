@@ -3,7 +3,6 @@ package com.oriolvc.topicman.messaging.infrastructure.broker.rabbitmq;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
 import com.oriolvc.topicman.messaging.domain.Destination;
 import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
-import com.oriolvc.topicman.messaging.domain.InvalidMessageException;
 import com.oriolvc.topicman.messaging.domain.Message;
 import com.oriolvc.topicman.messaging.domain.MessageProducer;
 import com.oriolvc.topicman.messaging.domain.PayloadFormat;
@@ -24,6 +23,7 @@ import java.util.concurrent.TimeoutException;
  * Publishes to an exchange with publisher confirms, so a send succeeds only once the broker took
  * responsibility for the message. Each send uses its own channel: a channel is not thread-safe,
  * and the broker closes it when the exchange does not exist, which must not affect other sends.
+ * RabbitMQ has no message key; the application layer rejects one before it gets here.
  */
 final class RabbitMqMessageProducer implements MessageProducer {
 
@@ -47,10 +47,6 @@ final class RabbitMqMessageProducer implements MessageProducer {
     public SendReceipt send(BrokerEndpoint endpoint, Destination destination, Message message) {
         if (!(destination instanceof Destination.Exchange(var exchange, var routingKey))) {
             throw new InvalidDestinationException("RabbitMQ produces to exchanges, not to " + destination);
-        }
-        if (message.key() != null) {
-            throw new InvalidMessageException(
-                    "RabbitMQ messages have no key; they are routed by the destination's routing key");
         }
         com.rabbitmq.client.Connection connection;
         try {

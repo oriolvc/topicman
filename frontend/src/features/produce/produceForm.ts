@@ -1,6 +1,4 @@
-import type { BrokerType } from '../../api/connection';
-import type { Payload, ProduceMessageRequest } from '../../api/messaging';
-import { DESTINATION_TYPES } from '../../shared/brokers';
+import type { Broker, Payload, ProduceMessageRequest } from '../../api/messaging';
 import { destinationError, toDestination, type DestinationValues } from '../../shared/destinations';
 
 export const MAX_COPIES = 100;
@@ -35,24 +33,19 @@ export function initialProduceValues(connectionId: string | null): ProduceFormVa
   };
 }
 
-/** Only brokers whose messages have a key (RabbitMQ routes with the routing key instead). */
-export function supportsMessageKey(brokerType: BrokerType): boolean {
-  return DESTINATION_TYPES[brokerType] === 'TOPIC';
-}
-
 /**
- * Errors keyed by form path (`headers.0.name`), as `@mantine/form` expects. `brokerType` is the
+ * Errors keyed by form path (`headers.0.name`), as `@mantine/form` expects. `broker` is the
  * selected connection's broker, or `undefined` when no saved connection is selected.
  */
 export function validateProduce(
   values: ProduceFormValues,
-  brokerType: BrokerType | undefined,
+  broker: Broker | undefined,
 ): Record<string, string> {
   const errors: Record<string, string> = {};
-  if (brokerType === undefined) {
+  if (broker === undefined) {
     errors['connectionId'] = 'Choose a connection';
   } else {
-    const destination = destinationError(values, brokerType);
+    const destination = destinationError(values, broker);
     if (destination !== undefined) {
       errors['destinationName'] = destination;
     }
@@ -100,7 +93,7 @@ function isValidCopies(copies: number | string): copies is number {
 export function toProduceRequest(
   values: ProduceFormValues,
   connectionId: string,
-  brokerType: BrokerType,
+  broker: Broker,
 ): ProduceMessageRequest {
   const messageKey = values.messageKey;
   const headers = Object.fromEntries(
@@ -108,8 +101,8 @@ export function toProduceRequest(
   );
   return {
     connectionId,
-    destination: toDestination(values, brokerType),
-    ...(supportsMessageKey(brokerType) && messageKey !== '' && { key: messageKey }),
+    destination: toDestination(values, broker),
+    ...(broker.supportsMessageKeys && messageKey !== '' && { key: messageKey }),
     ...(values.headers.length > 0 && { headers }),
     payload: { format: values.payloadFormat, content: values.payload },
     copies: typeof values.copies === 'number' ? values.copies : 1,

@@ -1,3 +1,4 @@
+import { BROKERS } from '../../test/brokerFixtures';
 import { describe, expect, it } from 'vitest';
 import {
   initialProduceValues,
@@ -17,7 +18,7 @@ function values(overrides: Partial<ProduceFormValues>): ProduceFormValues {
 
 describe('validateProduce', () => {
   it('accepts a complete message', () => {
-    expect(validateProduce(values({}), 'KAFKA')).toEqual({});
+    expect(validateProduce(values({}), BROKERS.KAFKA)).toEqual({});
   });
 
   it('requires a saved connection', () => {
@@ -27,18 +28,20 @@ describe('validateProduce', () => {
   it('names the destination the broker expects', () => {
     const blank = values({ destinationName: ' ' });
 
-    expect(validateProduce(blank, 'PULSAR')['destinationName']).toBe('Enter a topic');
-    expect(validateProduce(blank, 'RABBITMQ')['destinationName']).toBe('Enter an exchange');
+    expect(validateProduce(blank, BROKERS.PULSAR)['destinationName']).toBe('Enter a topic');
+    expect(validateProduce(blank, BROKERS.RABBITMQ)['destinationName']).toBe('Enter an exchange');
   });
 
   it('rejects a payload that is not valid JSON', () => {
-    expect(validateProduce(values({ payload: '{"id":' }), 'KAFKA')).toEqual({
+    expect(validateProduce(values({ payload: '{"id":' }), BROKERS.KAFKA)).toEqual({
       payload: 'The payload is not valid JSON',
     });
   });
 
   it('accepts any text payload, even empty', () => {
-    expect(validateProduce(values({ payloadFormat: 'TEXT', payload: '' }), 'KAFKA')).toEqual({});
+    expect(validateProduce(values({ payloadFormat: 'TEXT', payload: '' }), BROKERS.KAFKA)).toEqual(
+      {},
+    );
   });
 
   it('rejects blank and repeated header names', () => {
@@ -50,7 +53,7 @@ describe('validateProduce', () => {
           { key: 'c', name: 'trace ', value: '3' },
         ],
       }),
-      'KAFKA',
+      BROKERS.KAFKA,
     );
 
     expect(errors).toEqual({
@@ -60,10 +63,10 @@ describe('validateProduce', () => {
   });
 
   it('limits the number of copies', () => {
-    expect(validateProduce(values({ copies: 101 }), 'KAFKA')['copies']).toBe(
+    expect(validateProduce(values({ copies: 101 }), BROKERS.KAFKA)['copies']).toBe(
       'Send between 1 and 100 copies',
     );
-    expect(validateProduce(values({ copies: '' }), 'KAFKA')['copies']).toBeDefined();
+    expect(validateProduce(values({ copies: '' }), BROKERS.KAFKA)['copies']).toBeDefined();
   });
 });
 
@@ -77,7 +80,7 @@ describe('toProduceRequest', () => {
         copies: 3,
       }),
       'connection-1',
-      'KAFKA',
+      BROKERS.KAFKA,
     );
 
     expect(request).toEqual({
@@ -91,7 +94,7 @@ describe('toProduceRequest', () => {
   });
 
   it('omits an empty key and no headers', () => {
-    const request = toProduceRequest(values({}), 'connection-1', 'PULSAR');
+    const request = toProduceRequest(values({}), 'connection-1', BROKERS.PULSAR);
 
     expect(request).not.toHaveProperty('key');
     expect(request).not.toHaveProperty('headers');
@@ -101,7 +104,7 @@ describe('toProduceRequest', () => {
     const request = toProduceRequest(
       values({ destinationName: 'events', routingKey: 'orders.created', messageKey: 'ignored' }),
       'connection-1',
-      'RABBITMQ',
+      BROKERS.RABBITMQ,
     );
 
     expect(request.destination).toEqual({

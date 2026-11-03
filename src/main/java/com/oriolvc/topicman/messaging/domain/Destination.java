@@ -6,7 +6,11 @@ import java.util.Objects;
 /** Where a message is produced to or read from. Each broker supports one kind of destination. */
 public sealed interface Destination permits Destination.Topic, Destination.Exchange {
 
-    boolean isSupportedBy(BrokerType brokerType);
+    DestinationType type();
+
+    default boolean isSupportedBy(BrokerType brokerType) {
+        return BrokerCapabilities.of(brokerType).supports(this);
+    }
 
     static Topic topic(String name) {
         return new Topic(name);
@@ -30,8 +34,8 @@ public sealed interface Destination permits Destination.Topic, Destination.Excha
         }
 
         @Override
-        public boolean isSupportedBy(BrokerType brokerType) {
-            return brokerType == BrokerType.KAFKA || brokerType == BrokerType.PULSAR;
+        public DestinationType type() {
+            return DestinationType.TOPIC;
         }
     }
 
@@ -50,8 +54,8 @@ public sealed interface Destination permits Destination.Topic, Destination.Excha
         }
 
         @Override
-        public boolean isSupportedBy(BrokerType brokerType) {
-            return brokerType == BrokerType.RABBITMQ;
+        public DestinationType type() {
+            return DestinationType.EXCHANGE;
         }
     }
 }

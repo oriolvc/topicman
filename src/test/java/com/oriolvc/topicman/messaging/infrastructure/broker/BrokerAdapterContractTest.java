@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
+import com.oriolvc.topicman.messaging.domain.BrokerCapabilities;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
 import com.oriolvc.topicman.messaging.domain.Destination;
 import com.oriolvc.topicman.messaging.domain.Headers;
@@ -67,11 +68,13 @@ public abstract class BrokerAdapterContractTest {
     /** A destination of a kind this broker does not support. */
     protected abstract Destination unsupportedDestination();
 
-    /** Whether EARLIEST shows retained messages; if not, it must behave like LATEST (ADR 0003). */
-    protected abstract boolean canReadFromBeginning();
-
-    /** Whether messages carry a partitioning key; if not, messages are produced and read without one. */
-    protected abstract boolean supportsMessageKeys();
+    /**
+     * What the API tells clients about this broker. The contract checks the adapter against it, so
+     * the two cannot drift apart.
+     */
+    protected final BrokerCapabilities capabilities() {
+        return BrokerCapabilities.of(brokerType());
+    }
 
     /** Asserts that reading left no consumer state behind, such as a group, subscription or queue. */
     protected abstract void assertNoReaderStateLeftFor(Destination destination);
@@ -103,7 +106,7 @@ public abstract class BrokerAdapterContractTest {
         var destination = newDestination();
         var message = Message.of(Payload.json("{\"id\":42}"))
                 .withHeaders(Headers.of(Map.of("source", "topicman", "trace-id", "abc-123")));
-        if (supportsMessageKeys()) {
+        if (capabilities().supportsMessageKeys()) {
             message = message.withKey("order-42");
         }
 
@@ -166,7 +169,9 @@ public abstract class BrokerAdapterContractTest {
         try (var stream = reader.open(endpoint(), destination, StartPosition.EARLIEST)) {
             producer.send(endpoint(), destination, Message.of(Payload.text("third")));
 
-            var expected = canReadFromBeginning() ? List.of("first", "second", "third") : List.of("third");
+            // If EARLIEST cannot show retained messages, it must behave like LATEST (ADR 0003).
+            var expected =
+                    capabilities().canReadFromBeginning() ? List.of("first", "second", "third") : List.of("third");
             assertThat(payloadsOf(pollUntil(stream, expected.size()))).isEqualTo(expected);
         }
     }

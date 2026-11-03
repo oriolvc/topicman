@@ -1,3 +1,4 @@
+import { BROKERS } from '../../test/brokerFixtures';
 import { describe, expect, it } from 'vitest';
 import { initialConsumeValues, toOpenRequest, validateConsume } from './consumeForm';
 
@@ -11,13 +12,15 @@ describe('validateConsume', () => {
   it('asks for the kind of destination the broker uses', () => {
     const values = initialConsumeValues('c-1');
 
-    expect(validateConsume(values, 'KAFKA')).toEqual({ destinationName: 'Enter a topic' });
-    expect(validateConsume(values, 'RABBITMQ')).toEqual({ destinationName: 'Enter an exchange' });
+    expect(validateConsume(values, BROKERS.KAFKA)).toEqual({ destinationName: 'Enter a topic' });
+    expect(validateConsume(values, BROKERS.RABBITMQ)).toEqual({
+      destinationName: 'Enter an exchange',
+    });
   });
 
   it('accepts a destination', () => {
     expect(
-      validateConsume({ ...initialConsumeValues('c-1'), destinationName: 'orders' }, 'KAFKA'),
+      validateConsume({ ...initialConsumeValues('c-1'), destinationName: 'orders' }, BROKERS.KAFKA),
     ).toEqual({});
   });
 });
@@ -30,7 +33,7 @@ describe('toOpenRequest', () => {
       startPosition: 'EARLIEST' as const,
     };
 
-    expect(toOpenRequest(values, 'c-1', 'KAFKA')).toEqual({
+    expect(toOpenRequest(values, 'c-1', BROKERS.KAFKA)).toEqual({
       connectionId: 'c-1',
       destination: { type: 'TOPIC', name: 'orders' },
       startPosition: 'EARLIEST',
@@ -45,7 +48,7 @@ describe('toOpenRequest', () => {
       startPosition: 'EARLIEST' as const,
     };
 
-    expect(toOpenRequest(values, 'c-1', 'RABBITMQ')).toEqual({
+    expect(toOpenRequest(values, 'c-1', BROKERS.RABBITMQ)).toEqual({
       connectionId: 'c-1',
       destination: { type: 'EXCHANGE', name: 'events', routingKey: 'orders.*' },
       startPosition: 'LATEST',

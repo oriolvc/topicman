@@ -12,6 +12,7 @@ info:
 tags:
   - name: Messages
   - name: Consume sessions
+  - name: Brokers
 paths:
   /api/v1/messages:
     post:
@@ -55,6 +56,24 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/ProduceFailedProblem'
+  /api/v1/brokers:
+    get:
+      operationId: listBrokers
+      tags: [Brokers]
+      summary: List the brokers this server can produce to and read from, with their capabilities
+      description: >-
+        One entry per supported broker, so clients can adapt their forms (destination fields, key,
+        start position) and explain a limitation instead of hiding it (ADR 0003). The list is fixed
+        while the server runs.
+      responses:
+        '200':
+          description: Every supported broker, in a stable order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrokerResponse'
   /api/v1/consume-sessions:
     post:
       operationId: openConsumeSession
@@ -287,6 +306,31 @@ components:
           description: >-
             Where the message was read, in the broker's terms (Kafka `topic-partition@offset`,
             Pulsar message id, RabbitMQ delivery tag).
+    BrokerType:
+      $ref: 'common.yaml#/components/schemas/BrokerType'
+    BrokerResponse:
+      type: object
+      required: [type, destinationType, canReadFromBeginning, supportsMessageKeys]
+      properties:
+        type:
+          $ref: '#/components/schemas/BrokerType'
+        destinationType:
+          type: string
+          enum: [TOPIC, EXCHANGE]
+          description: >-
+            The one kind of `Destination` this broker accepts: `TOPIC` for Kafka and Pulsar,
+            `EXCHANGE` for RabbitMQ. Any other kind is rejected with
+            `messaging.invalid-destination`.
+        canReadFromBeginning:
+          type: boolean
+          description: >-
+            Whether a consume session can start from `EARLIEST` and see retained messages. When
+            false, `EARLIEST` behaves like `LATEST`.
+        supportsMessageKeys:
+          type: boolean
+          description: >-
+            Whether a produced message may have a `key`. When false, a key is rejected with
+            `messaging.invalid-message`.
     StartPosition:
       type: string
       enum: [LATEST, EARLIEST]

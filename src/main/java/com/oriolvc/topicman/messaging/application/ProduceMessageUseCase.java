@@ -1,5 +1,6 @@
 package com.oriolvc.topicman.messaging.application;
 
+import com.oriolvc.topicman.messaging.domain.BrokerCapabilities;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoints;
 import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
 import com.oriolvc.topicman.messaging.domain.InvalidMessageException;
@@ -35,9 +36,13 @@ public class ProduceMessageUseCase {
         }
         JsonPayloads.requireWellFormed(command.message().payload());
         var endpoint = endpoints.of(command.connectionId());
-        if (!command.destination().isSupportedBy(endpoint.type())) {
+        var capabilities = BrokerCapabilities.of(endpoint.type());
+        if (!capabilities.supports(command.destination())) {
             throw new InvalidDestinationException(endpoint.type() + " does not support "
                     + command.destination().getClass().getSimpleName() + " destinations");
+        }
+        if (command.message().key() != null && !capabilities.supportsMessageKeys()) {
+            throw new InvalidMessageException(endpoint.type() + " messages have no key; omit it");
         }
         var producer = producers.get(endpoint.type());
         if (producer == null) {

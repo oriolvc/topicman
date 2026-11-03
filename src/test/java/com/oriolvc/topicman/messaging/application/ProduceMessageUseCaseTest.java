@@ -25,7 +25,8 @@ class ProduceMessageUseCaseTest {
 
     private final InMemoryBrokerEndpoints endpoints = new InMemoryBrokerEndpoints();
     private final FakeMessageProducer kafka = new FakeMessageProducer(BrokerType.KAFKA);
-    private final ProduceMessageUseCase useCase = new ProduceMessageUseCase(endpoints, List.of(kafka));
+    private final FakeMessageProducer rabbitMq = new FakeMessageProducer(BrokerType.RABBITMQ);
+    private final ProduceMessageUseCase useCase = new ProduceMessageUseCase(endpoints, List.of(kafka, rabbitMq));
     private final ConnectionId kafkaConnection = endpoints.add(BrokerType.KAFKA, "localhost:9092");
 
     @Test
@@ -84,6 +85,18 @@ class ProduceMessageUseCaseTest {
                         new ProduceMessageCommand(kafkaConnection, exchange, Message.of(Payload.text("hi")), 1)))
                 .isInstanceOf(InvalidDestinationException.class);
         assertThat(kafka.sent()).isEmpty();
+    }
+
+    @Test
+    void rejectsAKeyForABrokerWithoutMessageKeys() {
+        var rabbitMqConnection = endpoints.add(BrokerType.RABBITMQ, "amqp://localhost:5672");
+        var message = Message.of(Payload.text("hi")).withKey("order-42");
+        var exchange = Destination.exchange("orders", "created");
+
+        assertThatThrownBy(() -> useCase.execute(new ProduceMessageCommand(rabbitMqConnection, exchange, message, 1)))
+                .isInstanceOf(InvalidMessageException.class)
+                .hasMessageContaining("RABBITMQ");
+        assertThat(rabbitMq.sent()).isEmpty();
     }
 
     @ParameterizedTest

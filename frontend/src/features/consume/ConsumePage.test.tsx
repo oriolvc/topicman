@@ -1,8 +1,9 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse, sse, type ServerSentEventMessage } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { ConsumedMessageEvent, ConsumeSessionResponse } from '../../api/messaging';
+import { brokersHandler } from '../../test/brokerFixtures';
 import { aConnection } from '../../test/connectionFixtures';
 import { renderAppAt } from '../../test/renderWithProviders';
 import { server } from '../../test/server';
@@ -84,6 +85,26 @@ function payloadOf(message: HTMLElement): string | null {
 }
 
 describe('ConsumePage', () => {
+  beforeEach(() => {
+    server.use(brokersHandler);
+  });
+
+  it('explains that a broker which cannot read from the beginning only reads new messages', async () => {
+    const user = userEvent.setup();
+    const rabbit = aConnection({ id: 'rabbit-1', name: 'Shared RabbitMQ', brokerType: 'RABBITMQ' });
+    server.use(http.get('/api/v1/connections', () => HttpResponse.json([rabbit])));
+    renderAppAt('/consume');
+
+    await user.click(screen.getByRole('combobox', { name: /Connection/ }));
+    await user.click(await screen.findByRole('option', { name: 'Shared RabbitMQ (RabbitMQ)' }));
+
+    expect(
+      await screen.findByText('RabbitMQ only reads messages published from now'),
+    ).toBeDefined();
+    expect(screen.getByRole('radio', { name: 'Earliest' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('textbox', { name: /Exchange/ })).toBeDefined();
+  });
+
   it('streams messages newest first, with their key, headers and formatted payload', async () => {
     const user = userEvent.setup();
     const { opened, clients } = serveASession();

@@ -8,6 +8,8 @@ export type Destination = Schemas['Destination'];
 export type Headers = Schemas['Headers'];
 export type Payload = Schemas['Payload'];
 export type StartPosition = Schemas['StartPosition'];
+/** A broker this server supports, with what it can do (`GET /api/v1/brokers`). */
+export type Broker = Schemas['BrokerResponse'];
 export type ProduceMessageRequest = Schemas['ProduceMessageRequest'];
 export type ProduceMessageResponse = Schemas['ProduceMessageResponse'];
 export type ProduceFailedProblem = Schemas['ProduceFailedProblem'];

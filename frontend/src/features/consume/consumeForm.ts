@@ -1,5 +1,4 @@
-import type { BrokerType } from '../../api/connection';
-import type { OpenConsumeSessionRequest, StartPosition } from '../../api/messaging';
+import type { Broker, OpenConsumeSessionRequest, StartPosition } from '../../api/messaging';
 import { destinationError, toDestination, type DestinationValues } from '../../shared/destinations';
 
 export type ConsumeFormValues = DestinationValues & {
@@ -11,31 +10,27 @@ export function initialConsumeValues(connectionId: string | null): ConsumeFormVa
   return { connectionId, destinationName: '', routingKey: '', startPosition: 'LATEST' };
 }
 
-/** RabbitMQ only sees messages published after its temporary queue is bound (ADR 0003). */
-export function supportsEarliest(brokerType: BrokerType): boolean {
-  return brokerType !== 'RABBITMQ';
-}
-
-/** `brokerType` is the selected connection's broker, or `undefined` when none is selected. */
+/** `broker` is the selected connection's broker, or `undefined` when none is selected. */
 export function validateConsume(
   values: ConsumeFormValues,
-  brokerType: BrokerType | undefined,
+  broker: Broker | undefined,
 ): Record<string, string> {
-  if (brokerType === undefined) {
+  if (broker === undefined) {
     return { connectionId: 'Choose a connection' };
   }
-  const destination = destinationError(values, brokerType);
+  const destination = destinationError(values, broker);
   return destination === undefined ? {} : { destinationName: destination };
 }
 
 export function toOpenRequest(
   values: ConsumeFormValues,
   connectionId: string,
-  brokerType: BrokerType,
+  broker: Broker,
 ): OpenConsumeSessionRequest {
   return {
     connectionId,
-    destination: toDestination(values, brokerType),
-    startPosition: supportsEarliest(brokerType) ? values.startPosition : 'LATEST',
+    destination: toDestination(values, broker),
+    // A broker that cannot read from the beginning treats EARLIEST as LATEST (ADR 0003).
+    startPosition: broker.canReadFromBeginning ? values.startPosition : 'LATEST',
   };
 }

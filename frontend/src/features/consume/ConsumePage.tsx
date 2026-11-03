@@ -16,14 +16,13 @@ import { useForm } from '@mantine/form';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import type { ConsumeSessionResponse, StartPosition } from '../../api/messaging';
-import { DESTINATION_TYPES } from '../../shared/brokers';
+import { BROKER_LABELS, useBrokers } from '../../shared/brokers';
 import { connectionOptions, useConnections } from '../../shared/connections';
 import { DestinationInputs } from '../../shared/DestinationInputs';
 import { ConsumedMessageCard } from './ConsumedMessageCard';
 import { addMessage, MAX_MESSAGES, type ConsumedMessage } from './consumedMessages';
 import {
   initialConsumeValues,
-  supportsEarliest,
   toOpenRequest,
   validateConsume,
   type ConsumeFormValues,
@@ -46,6 +45,7 @@ function isEnded(state: ConsumeState): boolean {
 export function ConsumePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const connections = useConnections();
+  const brokers = useBrokers();
   const open = useOpenConsumeSession();
   const [run, setRun] = useState<Run | undefined>(undefined);
   const [messages, setMessages] = useState<ConsumedMessage[]>([]);
@@ -79,11 +79,13 @@ export function ConsumePage() {
   }, [sessionId]);
 
   const savedConnections = connections.data ?? [];
-  const brokerOf = (connectionId: string | null) =>
-    savedConnections.find(({ id }) => id === connectionId)?.brokerType;
-  const brokerType = brokerOf(form.values.connectionId);
-  const destinationType = brokerType === undefined ? 'TOPIC' : DESTINATION_TYPES[brokerType];
-  const earliestSupported = brokerType === undefined || supportsEarliest(brokerType);
+  const brokerOf = (connectionId: string | null) => {
+    const brokerType = savedConnections.find(({ id }) => id === connectionId)?.brokerType;
+    return brokers.data?.find(({ type }) => type === brokerType);
+  };
+  const broker = brokerOf(form.values.connectionId);
+  const destinationType = broker?.destinationType ?? 'TOPIC';
+  const earliestSupported = broker === undefined || broker.canReadFromBeginning;
 
   const state: ConsumeState = run === undefined ? { kind: 'idle' } : (status ?? { kind: 'paused' });
   const active = run !== undefined && !isEnded(state);
@@ -164,7 +166,9 @@ export function ConsumePage() {
               <Input.Wrapper
                 label="Start from"
                 description={
-                  earliestSupported ? undefined : 'RabbitMQ only reads messages published from now'
+                  broker === undefined || broker.canReadFromBeginning
+                    ? undefined
+                    : `${BROKER_LABELS[broker.type]} only reads messages published from now`
                 }
               >
                 <SegmentedControl<StartPosition>

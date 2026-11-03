@@ -137,8 +137,7 @@ components:
     ProblemDetail:
       $ref: 'common.yaml#/components/schemas/ProblemDetail'
     BrokerType:
-      type: string
-      enum: [PULSAR, KAFKA, RABBITMQ]
+      $ref: 'common.yaml#/components/schemas/BrokerType'
     CredentialsType:
       type: string
       enum: [NONE, TOKEN, USERNAME_PASSWORD]

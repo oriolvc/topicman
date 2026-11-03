@@ -108,16 +108,6 @@ class KafkaAdapterContractIT extends BrokerAdapterContractTest {
     }
 
     @Override
-    protected boolean canReadFromBeginning() {
-        return true;
-    }
-
-    @Override
-    protected boolean supportsMessageKeys() {
-        return true;
-    }
-
-    @Override
     protected void assertNoReaderStateLeftFor(Destination destination) {
         try {
             assertThat(admin.listGroups().all().get()).isEmpty();

@@ -34,6 +34,15 @@ class DestinationTest {
     }
 
     @Test
+    void tellsItsType() {
+        var topic = Destination.topic("orders");
+        var exchange = Destination.exchange("events", "orders.created");
+
+        assertThat(topic.type()).isEqualTo(DestinationType.TOPIC);
+        assertThat(exchange.type()).isEqualTo(DestinationType.EXCHANGE);
+    }
+
+    @Test
     void topicsAreSupportedByKafkaAndPulsarOnly() {
         var topic = Destination.topic("orders");
 

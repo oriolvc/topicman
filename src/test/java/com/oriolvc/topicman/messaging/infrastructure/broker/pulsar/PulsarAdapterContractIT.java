@@ -100,16 +100,6 @@ class PulsarAdapterContractIT extends BrokerAdapterContractTest {
     }
 
     @Override
-    protected boolean canReadFromBeginning() {
-        return true;
-    }
-
-    @Override
-    protected boolean supportsMessageKeys() {
-        return true;
-    }
-
-    @Override
     protected void assertNoReaderStateLeftFor(Destination destination) {
         var topic = ((Destination.Topic) destination).name();
         assertThat(admin("GET", "/" + topic + "/subscriptions", null)).isEqualTo("[]");

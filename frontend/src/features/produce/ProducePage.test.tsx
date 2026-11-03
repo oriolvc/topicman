@@ -1,8 +1,9 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { ConnectionResponse } from '../../api/connection';
+import { brokersHandler } from '../../test/brokerFixtures';
 import { aConnection } from '../../test/connectionFixtures';
 import { server } from '../../test/server';
 import { renderAppAt } from '../../test/renderWithProviders';
@@ -49,6 +50,10 @@ function enterPayload(payload: string) {
 }
 
 describe('ProducePage', () => {
+  beforeEach(() => {
+    server.use(brokersHandler);
+  });
+
   it('sends a JSON message with key, headers and copies, and shows the receipts', async () => {
     const user = userEvent.setup();
     serveConnections([KAFKA]);

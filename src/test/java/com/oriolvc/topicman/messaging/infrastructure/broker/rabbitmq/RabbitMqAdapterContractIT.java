@@ -7,7 +7,6 @@ import static org.awaitility.Awaitility.await;
 
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
 import com.oriolvc.topicman.messaging.domain.Destination;
-import com.oriolvc.topicman.messaging.domain.InvalidMessageException;
 import com.oriolvc.topicman.messaging.domain.Message;
 import com.oriolvc.topicman.messaging.domain.MessageProducer;
 import com.oriolvc.topicman.messaging.domain.MessageReader;
@@ -114,16 +113,6 @@ class RabbitMqAdapterContractIT extends BrokerAdapterContractTest {
     }
 
     @Override
-    protected boolean canReadFromBeginning() {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsMessageKeys() {
-        return false;
-    }
-
-    @Override
     protected void assertNoReaderStateLeftFor(Destination destination) {
         var exchange = ((Destination.Exchange) destination).name();
         await().atMost(Duration.ofSeconds(5))
@@ -189,15 +178,6 @@ class RabbitMqAdapterContractIT extends BrokerAdapterContractTest {
             assertThat(nextMessage(channel, queue).getProps().getContentType()).isEqualTo("application/json");
             assertThat(nextMessage(channel, queue).getProps().getContentType()).isEqualTo("text/plain");
         }
-    }
-
-    @Test
-    void rejectsAMessageKey() {
-        var message = Message.of(Payload.text("x")).withKey("order-42");
-
-        assertThatThrownBy(() -> producer.send(endpoint(), newDestination(), message))
-                .isInstanceOf(InvalidMessageException.class)
-                .hasMessageContaining("routing key");
     }
 
     @Test

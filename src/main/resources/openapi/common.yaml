@@ -41,3 +41,7 @@ components:
         code:
           type: string
       additionalProperties: true
+    BrokerType:
+      description: The broker a connection points to. Shared by the connection and messaging APIs.
+      type: string
+      enum: [PULSAR, KAFKA, RABBITMQ]

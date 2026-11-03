@@ -19,14 +19,13 @@ import { useForm } from '@mantine/form';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import type { Payload } from '../../api/messaging';
-import { DESTINATION_TYPES } from '../../shared/brokers';
+import { useBrokers } from '../../shared/brokers';
 import { connectionOptions, useConnections } from '../../shared/connections';
 import { DestinationInputs } from '../../shared/DestinationInputs';
 import { HeadersInput } from './HeadersInput';
 import {
   initialProduceValues,
   MAX_COPIES,
-  supportsMessageKey,
   toProduceRequest,
   validateProduce,
   type ProduceFormValues,
@@ -40,6 +39,7 @@ const CONNECTION_PARAM = 'connection';
 export function ProducePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const connections = useConnections();
+  const brokers = useBrokers();
   const produce = useProduceMessage();
   const [outcome, setOutcome] = useState<ProduceOutcome | undefined>(undefined);
   const form = useForm<ProduceFormValues>({
@@ -49,10 +49,12 @@ export function ProducePage() {
   });
 
   const savedConnections = connections.data ?? [];
-  const brokerOf = (connectionId: string | null) =>
-    savedConnections.find(({ id }) => id === connectionId)?.brokerType;
-  const brokerType = brokerOf(form.values.connectionId);
-  const destinationType = brokerType === undefined ? 'TOPIC' : DESTINATION_TYPES[brokerType];
+  const brokerOf = (connectionId: string | null) => {
+    const brokerType = savedConnections.find(({ id }) => id === connectionId)?.brokerType;
+    return brokers.data?.find(({ type }) => type === brokerType);
+  };
+  const broker = brokerOf(form.values.connectionId);
+  const destinationType = broker?.destinationType ?? 'TOPIC';
 
   const chooseConnection = (connectionId: string | null) => {
     form.setFieldValue('connectionId', connectionId);
@@ -112,7 +114,7 @@ export function ProducePage() {
                   nameProps={form.getInputProps('destinationName')}
                   routingKeyProps={form.getInputProps('routingKey')}
                 />
-                {(brokerType === undefined || supportsMessageKey(brokerType)) && (
+                {(broker === undefined || broker.supportsMessageKeys) && (
                   <TextInput
                     label="Key"
                     description="Optional partitioning key"
