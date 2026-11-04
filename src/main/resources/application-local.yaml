@@ -1,6 +1,7 @@
-# Runs against a PostgreSQL installed on this machine instead of starting one with Docker Compose:
+# Runs against a PostgreSQL that is already running instead of starting one with Docker Compose:
 #   SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
-# The values match compose.yaml; override any of them with SPRING_DATASOURCE_* variables.
+# The URL matches compose.demo.yaml's PostgreSQL (port 5431), so the demo containers can be started
+# on their own and the app run from the IDE. Override any value with SPRING_DATASOURCE_* variables.
 spring:
   docker:
     compose:

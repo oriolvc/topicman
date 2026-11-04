@@ -15,7 +15,11 @@
 #                                            use the amq.topic or amq.fanout exchange, or create one
 #
 # Broker UIs: Pulsar admin API http://localhost:8082, RabbitMQ management http://localhost:15672.
-# The broker ports are fixed, so stop compose.kafka.yaml first if it is running.
+# The ports are fixed (PostgreSQL on 5431), so stop compose.kafka.yaml first if it is running.
+#
+# To run the app from the IDE instead, start the containers on their own and use the `local` profile:
+#   docker compose -f compose.demo.yaml up -d --wait
+#   SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 
 # A project of its own: compose.yaml's PostgreSQL is in project `topicman` too, so removing the
 # demo's containers would otherwise remove the development database as well.
@@ -29,7 +33,8 @@ services:
       - 'POSTGRES_USER=topicman'
       - 'POSTGRES_PASSWORD=topicman'
     ports:
-      - '5432'
+      # Fixed, so the `local` profile can use this database too (application-local.yaml).
+      - '5431:5432'
 
   kafka:
     image: 'apache/kafka:4.3.1'
