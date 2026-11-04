@@ -84,7 +84,7 @@ Out (post-MVP):
 
 ## Phase 5 — Security and packaging
 
-- [ ] TLS and SASL options in connections, covered by integration tests
+- [x] TLS and SASL options in connections, covered by integration tests
 - [ ] Mask credentials in the `toString()` of the generated request DTOs, so logging a request
       never prints a password or token
 - [ ] Production Docker image published to GHCR on release

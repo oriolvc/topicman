@@ -4,38 +4,72 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
+import com.oriolvc.topicman.shared.domain.SaslMechanism;
+import com.oriolvc.topicman.shared.domain.Secret;
 import org.junit.jupiter.api.Test;
 
 class CredentialsTest {
 
     @Test
     void noCredentialsAreSupportedByEveryBroker() {
-        assertThat(BrokerType.values()).allMatch(Credentials.none()::isSupportedBy);
+        for (var brokerType : BrokerType.values()) {
+            assertThat(Credentials.none().forBroker(brokerType)).isEqualTo(Credentials.none());
+        }
     }
 
     @Test
     void tokensAreSupportedOnlyByPulsar() {
         var token = Credentials.token(new Secret("jwt"));
 
-        assertThat(token.isSupportedBy(BrokerType.PULSAR)).isTrue();
-        assertThat(token.isSupportedBy(BrokerType.KAFKA)).isFalse();
-        assertThat(token.isSupportedBy(BrokerType.RABBITMQ)).isFalse();
+        assertThat(token.forBroker(BrokerType.PULSAR)).isEqualTo(token);
+        assertThatThrownBy(() -> token.forBroker(BrokerType.KAFKA)).isInstanceOf(InvalidConnectionException.class);
+        assertThatThrownBy(() -> token.forBroker(BrokerType.RABBITMQ)).isInstanceOf(InvalidConnectionException.class);
     }
 
     @Test
-    void usernameAndPasswordAreSupportedByKafkaAndRabbitMq() {
+    void usernameAndPasswordAreNotSupportedByPulsar() {
         var usernamePassword = Credentials.usernamePassword("app", new Secret("pw"));
 
-        assertThat(usernamePassword.isSupportedBy(BrokerType.KAFKA)).isTrue();
-        assertThat(usernamePassword.isSupportedBy(BrokerType.RABBITMQ)).isTrue();
-        assertThat(usernamePassword.isSupportedBy(BrokerType.PULSAR)).isFalse();
+        assertThatThrownBy(() -> usernamePassword.forBroker(BrokerType.PULSAR))
+                .isInstanceOf(InvalidConnectionException.class);
+    }
+
+    @Test
+    void kafkaUsesTheGivenSaslMechanism() {
+        var scram = Credentials.usernamePassword("app", new Secret("pw"), SaslMechanism.SCRAM_SHA_512);
+
+        assertThat(scram.forBroker(BrokerType.KAFKA)).isEqualTo(scram);
+    }
+
+    @Test
+    void kafkaDefaultsToSaslPlain() {
+        var usernamePassword = Credentials.usernamePassword("app", new Secret("pw"));
+
+        assertThat(usernamePassword.forBroker(BrokerType.KAFKA))
+                .isEqualTo(Credentials.usernamePassword("app", new Secret("pw"), SaslMechanism.PLAIN));
+    }
+
+    @Test
+    void rabbitMqTakesAUsernameAndPasswordWithoutASaslMechanism() {
+        var usernamePassword = Credentials.usernamePassword("guest", new Secret("guest"));
+
+        assertThat(usernamePassword.forBroker(BrokerType.RABBITMQ)).isEqualTo(usernamePassword);
+    }
+
+    @Test
+    void rabbitMqRejectsASaslMechanism() {
+        var scram = Credentials.usernamePassword("guest", new Secret("guest"), SaslMechanism.SCRAM_SHA_256);
+
+        assertThatThrownBy(() -> scram.forBroker(BrokerType.RABBITMQ))
+                .isInstanceOf(InvalidConnectionException.class)
+                .hasMessageContaining("SASL mechanism");
     }
 
     @Test
     void stripsSurroundingWhitespaceFromTheUsername() {
-        var credentials = new Credentials.UsernamePassword(" app ", new Secret("pw"));
+        var credentials = Credentials.usernamePassword(" app ", new Secret("pw"));
 
-        assertThat(credentials.username()).isEqualTo("app");
+        assertThat(((Credentials.UsernamePassword) credentials).username()).isEqualTo("app");
     }
 
     @Test
@@ -47,7 +81,7 @@ class CredentialsTest {
     @Test
     void neverShowsSecretsInToString() {
         var token = Credentials.token(new Secret("jwt-value"));
-        var usernamePassword = Credentials.usernamePassword("app", new Secret("pw-value"));
+        var usernamePassword = Credentials.usernamePassword("app", new Secret("pw-value"), SaslMechanism.PLAIN);
 
         assertThat(token.toString()).doesNotContain("jwt-value");
         assertThat(usernamePassword.toString()).doesNotContain("pw-value").contains("app");

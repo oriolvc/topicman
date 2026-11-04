@@ -3,6 +3,7 @@ package com.oriolvc.topicman.connection.infrastructure.web;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jayway.jsonpath.JsonPath;
+import com.oriolvc.topicman.TestCertificates;
 import com.oriolvc.topicman.TestcontainersConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestConstructor.AutowireMode;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
+import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,6 +26,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 class ConnectionsApiIT {
 
     private static final String CONNECTIONS = "/api/v1/connections";
+    private static final JsonMapper JSON = JsonMapper.builder().build();
 
     private final MockMvcTester mvc;
     private final JdbcTemplate jdbc;
@@ -50,8 +53,9 @@ class ConnectionsApiIT {
         assertThat(result).headers().hasValue("Location", CONNECTIONS + "/" + id);
         assertThat(result).bodyJson().isLenientlyEqualTo("""
                         {"id": %s, "name": "Local Kafka", "brokerType": "KAFKA", "address": "localhost:9092",
-                         "credentialsType": "USERNAME_PASSWORD"}
+                         "credentialsType": "USERNAME_PASSWORD", "saslMechanism": "PLAIN", "tls": {"enabled": false}}
                         """.formatted(id));
+        assertThat(result).bodyJson().doesNotHavePath("$.tls.trustedCertificates");
         assertThat(result)
                 .bodyJson()
                 .hasPathSatisfying("$.createdAt", path -> path.assertThat().isNotNull());
@@ -67,6 +71,78 @@ class ConnectionsApiIT {
                 .doesNotContain("jwt-s3cret");
         assertThat(mvc.get().uri(CONNECTIONS + "/" + id)).bodyText().doesNotContain("jwt-s3cret");
         assertThat(mvc.get().uri(CONNECTIONS)).bodyText().doesNotContain("jwt-s3cret");
+    }
+
+    @Test
+    void createsAKafkaConnectionWithTlsAndScram() {
+        var result = create("""
+                {"name": "Secure Kafka", "brokerType": "KAFKA", "address": "kafka.example.com:9093",
+                 "credentials": {"type": "USERNAME_PASSWORD", "username": "app", "password": "pw",
+                                 "saslMechanism": "SCRAM_SHA_512"},
+                 "tls": {"enabled": true, "trustedCertificates": %s}}
+                """.formatted(JSON.writeValueAsString(TestCertificates.CA)));
+
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+        assertThat(result).bodyJson().isLenientlyEqualTo("""
+                {"saslMechanism": "SCRAM_SHA_512", "tls": {"enabled": true, "trustedCertificates": %s}}
+                """.formatted(
+                        JSON.writeValueAsString(TestCertificates.CA.strip())));
+    }
+
+    @Test
+    void returnsNoSaslMechanismForBrokersWithoutOne() {
+        var result = create("""
+                {"name": "Local RabbitMQ", "brokerType": "RABBITMQ", "address": "amqps://localhost:5671",
+                 "credentials": {"type": "USERNAME_PASSWORD", "username": "guest", "password": "guest"}}
+                """);
+
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+        assertThat(result).bodyJson().doesNotHavePath("$.saslMechanism");
+    }
+
+    @Test
+    void rejectsASaslMechanismForRabbitMq() {
+        var result = create("""
+                {"name": "Local RabbitMQ", "brokerType": "RABBITMQ", "address": "amqp://localhost:5672",
+                 "credentials": {"type": "USERNAME_PASSWORD", "username": "guest", "password": "guest",
+                                 "saslMechanism": "PLAIN"}}
+                """);
+
+        assertProblem(result, HttpStatus.BAD_REQUEST, "connection.invalid-connection");
+    }
+
+    @Test
+    void rejectsTheTlsFlagForPulsar() {
+        var result = create("""
+                {"name": "Local Pulsar", "brokerType": "PULSAR", "address": "pulsar://localhost:6650",
+                 "credentials": {"type": "NONE"}, "tls": {"enabled": true}}
+                """);
+
+        assertProblem(result, HttpStatus.BAD_REQUEST, "connection.invalid-connection");
+    }
+
+    @Test
+    void rejectsTrustedCertificatesThatAreNotPem() {
+        var result = create("""
+                {"name": "Secure Kafka", "brokerType": "KAFKA", "address": "kafka:9093",
+                 "credentials": {"type": "NONE"}, "tls": {"enabled": true, "trustedCertificates": "not a certificate"}}
+                """);
+
+        assertProblem(result, HttpStatus.BAD_REQUEST, "connection.invalid-connection");
+    }
+
+    @Test
+    void changesOnlyTheTlsSettings() {
+        var id = idOf(create(aKafkaConnection("Local Kafka")));
+
+        var result = patch(id, """
+                {"tls": {"enabled": true}}
+                """);
+
+        assertThat(result).hasStatusOk();
+        assertThat(result).bodyJson().isLenientlyEqualTo("""
+                {"name": "Local Kafka", "credentialsType": "NONE", "tls": {"enabled": true}}
+                """);
     }
 
     @Test

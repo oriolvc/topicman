@@ -97,6 +97,7 @@ final class KafkaMessageReader implements MessageReader {
                 false,
                 ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG,
                 (int) openTimeout.toMillis());
-        return new KafkaConsumer<>(config, new StringDeserializer(), new ByteArrayDeserializer());
+        return new KafkaConsumer<>(
+                KafkaSecurity.withSecurity(endpoint, config), new StringDeserializer(), new ByteArrayDeserializer());
     }
 }

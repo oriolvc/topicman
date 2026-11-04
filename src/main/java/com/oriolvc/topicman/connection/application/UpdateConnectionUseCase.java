@@ -27,10 +27,13 @@ public class UpdateConnectionUseCase {
         if (name != null && !name.equals(connection.name()) && repository.existsByName(name)) {
             throw new ConnectionNameTakenException(name);
         }
-        // Credentials first: they are the only change a business rule can reject, so a rejected
-        // update changes nothing.
+        // Credentials and TLS settings first: they are the only changes a business rule can reject,
+        // so a rejected update changes nothing.
         if (command.credentials() != null) {
             connection.changeCredentials(command.credentials(), now);
+        }
+        if (command.tls() != null) {
+            connection.changeTls(command.tls(), now);
         }
         if (command.address() != null) {
             connection.changeAddress(command.address(), now);

@@ -4,6 +4,8 @@ import type {
   CreateConnectionRequest,
   CredentialsRequest,
   CredentialsType,
+  SaslMechanism,
+  TlsSettings,
   UpdateConnectionRequest,
 } from '../../api/connection';
 import { BROKER_SETTINGS } from './brokers';
@@ -19,15 +21,31 @@ export type ConnectionFormValues = {
   token: string;
   username: string;
   password: string;
+  /** Kafka only, for a username and password. */
+  saslMechanism: SaslMechanism;
+  /** Kafka only: Pulsar and RabbitMQ switch TLS on with their address scheme. */
+  tlsEnabled: boolean;
+  trustedCertificates: string;
 };
 
 const NAME_MAX_LENGTH = 100;
 const ADDRESS_MAX_LENGTH = 2048;
+const CERTIFICATES_MAX_LENGTH = 65536;
+const PEM_CERTIFICATE = '-----BEGIN CERTIFICATE-----';
 
 const BLANK_SECRETS = { token: '', username: '', password: '' };
 
 export function newConnectionValues(): ConnectionFormValues {
-  return { name: '', brokerType: 'KAFKA', address: '', credentialsType: 'NONE', ...BLANK_SECRETS };
+  return {
+    name: '',
+    brokerType: 'KAFKA',
+    address: '',
+    credentialsType: 'NONE',
+    ...BLANK_SECRETS,
+    saslMechanism: 'PLAIN',
+    tlsEnabled: false,
+    trustedCertificates: '',
+  };
 }
 
 export function existingConnectionValues(connection: ConnectionResponse): ConnectionFormValues {
@@ -37,7 +55,18 @@ export function existingConnectionValues(connection: ConnectionResponse): Connec
     address: connection.address,
     credentialsType: 'KEEP',
     ...BLANK_SECRETS,
+    saslMechanism: connection.saslMechanism ?? 'PLAIN',
+    tlsEnabled: connection.tls.enabled ?? false,
+    trustedCertificates: connection.tls.trustedCertificates ?? '',
   };
+}
+
+/** Whether the connection will use TLS: Kafka's flag, or the other brokers' address scheme. */
+export function tlsInUse(values: ConnectionFormValues): boolean {
+  const scheme = BROKER_SETTINGS[values.brokerType].tlsScheme;
+  return scheme === undefined
+    ? values.tlsEnabled
+    : values.address.trim().toLowerCase().startsWith(scheme);
 }
 
 export function credentialsChoices(brokerType: BrokerType, editing: boolean): CredentialsChoice[] {
@@ -58,7 +87,12 @@ export function credentialsAfterBrokerChange(
 
 type Validator = (value: string, values: ConnectionFormValues) => string | null;
 
-export const validateConnection: Partial<Record<keyof ConnectionFormValues, Validator>> = {
+/** The form fields that hold text, which are the ones validated. */
+type TextField = {
+  [K in keyof ConnectionFormValues]: ConnectionFormValues[K] extends string ? K : never;
+}[keyof ConnectionFormValues];
+
+export const validateConnection: Partial<Record<TextField, Validator>> = {
   name: (value) => requiredWithin(value, NAME_MAX_LENGTH, 'Enter a name'),
   address: (value) => requiredWithin(value, ADDRESS_MAX_LENGTH, 'Enter the broker address'),
   token: (value, values) =>
@@ -69,6 +103,21 @@ export const validateConnection: Partial<Record<keyof ConnectionFormValues, Vali
       : null,
   password: (value, values) =>
     values.credentialsType === 'USERNAME_PASSWORD' && value === '' ? 'Enter the password' : null,
+  trustedCertificates: (value, values) => {
+    const trimmed = value.trim();
+    if (!tlsInUse(values) || trimmed === '') {
+      return null;
+    }
+    if (trimmed.includes('PRIVATE KEY-----')) {
+      return 'Paste only CA certificates, never a private key';
+    }
+    if (!trimmed.includes(PEM_CERTIFICATE)) {
+      return `Paste PEM certificates, each starting with ${PEM_CERTIFICATE}`;
+    }
+    return trimmed.length > CERTIFICATES_MAX_LENGTH
+      ? `Use at most ${String(CERTIFICATES_MAX_LENGTH)} characters`
+      : null;
+  },
 };
 
 function requiredWithin(value: string, maxLength: number, missing: string): string | null {
@@ -85,6 +134,7 @@ export function toCreateRequest(values: ConnectionFormValues): CreateConnectionR
     brokerType: values.brokerType,
     address: values.address.trim(),
     credentials: toCredentials(values) ?? { type: 'NONE' },
+    ...(tlsInUse(values) && { tls: toTls(values) }),
   };
 }
 
@@ -96,10 +146,25 @@ export function toUpdateRequest(
   const name = values.name.trim();
   const address = values.address.trim();
   const credentials = toCredentials(values);
+  const tls = toTls(values);
+  const tlsChanged =
+    (tls.enabled ?? false) !== (connection.tls.enabled ?? false) ||
+    tls.trustedCertificates !== connection.tls.trustedCertificates;
   return {
     ...(name !== connection.name && { name }),
     ...(address !== connection.address && { address }),
     ...(credentials !== undefined && { credentials }),
+    ...(tlsChanged && { tls }),
+  };
+}
+
+/** Trusted certificates are kept only while TLS is in use, as the broker would ignore them. */
+function toTls(values: ConnectionFormValues): TlsSettings {
+  const usesFlag = BROKER_SETTINGS[values.brokerType].tlsScheme === undefined;
+  const certificates = values.trustedCertificates.trim();
+  return {
+    enabled: usesFlag && values.tlsEnabled,
+    ...(tlsInUse(values) && certificates !== '' && { trustedCertificates: certificates }),
   };
 }
 
@@ -116,6 +181,7 @@ function toCredentials(values: ConnectionFormValues): CredentialsRequest | undef
         type: 'USERNAME_PASSWORD',
         username: values.username.trim(),
         password: values.password,
+        ...(values.brokerType === 'KAFKA' && { saslMechanism: values.saslMechanism }),
       };
   }
 }

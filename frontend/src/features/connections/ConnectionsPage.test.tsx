@@ -40,6 +40,8 @@ function serveConnections(initial: ConnectionResponse[]) {
   return requests;
 }
 
+const PEM = '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----';
+
 describe('ConnectionsPage', () => {
   it('lists the connections', async () => {
     serveConnections([
@@ -114,6 +116,61 @@ describe('ConnectionsPage', () => {
         },
       },
     ]);
+  });
+
+  it('creates a Kafka connection with SCRAM over TLS and trusted certificates', async () => {
+    const user = userEvent.setup();
+    const requests = serveConnections([]);
+    renderAppAt('/connections');
+
+    await user.click(await screen.findByRole('button', { name: 'New connection' }));
+    const dialog = screen.getByRole('dialog', { name: 'New connection' });
+    await user.type(within(dialog).getByLabelText(/Name/), 'Secure Kafka');
+    await user.type(within(dialog).getByLabelText(/Address/), 'kafka:9093');
+    await user.click(within(dialog).getByRole('radio', { name: 'Username and password' }));
+    await user.type(within(dialog).getByRole('textbox', { name: /Username/ }), 'app');
+    await user.type(within(dialog).getByLabelText(/^Password/), 'app-secret');
+    await user.click(within(dialog).getByRole('radio', { name: 'SCRAM-SHA-512' }));
+    expect(within(dialog).queryByLabelText(/Trusted certificates/)).toBeNull();
+    await user.click(within(dialog).getByRole('switch', { name: /^Use TLS/ }));
+    await user.click(within(dialog).getByLabelText(/Trusted certificates/));
+    await user.paste(PEM);
+    await user.click(within(dialog).getByRole('button', { name: 'Create' }));
+
+    expect(await screen.findByRole('row', { name: /Secure Kafka/ })).toBeDefined();
+    expect(requests).toEqual([
+      {
+        method: 'POST',
+        body: {
+          name: 'Secure Kafka',
+          brokerType: 'KAFKA',
+          address: 'kafka:9093',
+          credentials: {
+            type: 'USERNAME_PASSWORD',
+            username: 'app',
+            password: 'app-secret',
+            saslMechanism: 'SCRAM_SHA_512',
+          },
+          tls: { enabled: true, trustedCertificates: PEM },
+        },
+      },
+    ]);
+  });
+
+  it('switches TLS on for Pulsar with the address scheme', async () => {
+    const user = userEvent.setup();
+    serveConnections([]);
+    renderAppAt('/connections');
+
+    await user.click(await screen.findByRole('button', { name: 'New connection' }));
+    const dialog = screen.getByRole('dialog', { name: 'New connection' });
+    await user.click(within(dialog).getByRole('radio', { name: 'Pulsar' }));
+
+    expect(within(dialog).queryByRole('switch', { name: /^Use TLS/ })).toBeNull();
+    expect(within(dialog).getByText(/pulsar\+ssl:\/\//)).toBeDefined();
+    expect(within(dialog).queryByLabelText(/Trusted certificates/)).toBeNull();
+    await user.type(within(dialog).getByLabelText(/Address/), 'pulsar+ssl://pulsar:6651');
+    expect(within(dialog).getByLabelText(/Trusted certificates/)).toBeDefined();
   });
 
   it('validates the form before sending it', async () => {

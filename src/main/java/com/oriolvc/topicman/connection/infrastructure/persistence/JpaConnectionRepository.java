@@ -33,6 +33,7 @@ class JpaConnectionRepository implements ConnectionRepository {
     @Override
     public void save(Connection connection) {
         var credentials = credentialsCodec.encode(connection.id(), connection.credentials());
+        var tls = StoredTls.of(connection.tls());
         // Update the managed entity when it exists, so its @Version is kept and checked.
         var entity = jpaRepository
                 .findById(connection.id().value())
@@ -41,6 +42,7 @@ class JpaConnectionRepository implements ConnectionRepository {
                             connection.name().value(),
                             connection.address().value(),
                             credentials,
+                            tls,
                             connection.updatedAt());
                     return existing;
                 })
@@ -50,6 +52,7 @@ class JpaConnectionRepository implements ConnectionRepository {
                         connection.brokerType(),
                         connection.address().value(),
                         credentials,
+                        tls,
                         connection.createdAt(),
                         connection.updatedAt()));
         try {
@@ -99,6 +102,7 @@ class JpaConnectionRepository implements ConnectionRepository {
                 entity.brokerType(),
                 new BrokerAddress(entity.address()),
                 credentialsCodec.decode(id, entity.credentials()),
+                entity.tls().toDomain(),
                 entity.createdAt(),
                 entity.updatedAt());
     }

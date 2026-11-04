@@ -6,21 +6,29 @@ import {
   PasswordInput,
   SegmentedControl,
   Stack,
+  Switch,
   Text,
+  Textarea,
   TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import type { BrokerType, ConnectionResponse } from '../../api/connection';
+import type { BrokerType, ConnectionResponse, SaslMechanism } from '../../api/connection';
 import { ApiProblem } from '../../api/problem';
 import { showProblem } from '../../shared/showProblem';
 import { BROKER_LABELS, BROKER_TYPES } from '../../shared/brokers';
-import { BROKER_SETTINGS, CREDENTIALS_LABELS } from './brokers';
+import {
+  BROKER_SETTINGS,
+  CREDENTIALS_LABELS,
+  SASL_MECHANISM_LABELS,
+  SASL_MECHANISMS,
+} from './brokers';
 import {
   credentialsAfterBrokerChange,
   credentialsChoices,
   existingConnectionValues,
   newConnectionValues,
+  tlsInUse,
   toCreateRequest,
   toUpdateRequest,
   validateConnection,
@@ -46,6 +54,7 @@ export function ConnectionFormModal({ connection, onClose }: ConnectionFormModal
   const update = useUpdateConnection();
   const saving = create.isPending || update.isPending;
   const { brokerType, credentialsType } = form.values;
+  const tlsScheme = BROKER_SETTINGS[brokerType].tlsScheme;
 
   const handleSubmit = async (values: ConnectionFormValues) => {
     try {
@@ -143,7 +152,46 @@ export function ConnectionFormModal({ connection, onClose }: ConnectionFormModal
                 autoComplete="new-password"
                 {...form.getInputProps('password')}
               />
+              {brokerType === 'KAFKA' && (
+                <Input.Wrapper label="SASL mechanism">
+                  <SegmentedControl
+                    fullWidth
+                    value={form.values.saslMechanism}
+                    onChange={(value: SaslMechanism) => {
+                      form.setFieldValue('saslMechanism', value);
+                    }}
+                    data={SASL_MECHANISMS.map((mechanism) => ({
+                      value: mechanism,
+                      label: SASL_MECHANISM_LABELS[mechanism],
+                    }))}
+                  />
+                </Input.Wrapper>
+              )}
             </>
+          )}
+          {tlsScheme === undefined ? (
+            <Switch
+              label="Use TLS"
+              description="The broker's certificate and hostname are always verified."
+              {...form.getInputProps('tlsEnabled', { type: 'checkbox' })}
+            />
+          ) : (
+            <Text size="sm" c="dimmed">
+              For TLS, use a {tlsScheme} address. The broker&apos;s certificate and hostname are
+              always verified.
+            </Text>
+          )}
+          {tlsInUse(form.values) && (
+            <Textarea
+              label="Trusted certificates"
+              description="CA certificates in PEM form, for a broker whose certificate a private CA issued. Leave empty to trust the default CAs."
+              placeholder="-----BEGIN CERTIFICATE-----"
+              autosize
+              minRows={3}
+              maxRows={8}
+              styles={{ input: { fontFamily: 'var(--mantine-font-family-monospace)' } }}
+              {...form.getInputProps('trustedCertificates')}
+            />
           )}
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>

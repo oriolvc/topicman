@@ -1,16 +1,26 @@
 package com.oriolvc.topicman.messaging.infrastructure.broker.rabbitmq;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.oriolvc.topicman.messaging.domain.Authentication;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +30,11 @@ import org.slf4j.LoggerFactory;
  * and the next use opens a new one.
  *
  * <p>An AMQP URI may carry a username and password, so failure messages name only the host and
- * port, never the URI.
+ * port, never the URI. The endpoint's username and password take precedence over the URI's.
+ *
+ * <p>An {@code amqps://} URI switches TLS on. The client would then trust every certificate, so the
+ * TLS context is replaced with one that verifies the broker's certificate, against the endpoint's
+ * trusted certificates or the JVM's default CAs, and its hostname (ADR 0008).
  */
 final class RabbitMqConnections implements AutoCloseable {
 
@@ -67,6 +81,14 @@ final class RabbitMqConnections implements AutoCloseable {
             // The exception may quote the URI, credentials included, so it is neither kept nor shown.
             throw new ConnectionFailedException("Invalid AMQP URI; expected amqp://host:port or amqps://host:port");
         }
+        if (factory.isSSL()) {
+            factory.useSslProtocol(sslContext(endpoint.tls().trustedCertificates()));
+            factory.enableHostnameVerification();
+        }
+        if (endpoint.authentication() instanceof Authentication.UsernamePassword usernamePassword) {
+            factory.setUsername(usernamePassword.username());
+            factory.setPassword(usernamePassword.password().value());
+        }
         factory.setAutomaticRecoveryEnabled(false);
         factory.setTopologyRecoveryEnabled(false);
         factory.setConnectionTimeout((int) properties.connectTimeout().toMillis());
@@ -81,6 +103,32 @@ final class RabbitMqConnections implements AutoCloseable {
         } catch (IOException | TimeoutException e) {
             throw new ConnectionFailedException(
                     "Could not connect to the RabbitMQ broker at " + server + ": " + e.getMessage());
+        }
+    }
+
+    /** A TLS context that trusts the given PEM certificates, or the JVM's default CAs when null. */
+    private static SSLContext sslContext(@Nullable String trustedCertificates) throws ConnectionFailedException {
+        try {
+            var trustManagers = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            if (trustedCertificates == null) {
+                trustManagers.init((KeyStore) null);
+            } else {
+                var trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                trustStore.load(null, null);
+                var certificates = CertificateFactory.getInstance("X.509")
+                        .generateCertificates(new ByteArrayInputStream(trustedCertificates.getBytes(UTF_8)));
+                var index = 0;
+                for (var certificate : certificates) {
+                    trustStore.setCertificateEntry("trusted-" + index++, certificate);
+                }
+                trustManagers.init(trustStore);
+            }
+            var context = SSLContext.getInstance("TLS");
+            context.init(null, trustManagers.getTrustManagers(), null);
+            return context;
+        } catch (GeneralSecurityException | IOException e) {
+            throw new ConnectionFailedException(
+                    "Could not set up TLS with the trusted certificates: " + e.getMessage());
         }
     }
 

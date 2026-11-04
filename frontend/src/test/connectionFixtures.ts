@@ -7,6 +7,7 @@ export function aConnection(overrides: Partial<ConnectionResponse> = {}): Connec
     brokerType: 'KAFKA',
     address: 'localhost:9092',
     credentialsType: 'NONE',
+    tls: { enabled: false },
     createdAt: '2026-10-18T10:00:00Z',
     updatedAt: '2026-10-18T10:00:00Z',
     ...overrides,

@@ -62,6 +62,26 @@ class ArchitectureTest {
     static final ArchRule collectionInternalsStayInCollection = internalsStayInside("collection");
 
     /**
+     * The only use case that returns decrypted credentials is called by messaging's broker endpoint
+     * adapter alone, so no controller can return a secret (ADR 0008).
+     */
+    @ArchTest
+    static final ArchRule onlyBrokerEndpointsGetBrokerAccess = noClasses()
+            .that()
+            .resideOutsideOfPackages(
+                    BASE + ".connection.application..", BASE + ".messaging.infrastructure.connection..")
+            .should()
+            .dependOnClassesThat()
+            .haveSimpleNameStartingWith("GetBrokerAccess")
+            .orShould()
+            .dependOnClassesThat()
+            .haveFullyQualifiedName(BASE + ".connection.application.BrokerAccessResult")
+            .orShould()
+            .dependOnClassesThat()
+            .haveNameMatching(BASE.replace(".", "\\.") + "\\.connection\\.application\\.BrokerCredentials.*")
+            .because("decrypted credentials must never reach a controller or the API (ADR 0008)");
+
+    /**
      * Other contexts may use a context only through its application layer (or domain events, which
      * are published through it), never through its domain or infrastructure packages.
      */

@@ -5,14 +5,19 @@ import static com.oriolvc.topicman.connection.application.ConnectionFixtures.aCr
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.oriolvc.topicman.TestCertificates;
 import com.oriolvc.topicman.connection.domain.BrokerAddress;
 import com.oriolvc.topicman.connection.domain.ConnectionName;
 import com.oriolvc.topicman.connection.domain.ConnectionNameTakenException;
 import com.oriolvc.topicman.connection.domain.Credentials;
 import com.oriolvc.topicman.connection.domain.InvalidConnectionException;
-import com.oriolvc.topicman.connection.domain.Secret;
+import com.oriolvc.topicman.connection.domain.TlsSettings;
+import com.oriolvc.topicman.connection.domain.TrustedCertificates;
+import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
+import com.oriolvc.topicman.shared.domain.SaslMechanism;
+import com.oriolvc.topicman.shared.domain.Secret;
 import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import java.time.Clock;
 import java.time.ZoneOffset;
@@ -55,7 +60,56 @@ class UpdateConnectionUseCaseTest {
         assertThat(result.credentialsType()).isEqualTo(CredentialsType.USERNAME_PASSWORD);
         assertThat(repository.findById(idOf(created)))
                 .hasValueSatisfying(stored -> assertThat(stored.credentials())
-                        .isEqualTo(Credentials.usernamePassword("app", new Secret("pw"))));
+                        .isEqualTo(Credentials.usernamePassword("app", new Secret("pw"), SaslMechanism.PLAIN)));
+    }
+
+    @Test
+    void changesTlsSettings() {
+        var created = create.execute(aCreateKafkaConnectionCommand("Local"));
+        var certificates = new TrustedCertificates(TestCertificates.CA);
+
+        var result = useCase.execute(
+                new UpdateConnectionCommand(idOf(created), null, null, null, new TlsSettings(true, certificates)));
+
+        assertThat(result.tlsEnabled()).isTrue();
+        assertThat(result.trustedCertificates()).isEqualTo(certificates.pem());
+        assertThat(result.updatedAt()).isEqualTo(NOW.plusSeconds(60));
+    }
+
+    @Test
+    void keepsTlsSettingsWhenNoneAreGiven() {
+        var created = create.execute(new CreateConnectionCommand(
+                new ConnectionName("Local"),
+                BrokerType.KAFKA,
+                new BrokerAddress("localhost:9093"),
+                Credentials.none(),
+                new TlsSettings(true, null)));
+
+        var result =
+                useCase.execute(new UpdateConnectionCommand(idOf(created), new ConnectionName("Renamed"), null, null));
+
+        assertThat(result.tlsEnabled()).isTrue();
+    }
+
+    @Test
+    void rejectsTlsSettingsTheBrokerDoesNotSupportWithoutChangingAnything() {
+        var created = create.execute(new CreateConnectionCommand(
+                new ConnectionName("Local Pulsar"),
+                BrokerType.PULSAR,
+                new BrokerAddress("pulsar://localhost:6650"),
+                Credentials.none()));
+
+        assertThatThrownBy(() -> useCase.execute(new UpdateConnectionCommand(
+                        idOf(created),
+                        new ConnectionName("Renamed"),
+                        new BrokerAddress("pulsar+ssl://localhost:6651"),
+                        null,
+                        new TlsSettings(true, null))))
+                .isInstanceOf(InvalidConnectionException.class);
+        assertThat(repository.findById(idOf(created))).hasValueSatisfying(stored -> {
+            assertThat(stored.name()).isEqualTo(new ConnectionName("Local Pulsar"));
+            assertThat(stored.address()).isEqualTo(new BrokerAddress("pulsar://localhost:6650"));
+        });
     }
 
     @Test

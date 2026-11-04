@@ -71,10 +71,11 @@ paths:
     patch:
       operationId: updateConnection
       tags: [Connections]
-      summary: Change a connection's name, address or credentials
+      summary: Change a connection's name, address, credentials or TLS settings
       description: >-
         Only the properties present are changed, so a client can rename a connection without
-        knowing its credentials. The broker type cannot be changed: create a new connection instead.
+        knowing its credentials. `credentials` and `tls` are each replaced as a whole when present.
+        The broker type cannot be changed: create a new connection instead.
       requestBody:
         required: true
         content:
@@ -147,7 +148,7 @@ components:
         every broker.
     ConnectionResponse:
       type: object
-      required: [id, name, brokerType, address, credentialsType, createdAt, updatedAt]
+      required: [id, name, brokerType, address, credentialsType, tls, createdAt, updatedAt]
       properties:
         id:
           type: integer
@@ -164,6 +165,10 @@ components:
             (`pulsar://host:6650`) or AMQP URI (`amqp://host:5672`).
         credentialsType:
           $ref: '#/components/schemas/CredentialsType'
+        saslMechanism:
+          $ref: '#/components/schemas/SaslMechanism'
+        tls:
+          $ref: '#/components/schemas/TlsSettings'
         createdAt:
           type: string
           format: date-time
@@ -182,6 +187,8 @@ components:
           $ref: '#/components/schemas/BrokerAddress'
         credentials:
           $ref: '#/components/schemas/CredentialsRequest'
+        tls:
+          $ref: '#/components/schemas/TlsSettings'
     UpdateConnectionRequest:
       type: object
       minProperties: 1
@@ -192,6 +199,41 @@ components:
           $ref: '#/components/schemas/BrokerAddress'
         credentials:
           $ref: '#/components/schemas/CredentialsRequest'
+        tls:
+          $ref: '#/components/schemas/TlsSettings'
+    TlsSettings:
+      type: object
+      description: >-
+        How TopicMan secures the connection with TLS (ADR 0008). Pulsar and RabbitMQ switch TLS on
+        with their address scheme (`pulsar+ssl://`, `amqps://`); Kafka, whose address has no
+        scheme, with `enabled`. The broker's certificate and hostname are always verified. Left out
+        when creating, TLS settings are `{"enabled": false}`.
+      properties:
+        enabled:
+          type: boolean
+          default: false
+          description: >-
+            Kafka only: connect with TLS (`SSL` or `SASL_SSL`). Must be `false` for Pulsar and
+            RabbitMQ, which use their address scheme.
+        trustedCertificates:
+          type: string
+          minLength: 1
+          maxLength: 65536
+          description: >-
+            One or more CA certificates in PEM form, trusted instead of the JVM's default CAs, for
+            brokers whose certificate a private or self-signed CA issued. Public, so returned in
+            responses. Left out, the JVM's default CAs are trusted. Ignored when TLS is not in use.
+          example: |
+            -----BEGIN CERTIFICATE-----
+            MIIBszCCAVmgAwIBAgIU...
+            -----END CERTIFICATE-----
+    SaslMechanism:
+      type: string
+      enum: [PLAIN, SCRAM_SHA_256, SCRAM_SHA_512]
+      description: >-
+        How a Kafka connection sends its username and password: SASL `PLAIN`, `SCRAM-SHA-256` or
+        `SCRAM-SHA-512`. Kafka only; present in responses only for Kafka connections with
+        `USERNAME_PASSWORD` credentials.
     ConnectionName:
       type: string
       minLength: 1
@@ -249,3 +291,8 @@ components:
           type: string
           minLength: 1
           writeOnly: true
+        saslMechanism:
+          $ref: '#/components/schemas/SaslMechanism'
+          description: >-
+            Kafka only, where it defaults to `PLAIN`. Rejected for RabbitMQ
+            (`connection.invalid-connection`).

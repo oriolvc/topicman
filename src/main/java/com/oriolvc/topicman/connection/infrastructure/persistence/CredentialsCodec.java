@@ -3,10 +3,10 @@ package com.oriolvc.topicman.connection.infrastructure.persistence;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.oriolvc.topicman.connection.domain.Credentials;
-import com.oriolvc.topicman.connection.domain.Secret;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CredentialCipher;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CredentialDecryptionException;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
+import com.oriolvc.topicman.shared.domain.Secret;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
@@ -29,14 +29,16 @@ class CredentialsCodec {
 
     StoredCredentials encode(ConnectionId connectionId, Credentials credentials) {
         return switch (credentials) {
-            case Credentials.None none -> new StoredCredentials(CredentialsType.NONE, null);
+            case Credentials.None none -> new StoredCredentials(CredentialsType.NONE, null, null);
             case Credentials.Token token ->
                 new StoredCredentials(
                         CredentialsType.TOKEN,
+                        null,
                         encrypt(connectionId, new TokenJson(token.token().value())));
             case Credentials.UsernamePassword usernamePassword ->
                 new StoredCredentials(
                         CredentialsType.USERNAME_PASSWORD,
+                        usernamePassword.mechanism(),
                         encrypt(
                                 connectionId,
                                 new UsernamePasswordJson(
@@ -62,7 +64,10 @@ class CredentialsCodec {
                             new Secret(JSON.readValue(json, TokenJson.class).token()));
                 case USERNAME_PASSWORD -> {
                     var value = JSON.readValue(json, UsernamePasswordJson.class);
-                    yield Credentials.usernamePassword(value.username(), new Secret(value.password()));
+                    var mechanism = stored.saslMechanism();
+                    yield mechanism == null
+                            ? Credentials.usernamePassword(value.username(), new Secret(value.password()))
+                            : Credentials.usernamePassword(value.username(), new Secret(value.password()), mechanism);
                 }
                 case NONE -> Credentials.none();
             };

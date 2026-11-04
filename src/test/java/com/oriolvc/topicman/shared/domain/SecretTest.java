@@ -1,4 +1,4 @@
-package com.oriolvc.topicman.connection.domain;
+package com.oriolvc.topicman.shared.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,6 +23,6 @@ class SecretTest {
 
     @Test
     void rejectsEmptySecret() {
-        assertThatThrownBy(() -> new Secret("")).isInstanceOf(InvalidConnectionException.class);
+        assertThatThrownBy(() -> new Secret("")).isInstanceOf(IllegalArgumentException.class);
     }
 }

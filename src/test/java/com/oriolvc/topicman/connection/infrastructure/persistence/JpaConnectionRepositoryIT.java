@@ -4,16 +4,20 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.oriolvc.topicman.TestCertificates;
 import com.oriolvc.topicman.TestcontainersConfiguration;
 import com.oriolvc.topicman.connection.domain.BrokerAddress;
 import com.oriolvc.topicman.connection.domain.Connection;
 import com.oriolvc.topicman.connection.domain.ConnectionName;
 import com.oriolvc.topicman.connection.domain.ConnectionNameTakenException;
 import com.oriolvc.topicman.connection.domain.Credentials;
-import com.oriolvc.topicman.connection.domain.Secret;
+import com.oriolvc.topicman.connection.domain.TlsSettings;
+import com.oriolvc.topicman.connection.domain.TrustedCertificates;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CredentialDecryptionException;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CryptoConfiguration;
 import com.oriolvc.topicman.shared.domain.BrokerType;
+import com.oriolvc.topicman.shared.domain.SaslMechanism;
+import com.oriolvc.topicman.shared.domain.Secret;
 import com.oriolvc.topicman.shared.domain.TestConnectionIds;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
@@ -96,9 +100,9 @@ class JpaConnectionRepositoryIT {
     }
 
     @Test
-    void savesAndFindsAUsernameAndPasswordCredential() {
+    void savesAndFindsAUsernameAndPasswordCredentialWithItsSaslMechanism() {
         var connection = aConnection("Local Kafka", BrokerType.KAFKA, "localhost:9092");
-        var credentials = Credentials.usernamePassword("app", new Secret("pw-value"));
+        var credentials = Credentials.usernamePassword("app", new Secret("pw-value"), SaslMechanism.SCRAM_SHA_512);
         connection.changeCredentials(credentials, CREATED_AT);
 
         repository.save(connection);
@@ -106,6 +110,52 @@ class JpaConnectionRepositoryIT {
 
         assertThat(repository.findById(connection.id()))
                 .hasValueSatisfying(found -> assertThat(found.credentials()).isEqualTo(credentials));
+        assertThat(entityManager
+                        .createNativeQuery("SELECT sasl_mechanism FROM broker_connection WHERE id = :id")
+                        .setParameter("id", connection.id().value())
+                        .getSingleResult())
+                .isEqualTo("SCRAM_SHA_512");
+    }
+
+    @Test
+    void savesAndFindsAUsernameAndPasswordCredentialWithoutASaslMechanism() {
+        var connection = aConnection("Local RabbitMQ", BrokerType.RABBITMQ, "amqp://localhost:5672");
+        var credentials = Credentials.usernamePassword("guest", new Secret("pw-value"));
+        connection.changeCredentials(credentials, CREATED_AT);
+
+        repository.save(connection);
+        flushAndClear();
+
+        assertThat(repository.findById(connection.id()))
+                .hasValueSatisfying(found -> assertThat(found.credentials()).isEqualTo(credentials));
+    }
+
+    @Test
+    void savesAndFindsTlsSettings() {
+        var connection = aConnection("Secure Kafka", BrokerType.KAFKA, "localhost:9093");
+        var tls = new TlsSettings(true, new TrustedCertificates(TestCertificates.CA));
+        connection.changeTls(tls, CREATED_AT);
+
+        repository.save(connection);
+        flushAndClear();
+
+        assertThat(repository.findById(connection.id()))
+                .hasValueSatisfying(found -> assertThat(found.tls()).isEqualTo(tls));
+    }
+
+    @Test
+    void changesTlsSettingsBackToTheDefaults() {
+        var connection = aConnection("Secure Kafka", BrokerType.KAFKA, "localhost:9093");
+        connection.changeTls(new TlsSettings(true, new TrustedCertificates(TestCertificates.CA)), CREATED_AT);
+        repository.save(connection);
+        flushAndClear();
+
+        connection.changeTls(TlsSettings.disabled(), CREATED_AT);
+        repository.save(connection);
+        flushAndClear();
+
+        assertThat(repository.findById(connection.id()))
+                .hasValueSatisfying(found -> assertThat(found.tls()).isEqualTo(TlsSettings.disabled()));
     }
 
     @Test

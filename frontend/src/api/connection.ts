@@ -10,6 +10,8 @@ export type ConnectionResponse = Schemas['ConnectionResponse'];
 export type CreateConnectionRequest = Schemas['CreateConnectionRequest'];
 export type UpdateConnectionRequest = Schemas['UpdateConnectionRequest'];
 export type CredentialsRequest = Schemas['CredentialsRequest'];
+export type SaslMechanism = Schemas['SaslMechanism'];
+export type TlsSettings = Schemas['TlsSettings'];
 
 /** Typed client for the connections API (`connection.yaml`). */
 export const connectionApi = createClient<paths>(clientOptions);

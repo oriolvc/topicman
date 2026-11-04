@@ -1,28 +1,45 @@
 package com.oriolvc.topicman.messaging.infrastructure.connection;
 
-import com.oriolvc.topicman.connection.application.GetConnectionCommand;
-import com.oriolvc.topicman.connection.application.GetConnectionUseCase;
+import com.oriolvc.topicman.connection.application.BrokerCredentials;
+import com.oriolvc.topicman.connection.application.GetBrokerAccessCommand;
+import com.oriolvc.topicman.connection.application.GetBrokerAccessUseCase;
+import com.oriolvc.topicman.messaging.domain.Authentication;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
 import com.oriolvc.topicman.messaging.domain.BrokerEndpoints;
+import com.oriolvc.topicman.messaging.domain.Tls;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import org.springframework.stereotype.Component;
 
 /**
- * Resolves endpoints through the connection context's application API, never its domain or
- * persistence. Credentials are added with the TLS and SASL task (Phase 5).
+ * Resolves endpoints, credentials and TLS settings included, through the connection context's
+ * application API, never its domain or persistence (ADR 0002, ADR 0008).
  */
 @Component
 class ConnectionBrokerEndpoints implements BrokerEndpoints {
 
-    private final GetConnectionUseCase getConnection;
+    private final GetBrokerAccessUseCase getBrokerAccess;
 
-    ConnectionBrokerEndpoints(GetConnectionUseCase getConnection) {
-        this.getConnection = getConnection;
+    ConnectionBrokerEndpoints(GetBrokerAccessUseCase getBrokerAccess) {
+        this.getBrokerAccess = getBrokerAccess;
     }
 
     @Override
     public BrokerEndpoint of(ConnectionId connectionId) {
-        var connection = getConnection.execute(new GetConnectionCommand(connectionId));
-        return new BrokerEndpoint(connection.brokerType(), connection.address());
+        var access = getBrokerAccess.execute(new GetBrokerAccessCommand(connectionId));
+        return new BrokerEndpoint(
+                access.brokerType(),
+                access.address(),
+                toAuthentication(access.credentials()),
+                new Tls(access.tlsEnabled(), access.trustedCertificates()));
+    }
+
+    private static Authentication toAuthentication(BrokerCredentials credentials) {
+        return switch (credentials) {
+            case BrokerCredentials.None none -> Authentication.none();
+            case BrokerCredentials.Token token -> new Authentication.Token(token.token());
+            case BrokerCredentials.UsernamePassword usernamePassword ->
+                new Authentication.UsernamePassword(
+                        usernamePassword.username(), usernamePassword.password(), usernamePassword.mechanism());
+        };
     }
 }

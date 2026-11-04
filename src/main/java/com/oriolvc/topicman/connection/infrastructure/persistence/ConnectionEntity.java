@@ -1,6 +1,7 @@
 package com.oriolvc.topicman.connection.infrastructure.persistence;
 
 import com.oriolvc.topicman.shared.domain.BrokerType;
+import com.oriolvc.topicman.shared.domain.SaslMechanism;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,6 +36,16 @@ class ConnectionEntity {
     @Column(name = "credentials_ciphertext")
     private byte @Nullable [] credentialsCiphertext;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sasl_mechanism")
+    private @Nullable SaslMechanism saslMechanism;
+
+    @Column(name = "tls_enabled", nullable = false)
+    private boolean tlsEnabled;
+
+    @Column(name = "tls_trusted_certificates")
+    private @Nullable String tlsTrustedCertificates;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -53,23 +64,23 @@ class ConnectionEntity {
             BrokerType brokerType,
             String address,
             StoredCredentials credentials,
+            StoredTls tls,
             Instant createdAt,
             Instant updatedAt) {
         this.id = id;
-        this.name = name;
         this.brokerType = brokerType;
-        this.address = address;
-        this.credentialsType = credentials.type();
-        this.credentialsCiphertext = credentials.ciphertext();
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        update(name, address, credentials, tls, updatedAt);
     }
 
-    void update(String name, String address, StoredCredentials credentials, Instant updatedAt) {
+    void update(String name, String address, StoredCredentials credentials, StoredTls tls, Instant updatedAt) {
         this.name = name;
         this.address = address;
         this.credentialsType = credentials.type();
+        this.saslMechanism = credentials.saslMechanism();
         this.credentialsCiphertext = credentials.ciphertext();
+        this.tlsEnabled = tls.enabled();
+        this.tlsTrustedCertificates = tls.trustedCertificates();
         this.updatedAt = updatedAt;
     }
 
@@ -90,7 +101,11 @@ class ConnectionEntity {
     }
 
     StoredCredentials credentials() {
-        return new StoredCredentials(credentialsType, credentialsCiphertext);
+        return new StoredCredentials(credentialsType, saslMechanism, credentialsCiphertext);
+    }
+
+    StoredTls tls() {
+        return new StoredTls(tlsEnabled, tlsTrustedCertificates);
     }
 
     Instant createdAt() {

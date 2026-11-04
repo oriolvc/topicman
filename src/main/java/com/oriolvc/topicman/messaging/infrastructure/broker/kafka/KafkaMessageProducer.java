@@ -107,7 +107,8 @@ final class KafkaMessageProducer implements MessageProducer, AutoCloseable {
                 timeoutMs,
                 ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG,
                 timeoutMs);
-        return new KafkaProducer<>(config, new StringSerializer(), new ByteArraySerializer());
+        return new KafkaProducer<>(
+                KafkaSecurity.withSecurity(endpoint, config), new StringSerializer(), new ByteArraySerializer());
     }
 
     private void discard(BrokerEndpoint endpoint, Producer<String, byte[]> producer) {

@@ -96,6 +96,10 @@ paths:
           closes it.
 
 
+        Every test uses the connection's credentials and TLS settings (ADR 0008), so rejected
+        credentials and a certificate that is not trusted or does not match the host fail it too.
+
+
         A broker that cannot be reached is a test result, not an error: the answer is `200` with
         `status: FAILED`. The test takes at most the broker's connect and open timeouts.
       requestBody:

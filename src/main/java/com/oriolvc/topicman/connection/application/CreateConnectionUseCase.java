@@ -29,6 +29,7 @@ public class CreateConnectionUseCase {
                 command.brokerType(),
                 command.address(),
                 command.credentials(),
+                command.tls(),
                 clock.instant());
         repository.save(connection);
         return ConnectionResult.of(connection);

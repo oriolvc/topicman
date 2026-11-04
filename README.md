@@ -85,6 +85,22 @@ Broker credentials are encrypted at rest with the key in `TOPICMAN_MASTER_KEY`
 key; TopicMan does not start without one. Store it safely and reuse it: **if you lose the key, the
 saved credentials cannot be recovered** and must be entered again.
 
+### Secured brokers
+
+Connections authenticate and use TLS as each broker does
+([ADR 0008](docs/adr/0008-tls-and-sasl-for-broker-connections.md)):
+
+| Broker   | Authentication                                        | TLS                         |
+|----------|-------------------------------------------------------|-----------------------------|
+| Kafka    | Username and password with SASL PLAIN, SCRAM-SHA-256 or SCRAM-SHA-512 | the connection's "Use TLS" switch |
+| Pulsar   | JWT token                                             | a `pulsar+ssl://` address   |
+| RabbitMQ | Username and password                                 | an `amqps://` address       |
+
+TopicMan always verifies the broker's certificate and hostname. For a broker whose certificate a
+private or self-signed CA issued, paste that CA's certificate (PEM) into the connection's trusted
+certificates; otherwise the JVM's default CAs are trusted. Client certificates (mutual TLS) are not
+supported yet.
+
 ## Design
 
 Hexagonal architecture in a single Spring Boot service, one adapter per broker behind common ports.

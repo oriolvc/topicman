@@ -47,15 +47,17 @@ final class KafkaConnectionTester implements ConnectionTester {
         }
         Admin admin;
         try {
-            admin = Admin.create(Map.of(
-                    AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
-                    endpoint.address(),
-                    AdminClientConfig.CLIENT_ID_CONFIG,
-                    KafkaClientIds.next("tester"),
-                    AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG,
-                    (int) openTimeout.toMillis(),
-                    AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG,
-                    (int) openTimeout.toMillis()));
+            admin = Admin.create(KafkaSecurity.withSecurity(
+                    endpoint,
+                    Map.of(
+                            AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
+                            endpoint.address(),
+                            AdminClientConfig.CLIENT_ID_CONFIG,
+                            KafkaClientIds.next("tester"),
+                            AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG,
+                            (int) openTimeout.toMillis(),
+                            AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG,
+                            (int) openTimeout.toMillis())));
         } catch (KafkaException e) {
             return ConnectionTestOutcome.failed("Invalid Kafka address: " + e.getMessage());
         }
