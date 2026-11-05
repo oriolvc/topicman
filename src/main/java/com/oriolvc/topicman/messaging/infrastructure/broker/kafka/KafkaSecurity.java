@@ -1,7 +1,7 @@
 package com.oriolvc.topicman.messaging.infrastructure.broker.kafka;
 
-import com.oriolvc.topicman.messaging.domain.Authentication;
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.Authentication;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
 import com.oriolvc.topicman.shared.domain.SaslMechanism;
 import java.util.HashMap;
 import java.util.Map;

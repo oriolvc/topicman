@@ -1,15 +1,15 @@
 package com.oriolvc.topicman.collection.infrastructure.web;
 
-import com.oriolvc.topicman.collection.domain.CollectionNameTakenException;
-import com.oriolvc.topicman.collection.domain.CollectionNotFoundException;
-import com.oriolvc.topicman.collection.domain.EnvironmentNameTakenException;
-import com.oriolvc.topicman.collection.domain.EnvironmentNotFoundException;
-import com.oriolvc.topicman.collection.domain.InvalidCollectionException;
-import com.oriolvc.topicman.collection.domain.InvalidEnvironmentException;
-import com.oriolvc.topicman.collection.domain.InvalidTemplateException;
-import com.oriolvc.topicman.collection.domain.TemplateNameTakenException;
-import com.oriolvc.topicman.collection.domain.TemplateNotFoundException;
-import com.oriolvc.topicman.collection.domain.UnresolvedVariablesException;
+import com.oriolvc.topicman.collection.domain.exception.CollectionNameTakenException;
+import com.oriolvc.topicman.collection.domain.exception.CollectionNotFoundException;
+import com.oriolvc.topicman.collection.domain.exception.EnvironmentNameTakenException;
+import com.oriolvc.topicman.collection.domain.exception.EnvironmentNotFoundException;
+import com.oriolvc.topicman.collection.domain.exception.InvalidCollectionException;
+import com.oriolvc.topicman.collection.domain.exception.InvalidEnvironmentException;
+import com.oriolvc.topicman.collection.domain.exception.InvalidTemplateException;
+import com.oriolvc.topicman.collection.domain.exception.TemplateNameTakenException;
+import com.oriolvc.topicman.collection.domain.exception.TemplateNotFoundException;
+import com.oriolvc.topicman.collection.domain.exception.UnresolvedVariablesException;
 import com.oriolvc.topicman.shared.infrastructure.web.ContextExceptionHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

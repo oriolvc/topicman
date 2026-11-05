@@ -1,0 +1,13 @@
+package com.oriolvc.topicman.messaging.domain.exception;
+
+import com.oriolvc.topicman.messaging.domain.model.ConsumeSessionId;
+import com.oriolvc.topicman.shared.domain.DomainException;
+
+public final class ConsumeSessionNotFoundException extends DomainException {
+
+    public static final String CODE = "messaging.session-not-found";
+
+    public ConsumeSessionNotFoundException(ConsumeSessionId id) {
+        super(CODE, "No open consume session has id " + id);
+    }
+}

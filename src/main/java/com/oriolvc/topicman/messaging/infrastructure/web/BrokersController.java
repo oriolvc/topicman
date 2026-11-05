@@ -1,8 +1,8 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
-import com.oriolvc.topicman.messaging.application.ListBrokersCommand;
-import com.oriolvc.topicman.messaging.application.ListBrokersUseCase;
-import com.oriolvc.topicman.messaging.application.SupportedBroker;
+import com.oriolvc.topicman.messaging.application.model.ListBrokersCommand;
+import com.oriolvc.topicman.messaging.application.model.SupportedBroker;
+import com.oriolvc.topicman.messaging.application.usecase.ListBrokersUseCase;
 import com.oriolvc.topicman.messaging.infrastructure.web.api.BrokersApi;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.BrokerResponse;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.BrokerType;

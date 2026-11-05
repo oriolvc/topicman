@@ -1,10 +1,10 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
-import com.oriolvc.topicman.messaging.domain.Destination;
-import com.oriolvc.topicman.messaging.domain.Headers;
-import com.oriolvc.topicman.messaging.domain.Message;
-import com.oriolvc.topicman.messaging.domain.Payload;
-import com.oriolvc.topicman.messaging.domain.PayloadFormat;
+import com.oriolvc.topicman.messaging.domain.model.Destination;
+import com.oriolvc.topicman.messaging.domain.model.Headers;
+import com.oriolvc.topicman.messaging.domain.model.Message;
+import com.oriolvc.topicman.messaging.domain.model.Payload;
+import com.oriolvc.topicman.messaging.domain.model.PayloadFormat;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.ExchangeDestination;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.TopicDestination;
 import java.util.Map;

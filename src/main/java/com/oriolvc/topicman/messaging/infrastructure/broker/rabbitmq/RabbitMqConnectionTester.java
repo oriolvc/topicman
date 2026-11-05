@@ -1,8 +1,8 @@
 package com.oriolvc.topicman.messaging.infrastructure.broker.rabbitmq;
 
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
-import com.oriolvc.topicman.messaging.domain.ConnectionTestOutcome;
-import com.oriolvc.topicman.messaging.domain.ConnectionTester;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.ConnectionTestOutcome;
+import com.oriolvc.topicman.messaging.domain.port.ConnectionTester;
 import com.oriolvc.topicman.messaging.infrastructure.broker.rabbitmq.RabbitMqConnections.ConnectionFailedException;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import org.slf4j.Logger;

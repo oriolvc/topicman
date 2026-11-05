@@ -1,8 +1,8 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
-import com.oriolvc.topicman.messaging.application.ConsumeSessionSink;
-import com.oriolvc.topicman.messaging.domain.ReadFailedException;
-import com.oriolvc.topicman.messaging.domain.ReceivedMessage;
+import com.oriolvc.topicman.messaging.application.model.ConsumeSessionSink;
+import com.oriolvc.topicman.messaging.domain.exception.ReadFailedException;
+import com.oriolvc.topicman.messaging.domain.model.ReceivedMessage;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.ConsumedMessageEvent;
 import java.io.IOException;
 import java.time.ZoneOffset;

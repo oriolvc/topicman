@@ -1,7 +1,7 @@
 package com.oriolvc.topicman.connection.infrastructure.persistence;
 
-import com.oriolvc.topicman.connection.domain.TlsSettings;
-import com.oriolvc.topicman.connection.domain.TrustedCertificates;
+import com.oriolvc.topicman.connection.domain.model.TlsSettings;
+import com.oriolvc.topicman.connection.domain.model.TrustedCertificates;
 import org.jspecify.annotations.Nullable;
 
 /** TLS settings as stored, in plain text: none of them is a secret (ADR 0008). */

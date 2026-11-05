@@ -1,7 +1,7 @@
 package com.oriolvc.topicman.collection.infrastructure.persistence;
 
-import com.oriolvc.topicman.collection.domain.DestinationKind;
-import com.oriolvc.topicman.collection.domain.PayloadFormat;
+import com.oriolvc.topicman.collection.domain.model.DestinationKind;
+import com.oriolvc.topicman.collection.domain.model.PayloadFormat;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;

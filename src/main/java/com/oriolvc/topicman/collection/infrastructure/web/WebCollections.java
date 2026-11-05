@@ -1,16 +1,16 @@
 package com.oriolvc.topicman.collection.infrastructure.web;
 
-import com.oriolvc.topicman.collection.application.CollectionResult;
-import com.oriolvc.topicman.collection.application.EnvironmentResult;
-import com.oriolvc.topicman.collection.application.TemplateContent;
-import com.oriolvc.topicman.collection.application.TemplateResult;
-import com.oriolvc.topicman.collection.domain.PayloadFormat;
-import com.oriolvc.topicman.collection.domain.ResolvedMessage;
-import com.oriolvc.topicman.collection.domain.TemplateDestination;
-import com.oriolvc.topicman.collection.domain.TemplateName;
-import com.oriolvc.topicman.collection.domain.TemplatePayload;
-import com.oriolvc.topicman.collection.domain.Variable;
-import com.oriolvc.topicman.collection.domain.VariableName;
+import com.oriolvc.topicman.collection.application.model.CollectionResult;
+import com.oriolvc.topicman.collection.application.model.EnvironmentResult;
+import com.oriolvc.topicman.collection.application.model.TemplateContent;
+import com.oriolvc.topicman.collection.application.model.TemplateResult;
+import com.oriolvc.topicman.collection.domain.model.PayloadFormat;
+import com.oriolvc.topicman.collection.domain.model.ResolvedMessage;
+import com.oriolvc.topicman.collection.domain.model.TemplateDestination;
+import com.oriolvc.topicman.collection.domain.model.TemplateName;
+import com.oriolvc.topicman.collection.domain.model.TemplatePayload;
+import com.oriolvc.topicman.collection.domain.model.Variable;
+import com.oriolvc.topicman.collection.domain.model.VariableName;
 import com.oriolvc.topicman.collection.infrastructure.web.model.BrokerType;
 import com.oriolvc.topicman.collection.infrastructure.web.model.CollectionResponse;
 import com.oriolvc.topicman.collection.infrastructure.web.model.Destination;

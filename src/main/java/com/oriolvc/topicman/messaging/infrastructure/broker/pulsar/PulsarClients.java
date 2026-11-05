@@ -1,7 +1,7 @@
 package com.oriolvc.topicman.messaging.infrastructure.broker.pulsar;
 
-import com.oriolvc.topicman.messaging.domain.Authentication;
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.Authentication;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

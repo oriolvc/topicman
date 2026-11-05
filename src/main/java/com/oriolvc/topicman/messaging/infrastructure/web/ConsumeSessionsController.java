@@ -1,14 +1,14 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
-import com.oriolvc.topicman.messaging.application.CloseConsumeSessionCommand;
-import com.oriolvc.topicman.messaging.application.CloseConsumeSessionUseCase;
-import com.oriolvc.topicman.messaging.application.ConsumeSessionResult;
-import com.oriolvc.topicman.messaging.application.OpenConsumeSessionCommand;
-import com.oriolvc.topicman.messaging.application.OpenConsumeSessionUseCase;
-import com.oriolvc.topicman.messaging.application.StreamConsumeSessionCommand;
-import com.oriolvc.topicman.messaging.application.StreamConsumeSessionUseCase;
-import com.oriolvc.topicman.messaging.domain.ConsumeSessionId;
-import com.oriolvc.topicman.messaging.domain.StartPosition;
+import com.oriolvc.topicman.messaging.application.model.CloseConsumeSessionCommand;
+import com.oriolvc.topicman.messaging.application.model.ConsumeSessionResult;
+import com.oriolvc.topicman.messaging.application.model.OpenConsumeSessionCommand;
+import com.oriolvc.topicman.messaging.application.model.StreamConsumeSessionCommand;
+import com.oriolvc.topicman.messaging.application.usecase.CloseConsumeSessionUseCase;
+import com.oriolvc.topicman.messaging.application.usecase.OpenConsumeSessionUseCase;
+import com.oriolvc.topicman.messaging.application.usecase.StreamConsumeSessionUseCase;
+import com.oriolvc.topicman.messaging.domain.model.ConsumeSessionId;
+import com.oriolvc.topicman.messaging.domain.model.StartPosition;
 import com.oriolvc.topicman.messaging.infrastructure.web.api.ConsumeSessionsApi;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.ConsumeSessionResponse;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.OpenConsumeSessionRequest;

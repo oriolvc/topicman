@@ -2,13 +2,13 @@ package com.oriolvc.topicman.messaging.infrastructure.broker.kafka;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
-import com.oriolvc.topicman.messaging.domain.Destination;
-import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
-import com.oriolvc.topicman.messaging.domain.Message;
-import com.oriolvc.topicman.messaging.domain.MessageProducer;
-import com.oriolvc.topicman.messaging.domain.ProduceFailedException;
-import com.oriolvc.topicman.messaging.domain.SendReceipt;
+import com.oriolvc.topicman.messaging.domain.exception.InvalidDestinationException;
+import com.oriolvc.topicman.messaging.domain.exception.ProduceFailedException;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.Destination;
+import com.oriolvc.topicman.messaging.domain.model.Message;
+import com.oriolvc.topicman.messaging.domain.model.SendReceipt;
+import com.oriolvc.topicman.messaging.domain.port.MessageProducer;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.time.Duration;
 import java.util.Map;

@@ -1,10 +1,10 @@
 package com.oriolvc.topicman.connection.infrastructure.persistence;
 
-import com.oriolvc.topicman.connection.domain.BrokerAddress;
-import com.oriolvc.topicman.connection.domain.Connection;
-import com.oriolvc.topicman.connection.domain.ConnectionName;
-import com.oriolvc.topicman.connection.domain.ConnectionNameTakenException;
-import com.oriolvc.topicman.connection.domain.ConnectionRepository;
+import com.oriolvc.topicman.connection.domain.exception.ConnectionNameTakenException;
+import com.oriolvc.topicman.connection.domain.model.BrokerAddress;
+import com.oriolvc.topicman.connection.domain.model.Connection;
+import com.oriolvc.topicman.connection.domain.model.ConnectionName;
+import com.oriolvc.topicman.connection.domain.port.ConnectionRepository;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import java.util.List;
 import java.util.Optional;

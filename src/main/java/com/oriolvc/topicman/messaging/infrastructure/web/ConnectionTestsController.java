@@ -1,7 +1,7 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
-import com.oriolvc.topicman.messaging.application.TestConnectionCommand;
-import com.oriolvc.topicman.messaging.application.TestConnectionUseCase;
+import com.oriolvc.topicman.messaging.application.model.TestConnectionCommand;
+import com.oriolvc.topicman.messaging.application.usecase.TestConnectionUseCase;
 import com.oriolvc.topicman.messaging.infrastructure.web.api.ConnectionTestsApi;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.ConnectionTestResponse;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.TestConnectionRequest;

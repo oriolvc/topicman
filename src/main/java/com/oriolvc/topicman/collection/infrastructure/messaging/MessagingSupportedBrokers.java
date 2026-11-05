@@ -1,11 +1,11 @@
 package com.oriolvc.topicman.collection.infrastructure.messaging;
 
-import com.oriolvc.topicman.collection.domain.BrokerFeatures;
-import com.oriolvc.topicman.collection.domain.DestinationKind;
-import com.oriolvc.topicman.collection.domain.SupportedBrokers;
-import com.oriolvc.topicman.messaging.application.ListBrokersCommand;
-import com.oriolvc.topicman.messaging.application.ListBrokersUseCase;
-import com.oriolvc.topicman.messaging.application.SupportedBroker;
+import com.oriolvc.topicman.collection.domain.model.BrokerFeatures;
+import com.oriolvc.topicman.collection.domain.model.DestinationKind;
+import com.oriolvc.topicman.collection.domain.port.SupportedBrokers;
+import com.oriolvc.topicman.messaging.application.model.ListBrokersCommand;
+import com.oriolvc.topicman.messaging.application.model.SupportedBroker;
+import com.oriolvc.topicman.messaging.application.usecase.ListBrokersUseCase;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.util.Optional;
 import org.springframework.stereotype.Component;

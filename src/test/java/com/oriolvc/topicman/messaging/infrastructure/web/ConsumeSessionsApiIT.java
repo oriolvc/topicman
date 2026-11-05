@@ -5,11 +5,11 @@ import static org.awaitility.Awaitility.await;
 
 import com.jayway.jsonpath.JsonPath;
 import com.oriolvc.topicman.TestcontainersConfiguration;
-import com.oriolvc.topicman.connection.application.CreateConnectionCommand;
-import com.oriolvc.topicman.connection.application.CreateConnectionUseCase;
-import com.oriolvc.topicman.connection.domain.BrokerAddress;
-import com.oriolvc.topicman.connection.domain.ConnectionName;
-import com.oriolvc.topicman.connection.domain.Credentials;
+import com.oriolvc.topicman.connection.application.model.CreateConnectionCommand;
+import com.oriolvc.topicman.connection.application.usecase.CreateConnectionUseCase;
+import com.oriolvc.topicman.connection.domain.model.BrokerAddress;
+import com.oriolvc.topicman.connection.domain.model.ConnectionName;
+import com.oriolvc.topicman.connection.domain.model.Credentials;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.net.URI;
 import java.net.http.HttpClient;

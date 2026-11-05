@@ -2,12 +2,12 @@ package com.oriolvc.topicman.messaging.infrastructure.broker.kafka;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.oriolvc.topicman.messaging.domain.Headers;
-import com.oriolvc.topicman.messaging.domain.Message;
-import com.oriolvc.topicman.messaging.domain.MessageStream;
-import com.oriolvc.topicman.messaging.domain.Payload;
-import com.oriolvc.topicman.messaging.domain.ReadFailedException;
-import com.oriolvc.topicman.messaging.domain.ReceivedMessage;
+import com.oriolvc.topicman.messaging.domain.exception.ReadFailedException;
+import com.oriolvc.topicman.messaging.domain.model.Headers;
+import com.oriolvc.topicman.messaging.domain.model.Message;
+import com.oriolvc.topicman.messaging.domain.model.Payload;
+import com.oriolvc.topicman.messaging.domain.model.ReceivedMessage;
+import com.oriolvc.topicman.messaging.domain.port.MessageStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;

@@ -1,13 +1,13 @@
 package com.oriolvc.topicman.messaging.infrastructure.broker.rabbitmq;
 
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
-import com.oriolvc.topicman.messaging.domain.Destination;
-import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
-import com.oriolvc.topicman.messaging.domain.Message;
-import com.oriolvc.topicman.messaging.domain.MessageProducer;
-import com.oriolvc.topicman.messaging.domain.PayloadFormat;
-import com.oriolvc.topicman.messaging.domain.ProduceFailedException;
-import com.oriolvc.topicman.messaging.domain.SendReceipt;
+import com.oriolvc.topicman.messaging.domain.exception.InvalidDestinationException;
+import com.oriolvc.topicman.messaging.domain.exception.ProduceFailedException;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.Destination;
+import com.oriolvc.topicman.messaging.domain.model.Message;
+import com.oriolvc.topicman.messaging.domain.model.PayloadFormat;
+import com.oriolvc.topicman.messaging.domain.model.SendReceipt;
+import com.oriolvc.topicman.messaging.domain.port.MessageProducer;
 import com.oriolvc.topicman.messaging.infrastructure.broker.rabbitmq.RabbitMqConnections.ConnectionFailedException;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import com.rabbitmq.client.AMQP;

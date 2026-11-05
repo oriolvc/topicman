@@ -1,11 +1,11 @@
 package com.oriolvc.topicman.collection.infrastructure.persistence;
 
-import com.oriolvc.topicman.collection.domain.Environment;
-import com.oriolvc.topicman.collection.domain.EnvironmentId;
-import com.oriolvc.topicman.collection.domain.EnvironmentName;
-import com.oriolvc.topicman.collection.domain.EnvironmentNameTakenException;
-import com.oriolvc.topicman.collection.domain.EnvironmentRepository;
-import com.oriolvc.topicman.collection.domain.VariableName;
+import com.oriolvc.topicman.collection.domain.exception.EnvironmentNameTakenException;
+import com.oriolvc.topicman.collection.domain.model.Environment;
+import com.oriolvc.topicman.collection.domain.model.EnvironmentId;
+import com.oriolvc.topicman.collection.domain.model.EnvironmentName;
+import com.oriolvc.topicman.collection.domain.model.VariableName;
+import com.oriolvc.topicman.collection.domain.port.EnvironmentRepository;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;

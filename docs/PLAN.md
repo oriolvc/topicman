@@ -26,6 +26,7 @@ Out (post-MVP):
 
 - v2: forms generated from a schema registry (Avro, JSON Schema, Protobuf)
 - v2: consumer test scenarios (produce to A, assert a matching message on B)
+- Post-launch: a history of produced and consumed messages
 - v2: replay a consumed message, or save it to a collection in one click
 - Later: users and roles, broker administration, more brokers (NATS, SQS, MQTT, RabbitMQ Streams)
 - Never: a public hosted version that stores third-party credentials
@@ -90,11 +91,22 @@ Out (post-MVP):
 - [x] `compose.demo.yaml` with PostgreSQL, Pulsar, Kafka and RabbitMQ
 - [x] App binds to localhost by default; documented way to expose it
 
-## Phase 6 — Launch
+## Phase 6 — Cleanup and refinements
+
+- [x] Split `domain` into `model`, `port` and `exception`, and `application` into `usecase` and
+      `model`, with ArchUnit rules that keep them that way
+- [ ] Run without PostgreSQL: an embedded H2 database stored on disk unless a datasource is set, and
+      a generated master key in that mode (each needs an ADR first)
+- [ ] Production Docker image published to GHCR on release. It must set `SERVER_ADDRESS=0.0.0.0`:
+      inside a container, the loopback default cannot be reached through a published port
+- [ ] Example data on an empty database: connections with each kind of credentials, collections,
+      environments and JSON and text templates. It loads in embedded mode, with the `demo` profile
+      or with `TOPICMAN_SEED_EXAMPLES=true`, and only once, so deleted examples do not come back
+- [ ] The demo brokers start with sample JSON and text messages in their topics
+
+## Phase 7 — Launch
 
 - [ ] README: 20-second GIF, quick start, broker differences table
 - [ ] ADRs up to date
-- [ ] Production Docker image published to GHCR on release. It must set `SERVER_ADDRESS=0.0.0.0`:
-      inside a container, the loopback default cannot be reached through a published port
 - [ ] Release v0.1.0
 - [ ] LinkedIn post explaining the design

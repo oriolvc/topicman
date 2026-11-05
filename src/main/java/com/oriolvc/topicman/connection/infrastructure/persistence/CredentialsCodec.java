@@ -2,7 +2,7 @@ package com.oriolvc.topicman.connection.infrastructure.persistence;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.oriolvc.topicman.connection.domain.Credentials;
+import com.oriolvc.topicman.connection.domain.model.Credentials;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CredentialCipher;
 import com.oriolvc.topicman.connection.infrastructure.crypto.CredentialDecryptionException;
 import com.oriolvc.topicman.shared.domain.ConnectionId;

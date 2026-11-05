@@ -9,14 +9,20 @@ paths:
 
 ```
 com.oriolvc.topicman.<context>
-├── domain/          aggregates, entities, value objects, domain events, domain exceptions,
-│                    outbound ports (e.g. ConnectionRepository, MessageProducer)
-├── application/     one class per use case, commands, results
+├── domain/
+│   ├── model/       aggregates, entities, value objects, domain events, domain services
+│   ├── port/        outbound ports, always interfaces (e.g. ConnectionRepository, MessageProducer)
+│   └── exception/   domain exceptions
+├── application/
+│   ├── usecase/     one class per use case, and package-private helpers only they use
+│   └── model/       commands, results and other types use cases expose
 └── infrastructure/
     ├── web/         REST and SSE controllers, request/response DTOs, exception mapping
     ├── persistence/ JPA entities, Spring Data repositories, mappers to the domain
     └── broker/      broker adapters: kafka/, pulsar/, rabbitmq/ (messaging context only)
 ```
+
+`shared/domain` stays flat (ADR 0009).
 
 ## Domain
 

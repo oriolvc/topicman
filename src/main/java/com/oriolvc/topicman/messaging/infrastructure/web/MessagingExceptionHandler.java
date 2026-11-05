@@ -1,12 +1,12 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
-import com.oriolvc.topicman.messaging.domain.ConsumeSessionInUseException;
-import com.oriolvc.topicman.messaging.domain.ConsumeSessionLimitReachedException;
-import com.oriolvc.topicman.messaging.domain.ConsumeSessionNotFoundException;
-import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
-import com.oriolvc.topicman.messaging.domain.InvalidMessageException;
-import com.oriolvc.topicman.messaging.domain.ProduceFailedException;
-import com.oriolvc.topicman.messaging.domain.ReadFailedException;
+import com.oriolvc.topicman.messaging.domain.exception.ConsumeSessionInUseException;
+import com.oriolvc.topicman.messaging.domain.exception.ConsumeSessionLimitReachedException;
+import com.oriolvc.topicman.messaging.domain.exception.ConsumeSessionNotFoundException;
+import com.oriolvc.topicman.messaging.domain.exception.InvalidDestinationException;
+import com.oriolvc.topicman.messaging.domain.exception.InvalidMessageException;
+import com.oriolvc.topicman.messaging.domain.exception.ProduceFailedException;
+import com.oriolvc.topicman.messaging.domain.exception.ReadFailedException;
 import com.oriolvc.topicman.shared.domain.ConnectionNotFoundException;
 import com.oriolvc.topicman.shared.infrastructure.web.ContextExceptionHandler;
 import org.slf4j.Logger;

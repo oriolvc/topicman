@@ -1,5 +1,6 @@
 package com.oriolvc.topicman;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
@@ -16,6 +17,7 @@ import com.tngtech.archunit.lang.ArchRule;
 class ArchitectureTest {
 
     private static final String BASE = "com.oriolvc.topicman";
+    private static final String CONTEXTS = BASE + ".[connection|messaging|collection]";
 
     @ArchTest
     static final ArchRule layersDependOnlyInward = layeredArchitecture()
@@ -75,11 +77,48 @@ class ArchitectureTest {
             .haveSimpleNameStartingWith("GetBrokerAccess")
             .orShould()
             .dependOnClassesThat()
-            .haveFullyQualifiedName(BASE + ".connection.application.BrokerAccessResult")
+            .haveFullyQualifiedName(BASE + ".connection.application.model.BrokerAccessResult")
             .orShould()
             .dependOnClassesThat()
-            .haveNameMatching(BASE.replace(".", "\\.") + "\\.connection\\.application\\.BrokerCredentials.*")
+            .haveNameMatching(BASE.replace(".", "\\.") + "\\.connection\\.application\\.model\\.BrokerCredentials.*")
             .because("decrypted credentials must never reach a controller or the API (ADR 0008)");
+
+    /** Every class in a context's inner layers belongs to a subpackage for its role (ADR 0009). */
+    @ArchTest
+    static final ArchRule innerLayersHaveNoLooseClasses =
+            noClasses().should().resideInAnyPackage(CONTEXTS + ".domain", CONTEXTS + ".application");
+
+    @ArchTest
+    static final ArchRule useCasesLiveInUsecase = classes()
+            .that()
+            .haveSimpleNameEndingWith("UseCase")
+            .should()
+            .resideInAPackage(CONTEXTS + ".application.usecase");
+
+    @ArchTest
+    static final ArchRule commandsAndResultsLiveInApplicationModel = classes()
+            .that()
+            .haveSimpleNameEndingWith("Command")
+            .or()
+            .haveSimpleNameEndingWith("Result")
+            .should()
+            .resideInAPackage(CONTEXTS + ".application.model");
+
+    @ArchTest
+    static final ArchRule domainExceptionsLiveInException = classes()
+            .that()
+            .resideInAPackage(CONTEXTS + ".domain..")
+            .and()
+            .areAssignableTo(RuntimeException.class)
+            .should()
+            .resideInAPackage(CONTEXTS + ".domain.exception");
+
+    @ArchTest
+    static final ArchRule portsAreInterfaces = classes()
+            .that()
+            .resideInAPackage(CONTEXTS + ".domain.port")
+            .should()
+            .beInterfaces();
 
     /**
      * Other contexts may use a context only through its application layer (or domain events, which

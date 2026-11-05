@@ -1,12 +1,12 @@
 package com.oriolvc.topicman.messaging.infrastructure.broker.kafka;
 
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
-import com.oriolvc.topicman.messaging.domain.Destination;
-import com.oriolvc.topicman.messaging.domain.InvalidDestinationException;
-import com.oriolvc.topicman.messaging.domain.MessageReader;
-import com.oriolvc.topicman.messaging.domain.MessageStream;
-import com.oriolvc.topicman.messaging.domain.ReadFailedException;
-import com.oriolvc.topicman.messaging.domain.StartPosition;
+import com.oriolvc.topicman.messaging.domain.exception.InvalidDestinationException;
+import com.oriolvc.topicman.messaging.domain.exception.ReadFailedException;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.Destination;
+import com.oriolvc.topicman.messaging.domain.model.StartPosition;
+import com.oriolvc.topicman.messaging.domain.port.MessageReader;
+import com.oriolvc.topicman.messaging.domain.port.MessageStream;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.time.Duration;
 import java.util.List;

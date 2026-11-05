@@ -1,15 +1,15 @@
 package com.oriolvc.topicman.collection.infrastructure.persistence;
 
-import com.oriolvc.topicman.collection.domain.Collection;
-import com.oriolvc.topicman.collection.domain.CollectionId;
-import com.oriolvc.topicman.collection.domain.CollectionName;
-import com.oriolvc.topicman.collection.domain.CollectionNameTakenException;
-import com.oriolvc.topicman.collection.domain.CollectionRepository;
-import com.oriolvc.topicman.collection.domain.MessageTemplate;
-import com.oriolvc.topicman.collection.domain.TemplateDestination;
-import com.oriolvc.topicman.collection.domain.TemplateId;
-import com.oriolvc.topicman.collection.domain.TemplateName;
-import com.oriolvc.topicman.collection.domain.TemplatePayload;
+import com.oriolvc.topicman.collection.domain.exception.CollectionNameTakenException;
+import com.oriolvc.topicman.collection.domain.model.Collection;
+import com.oriolvc.topicman.collection.domain.model.CollectionId;
+import com.oriolvc.topicman.collection.domain.model.CollectionName;
+import com.oriolvc.topicman.collection.domain.model.MessageTemplate;
+import com.oriolvc.topicman.collection.domain.model.TemplateDestination;
+import com.oriolvc.topicman.collection.domain.model.TemplateId;
+import com.oriolvc.topicman.collection.domain.model.TemplateName;
+import com.oriolvc.topicman.collection.domain.model.TemplatePayload;
+import com.oriolvc.topicman.collection.domain.port.CollectionRepository;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;

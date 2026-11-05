@@ -1,16 +1,16 @@
 package com.oriolvc.topicman.collection.infrastructure.web;
 
-import com.oriolvc.topicman.collection.application.AddTemplateCommand;
-import com.oriolvc.topicman.collection.application.AddTemplateUseCase;
-import com.oriolvc.topicman.collection.application.DeleteTemplateCommand;
-import com.oriolvc.topicman.collection.application.DeleteTemplateUseCase;
-import com.oriolvc.topicman.collection.application.ReplaceTemplateCommand;
-import com.oriolvc.topicman.collection.application.ReplaceTemplateUseCase;
-import com.oriolvc.topicman.collection.application.ResolveTemplateCommand;
-import com.oriolvc.topicman.collection.application.ResolveTemplateUseCase;
-import com.oriolvc.topicman.collection.domain.CollectionId;
-import com.oriolvc.topicman.collection.domain.EnvironmentId;
-import com.oriolvc.topicman.collection.domain.TemplateId;
+import com.oriolvc.topicman.collection.application.model.AddTemplateCommand;
+import com.oriolvc.topicman.collection.application.model.DeleteTemplateCommand;
+import com.oriolvc.topicman.collection.application.model.ReplaceTemplateCommand;
+import com.oriolvc.topicman.collection.application.model.ResolveTemplateCommand;
+import com.oriolvc.topicman.collection.application.usecase.AddTemplateUseCase;
+import com.oriolvc.topicman.collection.application.usecase.DeleteTemplateUseCase;
+import com.oriolvc.topicman.collection.application.usecase.ReplaceTemplateUseCase;
+import com.oriolvc.topicman.collection.application.usecase.ResolveTemplateUseCase;
+import com.oriolvc.topicman.collection.domain.model.CollectionId;
+import com.oriolvc.topicman.collection.domain.model.EnvironmentId;
+import com.oriolvc.topicman.collection.domain.model.TemplateId;
 import com.oriolvc.topicman.collection.infrastructure.web.api.TemplatesApi;
 import com.oriolvc.topicman.collection.infrastructure.web.model.ResolveTemplateRequest;
 import com.oriolvc.topicman.collection.infrastructure.web.model.ResolvedMessageResponse;

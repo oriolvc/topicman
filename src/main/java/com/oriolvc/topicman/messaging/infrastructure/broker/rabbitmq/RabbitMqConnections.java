@@ -2,8 +2,8 @@ package com.oriolvc.topicman.messaging.infrastructure.broker.rabbitmq;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.oriolvc.topicman.messaging.domain.Authentication;
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.Authentication;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import java.io.ByteArrayInputStream;

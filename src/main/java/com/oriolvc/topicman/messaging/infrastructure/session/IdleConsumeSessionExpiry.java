@@ -1,7 +1,7 @@
 package com.oriolvc.topicman.messaging.infrastructure.session;
 
-import com.oriolvc.topicman.messaging.application.ExpireIdleConsumeSessionsCommand;
-import com.oriolvc.topicman.messaging.application.ExpireIdleConsumeSessionsUseCase;
+import com.oriolvc.topicman.messaging.application.model.ExpireIdleConsumeSessionsCommand;
+import com.oriolvc.topicman.messaging.application.usecase.ExpireIdleConsumeSessionsUseCase;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

@@ -1,12 +1,12 @@
 package com.oriolvc.topicman.messaging.infrastructure.connection;
 
-import com.oriolvc.topicman.connection.application.BrokerCredentials;
-import com.oriolvc.topicman.connection.application.GetBrokerAccessCommand;
-import com.oriolvc.topicman.connection.application.GetBrokerAccessUseCase;
-import com.oriolvc.topicman.messaging.domain.Authentication;
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoint;
-import com.oriolvc.topicman.messaging.domain.BrokerEndpoints;
-import com.oriolvc.topicman.messaging.domain.Tls;
+import com.oriolvc.topicman.connection.application.model.BrokerCredentials;
+import com.oriolvc.topicman.connection.application.model.GetBrokerAccessCommand;
+import com.oriolvc.topicman.connection.application.usecase.GetBrokerAccessUseCase;
+import com.oriolvc.topicman.messaging.domain.model.Authentication;
+import com.oriolvc.topicman.messaging.domain.model.BrokerEndpoint;
+import com.oriolvc.topicman.messaging.domain.model.Tls;
+import com.oriolvc.topicman.messaging.domain.port.BrokerEndpoints;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import org.springframework.stereotype.Component;
 

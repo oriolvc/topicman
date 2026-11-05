@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oriolvc.topicman.TestcontainersConfiguration;
-import com.oriolvc.topicman.collection.domain.Environment;
-import com.oriolvc.topicman.collection.domain.EnvironmentName;
-import com.oriolvc.topicman.collection.domain.EnvironmentNameTakenException;
-import com.oriolvc.topicman.collection.domain.TestIds;
-import com.oriolvc.topicman.collection.domain.VariableName;
+import com.oriolvc.topicman.collection.domain.exception.EnvironmentNameTakenException;
+import com.oriolvc.topicman.collection.domain.model.Environment;
+import com.oriolvc.topicman.collection.domain.model.EnvironmentName;
+import com.oriolvc.topicman.collection.domain.model.TestIds;
+import com.oriolvc.topicman.collection.domain.model.VariableName;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.LinkedHashMap;

@@ -1,6 +1,6 @@
 package com.oriolvc.topicman.collection.infrastructure.resolution;
 
-import com.oriolvc.topicman.collection.domain.DynamicValues;
+import com.oriolvc.topicman.collection.domain.port.DynamicValues;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;

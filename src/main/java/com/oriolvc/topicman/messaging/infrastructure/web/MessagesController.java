@@ -1,8 +1,8 @@
 package com.oriolvc.topicman.messaging.infrastructure.web;
 
-import com.oriolvc.topicman.messaging.application.ProduceMessageCommand;
-import com.oriolvc.topicman.messaging.application.ProduceMessageUseCase;
-import com.oriolvc.topicman.messaging.domain.SendReceipt;
+import com.oriolvc.topicman.messaging.application.model.ProduceMessageCommand;
+import com.oriolvc.topicman.messaging.application.usecase.ProduceMessageUseCase;
+import com.oriolvc.topicman.messaging.domain.model.SendReceipt;
 import com.oriolvc.topicman.messaging.infrastructure.web.api.MessagesApi;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.ProduceMessageRequest;
 import com.oriolvc.topicman.messaging.infrastructure.web.model.ProduceMessageResponse;
