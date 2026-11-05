@@ -97,8 +97,7 @@ Out (post-MVP):
       `model`, with ArchUnit rules that keep them that way
 - [x] Run without PostgreSQL: an embedded H2 database stored on disk unless a datasource is set, and
       a generated master key in that mode (ADR 0010)
-- [ ] Production Docker image published to GHCR on release. It must set `SERVER_ADDRESS=0.0.0.0`:
-      inside a container, the loopback default cannot be reached through a published port
+- [x] Production Docker image, tested in CI and published to GHCR by a version tag
 - [x] Example data on an empty database: connections with each kind of credentials, collections,
       environments and JSON and text templates. It loads in embedded mode, with the `demo` profile
       or with `TOPICMAN_SEED_EXAMPLES=true`, and only once, so deleted examples do not come back
@@ -109,5 +108,5 @@ Out (post-MVP):
 
 - [ ] README: 20-second GIF, quick start, broker differences table
 - [ ] ADRs up to date
-- [ ] Release v0.1.0
+- [ ] Release v0.1.0, the first run of the release workflow: check the image it publishes
 - [ ] LinkedIn post explaining the design

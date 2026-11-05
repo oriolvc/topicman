@@ -15,6 +15,39 @@ fighting an admin console built for operators. TopicMan focuses on the developer
   them from real consumers ([ADR 0003](docs/adr/0003-side-effect-free-consumption.md))
 - **Save** messages as templates in collections, with variables per environment, versionable in Git
 
+## Run with Docker
+
+From the first release, published images need nothing else, not even a database. Until then, build one
+with `docker build -t ghcr.io/oriolvc/topicman .`.
+
+```bash
+docker run -p 127.0.0.1:8080:8080 -v topicman-data:/data ghcr.io/oriolvc/topicman
+```
+
+Then open <http://localhost:8080>. It starts with [example data](#example-data), and keeps everything
+in the `topicman-data` volume. Keep `127.0.0.1` in the port unless you mean to expose TopicMan: **it has
+no login** (see [Expose TopicMan](#expose-topicman)). Without that address, Docker publishes the port
+to your whole network.
+
+This mode is for testing and home use, because the volume holds both the saved credentials and the
+key that decrypts them (see [Embedded database](#embedded-database)). For real credentials, set
+`TOPICMAN_MASTER_KEY`, or better, use PostgreSQL:
+
+```bash
+docker run -p 127.0.0.1:8080:8080 \
+  -e TOPICMAN_MASTER_KEY \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://db-host:5432/topicman \
+  -e SPRING_DATASOURCE_USERNAME=topicman \
+  -e SPRING_DATASOURCE_PASSWORD \
+  ghcr.io/oriolvc/topicman
+```
+
+Inside a container, `localhost` is the container itself, so a connection must use an address the
+container can reach, and that the broker advertises. On Linux, `--network host` makes brokers on this
+machine reachable as `localhost`, including those in [`compose.demo.yaml`](compose.demo.yaml) that the
+example connections use. It also publishes every port, so add `-e SERVER_ADDRESS=127.0.0.1` and leave
+out `-p`.
+
 ## Run locally (development)
 
 Requirements: Java 25, plus Docker or a local PostgreSQL. The development commands below use

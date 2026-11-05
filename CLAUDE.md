@@ -26,6 +26,8 @@ frontend/             React app; its build output is bundled into the jar
 docs/                 PLAN.md and ADRs
 compose.yaml          PostgreSQL for local development
 compose.demo.yaml     PostgreSQL + Pulsar + Kafka + RabbitMQ for demos
+demo/                 what the brokers in compose.demo.yaml mount: start scripts and configuration
+Dockerfile            the production image; scripts/test-image.sh checks a built image
 ```
 
 ## Commands
@@ -35,6 +37,7 @@ compose.demo.yaml     PostgreSQL + Pulsar + Kafka + RabbitMQ for demos
 - Full verification (format check, tests, ArchUnit): `./gradlew check`
 - Format Java code: `./gradlew spotlessApply`
 - Frontend checks: `cd frontend && npm run lint && npm run typecheck && npm test`
+- Build and check the Docker image: `docker build -t topicman:test . && scripts/test-image.sh topicman:test`
 
 ## Architecture (non-negotiable)
 
