@@ -102,7 +102,8 @@ Out (post-MVP):
 - [x] Example data on an empty database: connections with each kind of credentials, collections,
       environments and JSON and text templates. It loads in embedded mode, with the `demo` profile
       or with `TOPICMAN_SEED_EXAMPLES=true`, and only once, so deleted examples do not come back
-- [ ] The demo brokers start with sample JSON and text messages in their topics
+- [x] The demo Kafka and Pulsar start with sample JSON and text messages in their topics. RabbitMQ
+      cannot: a consume session only sees what arrives after it starts
 
 ## Phase 7 — Launch
 
