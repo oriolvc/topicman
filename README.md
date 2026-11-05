@@ -106,6 +106,25 @@ To try it, the `demo` profile's brokers also listen with authentication and TLS:
 The header of [`compose.demo.yaml`](compose.demo.yaml) lists their demo credentials and the CA
 certificate to trust.
 
+### Expose TopicMan
+
+TopicMan listens on `127.0.0.1` by default, so only this machine can reach it. **It has no login:
+anyone who can reach it can use every saved connection**, and so produce to and read from your
+brokers with the saved credentials, although the API never returns them.
+
+To reach it from another machine, prefer an SSH tunnel, which needs no change:
+
+```bash
+ssh -L 8080:localhost:8080 user@topicman-host     # then open http://localhost:8080
+```
+
+To expose it, put it behind a reverse proxy that handles authentication and TLS, on the same
+machine, or set the address to listen on, and restrict who can reach it with a firewall:
+
+```bash
+SERVER_ADDRESS=0.0.0.0 ./gradlew bootRun          # every network interface
+```
+
 ## Design
 
 Hexagonal architecture in a single Spring Boot service, one adapter per broker behind common ports.

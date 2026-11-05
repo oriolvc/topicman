@@ -87,13 +87,14 @@ Out (post-MVP):
 - [x] TLS and SASL options in connections, covered by integration tests
 - [x] Mask credentials in the `toString()` of the generated request DTOs, so logging a request
       never prints a password or token
-- [ ] Production Docker image published to GHCR on release
 - [x] `compose.demo.yaml` with PostgreSQL, Pulsar, Kafka and RabbitMQ
-- [ ] App binds to localhost by default; documented way to expose it
+- [x] App binds to localhost by default; documented way to expose it
 
 ## Phase 6 — Launch
 
 - [ ] README: 20-second GIF, quick start, broker differences table
 - [ ] ADRs up to date
+- [ ] Production Docker image published to GHCR on release. It must set `SERVER_ADDRESS=0.0.0.0`:
+      inside a container, the loopback default cannot be reached through a published port
 - [ ] Release v0.1.0
 - [ ] LinkedIn post explaining the design

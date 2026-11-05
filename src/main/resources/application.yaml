@@ -1,3 +1,8 @@
+server:
+  # TopicMan has no login, so by default only this machine can reach it. To expose it, set
+  # SERVER_ADDRESS (README.md, "Expose TopicMan").
+  address: 127.0.0.1
+
 spring:
   application:
     name: TopicMan
