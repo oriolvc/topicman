@@ -8,7 +8,8 @@ for Apache Pulsar, Apache Kafka and RabbitMQ from one UI. Open source (Apache 2.
 
 ## Tech stack
 
-- Backend: Java 25, Spring Boot 4.x, Gradle, Spring Data JPA, PostgreSQL, Flyway, springdoc-openapi
+- Backend: Java 25, Spring Boot 4.x, Gradle, Spring Data JPA, PostgreSQL or embedded H2 (ADR 0010),
+  Flyway, springdoc-openapi
 - API: OpenAPI 3.1 specs written first, `openapi-generator` for the Java interfaces,
   `openapi-typescript` + `openapi-fetch` for the TS client
 - Broker clients: `kafka-clients`, `pulsar-client`, `amqp-client` used directly (no Spring broker starters)

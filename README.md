@@ -17,7 +17,8 @@ fighting an admin console built for operators. TopicMan focuses on the developer
 
 ## Run locally (development)
 
-Requirements: Java 25, plus Docker or a local PostgreSQL.
+Requirements: Java 25, plus Docker or a local PostgreSQL. The development commands below use
+PostgreSQL, while a built jar runs with no database at all (see [Embedded database](#embedded-database)).
 
 Create a master key once and keep it (see [Master key](#master-key)), for example:
 
@@ -82,8 +83,23 @@ docker compose -f compose.kafka.yaml up -d     # stop it with `down`; its data i
 
 Broker credentials are encrypted at rest with the key in `TOPICMAN_MASTER_KEY`
 ([ADR 0005](docs/adr/0005-credential-encryption-at-rest.md)). It must be a Base64-encoded 256-bit
-key; TopicMan does not start without one. Store it safely and reuse it: **if you lose the key, the
+key; with PostgreSQL, TopicMan does not start without one. Store it safely and reuse it: **if you lose the key, the
 saved credentials cannot be recovered** and must be entered again.
+
+### Embedded database
+
+With no database configured, TopicMan runs on its own, for testing and home use
+([ADR 0010](docs/adr/0010-embedded-database-and-generated-master-key.md)):
+
+```bash
+./gradlew bootJar
+java -jar build/libs/topicman-*-SNAPSHOT.jar
+```
+
+It keeps an H2 database and a generated master key in `~/.topicman`, or in `TOPICMAN_DATA_DIR`. **Anyone
+with a copy of that directory can decrypt the saved credentials**, because the key is next to them.
+For real credentials, set `TOPICMAN_MASTER_KEY`, or better, use PostgreSQL by setting
+`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
 
 ### Secured brokers
 

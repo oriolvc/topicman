@@ -4,7 +4,7 @@ Date: 2026-11-03
 
 ## Status
 
-Accepted
+Accepted. ADR 0010 replaces `BIGSERIAL` with explicit sequences, so H2 can run the migrations.
 
 ## Context
 

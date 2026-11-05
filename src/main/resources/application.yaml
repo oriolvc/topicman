@@ -6,6 +6,11 @@ server:
 spring:
   application:
     name: TopicMan
+  datasource:
+    # With nothing configured, an embedded database on disk, for testing and home use (ADR 0010). To
+    # use PostgreSQL, set SPRING_DATASOURCE_URL, _USERNAME and _PASSWORD. PostgreSQL mode is for the
+    # repositories' nextval('...').
+    url: jdbc:h2:file:${topicman.data-dir}/topicman;MODE=PostgreSQL
   threads:
     virtual:
       enabled: true
@@ -19,9 +24,13 @@ spring:
       ddl-auto: validate
 
 topicman:
+  # Where the embedded database and its generated master key live.
+  data-dir: ${TOPICMAN_DATA_DIR:${user.home}/.topicman}
   crypto:
-    # Required: Base64-encoded 256-bit key, e.g. `openssl rand -base64 32` (ADR 0005)
+    # Base64-encoded 256-bit key, e.g. `openssl rand -base64 32` (ADR 0005). Required with PostgreSQL;
+    # with the embedded database, a missing key is generated in generated-key-file (ADR 0010).
     master-key: ${TOPICMAN_MASTER_KEY:}
+    generated-key-file: ${topicman.data-dir}/master.key
 
 springdoc:
   # The specs are hand-written (ADR 0004). springdoc only runs Swagger UI when its code-first

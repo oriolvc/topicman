@@ -10,7 +10,7 @@ class NameValueEmbeddable {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "entry_value", nullable = false)
     private String value;
 
     protected NameValueEmbeddable() {}

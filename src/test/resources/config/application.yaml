@@ -3,3 +3,9 @@ topicman:
   crypto:
     # Test-only key (bytes 0x00..0x1f). Never use it outside tests.
     master-key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+
+spring:
+  test:
+    database:
+      # Never swap the database for an in-memory one: the tests choose it (TestcontainersConfiguration).
+      replace: none

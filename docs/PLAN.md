@@ -95,8 +95,8 @@ Out (post-MVP):
 
 - [x] Split `domain` into `model`, `port` and `exception`, and `application` into `usecase` and
       `model`, with ArchUnit rules that keep them that way
-- [ ] Run without PostgreSQL: an embedded H2 database stored on disk unless a datasource is set, and
-      a generated master key in that mode (each needs an ADR first)
+- [x] Run without PostgreSQL: an embedded H2 database stored on disk unless a datasource is set, and
+      a generated master key in that mode (ADR 0010)
 - [ ] Production Docker image published to GHCR on release. It must set `SERVER_ADDRESS=0.0.0.0`:
       inside a container, the loopback default cannot be reached through a published port
 - [ ] Example data on an empty database: connections with each kind of credentials, collections,

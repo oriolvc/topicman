@@ -62,7 +62,8 @@ com.oriolvc.topicman.<context>
 - Schema is owned by Flyway; Hibernate never generates DDL (`ddl-auto: validate`).
 - No lazy-loading surprises: no `open-in-view`, fetch what a use case needs explicitly.
 - Flyway migrations live in `src/main/resources/db/migration` as
-  `V<n>__<snake_case_description>.sql`. Never edit a migration that is already on `main`.
+  `V<n>__<snake_case_description>.sql`. Never edit a migration that is already on `main`. They run
+  on PostgreSQL and H2 (ADR 0010), so use SQL both accept.
 - Broker adapters hide every client type: no `ConsumerRecord`, Pulsar `Message<?>` or AMQP type
   leaves the adapter package.
 - Configuration through `@ConfigurationProperties` records with the `topicman.` prefix.

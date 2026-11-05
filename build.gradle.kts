@@ -39,6 +39,7 @@ dependencies {
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
     runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.h2)
     testImplementation(libs.spring.boot.starter.actuator.test)
     testImplementation(libs.spring.boot.starter.data.jpa.test)
     testImplementation(libs.spring.boot.starter.flyway.test)
@@ -56,6 +57,30 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// The tests that use the database, again on the default embedded database (ADR 0010), so a migration
+// or query that works on only one database fails the build.
+val embeddedDatabaseTest = tasks.register<Test>("embeddedDatabaseTest") {
+    group = "verification"
+    description = "Runs the persistence and API tests on the embedded H2 database."
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*.infrastructure.persistence.*IT")
+        includeTestsMatching("com.oriolvc.topicman.connection.infrastructure.web.*IT")
+        includeTestsMatching("com.oriolvc.topicman.collection.infrastructure.web.*IT")
+    }
+    val dataDir = layout.buildDirectory.dir("embedded-database-test")
+    systemProperty("topicman.test.database", "h2")
+    systemProperty("topicman.data-dir", dataDir.get().asFile.path)
+    doFirst { delete(dataDir) }
+    shouldRunAfter(tasks.test)
+}
+
+tasks.check {
+    dependsOn(embeddedDatabaseTest)
 }
 
 // `spotlessCheck` runs as part of `./gradlew check`; fix violations with `./gradlew spotlessApply`.

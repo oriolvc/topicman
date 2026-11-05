@@ -7,6 +7,7 @@ import com.oriolvc.topicman.connection.domain.model.ConnectionName;
 import com.oriolvc.topicman.connection.domain.port.ConnectionRepository;
 import com.oriolvc.topicman.shared.domain.ConnectionId;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
@@ -69,7 +70,10 @@ class JpaConnectionRepository implements ConnectionRepository {
 
     private static boolean isNameUniqueViolation(DataIntegrityViolationException e) {
         return e.getMostSpecificCause().getMessage() != null
-                && e.getMostSpecificCause().getMessage().contains(NAME_UNIQUE_CONSTRAINT);
+                && e.getMostSpecificCause()
+                        .getMessage()
+                        .toLowerCase(Locale.ROOT)
+                        .contains(NAME_UNIQUE_CONSTRAINT);
     }
 
     @Override

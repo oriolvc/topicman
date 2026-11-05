@@ -4,7 +4,7 @@ Date: 2026-10-16
 
 ## Status
 
-Accepted
+Accepted. ADR 0010 adds a generated key for the embedded database only.
 
 ## Context
 
