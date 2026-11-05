@@ -101,6 +101,17 @@ with a copy of that directory can decrypt the saved credentials**, because the k
 For real credentials, set `TOPICMAN_MASTER_KEY`, or better, use PostgreSQL by setting
 `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`.
 
+### Example data
+
+A new embedded database, and the `demo` profile, start with examples: a connection with each kind of
+credentials, collections of JSON and text templates for each broker, and two environments. The
+connections are for the brokers in [`compose.demo.yaml`](compose.demo.yaml), so their tests fail
+unless those brokers run on this machine.
+
+The examples load at most once, so what you delete does not come back. Set `TOPICMAN_SEED_EXAMPLES`
+to `true` to load them on an empty PostgreSQL too, such as with the `local` profile, or to `false` to
+never load them. A database that already holds data is left alone.
+
 ### Secured brokers
 
 Connections authenticate and use TLS as each broker does

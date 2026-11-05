@@ -9,3 +9,6 @@ spring:
         # Remove the containers, not just stop them: every run starts empty, and Pulsar standalone
         # cannot start again from a stopped container's state.
         command: down
+
+topicman:
+  seed-examples: true

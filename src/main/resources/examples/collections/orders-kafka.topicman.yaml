@@ -1,0 +1,31 @@
+topicman: 1
+kind: collection
+name: Orders (Kafka)
+templates:
+  - name: Order created
+    brokerType: KAFKA
+    destination:
+      type: TOPIC
+      name: orders
+    key: '{{customerId}}'
+    headers:
+      event-type: order.created
+      correlation-id: '{{$uuid}}'
+    payload:
+      format: JSON
+      content: |
+        {
+          "orderId": "{{$uuid}}",
+          "customerId": "{{customerId}}",
+          "quantity": {{$randomInt}},
+          "createdAt": "{{$isoTimestamp}}"
+        }
+  - name: Order note
+    brokerType: KAFKA
+    destination:
+      type: TOPIC
+      name: order-notes
+    key: '{{customerId}}'
+    payload:
+      format: TEXT
+      content: 'Customer {{customerId}} asked to deliver after 18:00 ({{region}}).'

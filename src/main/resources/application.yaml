@@ -26,6 +26,9 @@ spring:
 topicman:
   # Where the embedded database and its generated master key live.
   data-dir: ${TOPICMAN_DATA_DIR:${user.home}/.topicman}
+  # Load example connections, collections and environments into a new database. Unset means yes on
+  # the embedded database and no on PostgreSQL.
+  seed-examples: ${TOPICMAN_SEED_EXAMPLES:}
   crypto:
     # Base64-encoded 256-bit key, e.g. `openssl rand -base64 32` (ADR 0005). Required with PostgreSQL;
     # with the embedded database, a missing key is generated in generated-key-file (ADR 0010).

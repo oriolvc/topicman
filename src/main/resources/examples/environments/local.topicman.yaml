@@ -1,0 +1,10 @@
+topicman: 1
+kind: environment
+name: Local
+variables:
+  - name: customerId
+    value: customer-1001
+  - name: email
+    value: dev@example.com
+  - name: region
+    value: local

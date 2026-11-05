@@ -1,0 +1,28 @@
+topicman: 1
+kind: collection
+name: User events (Pulsar)
+templates:
+  - name: User signed up
+    brokerType: PULSAR
+    destination:
+      type: TOPIC
+      name: user-events
+    key: '{{customerId}}'
+    headers:
+      event-type: user.signed-up
+    payload:
+      format: JSON
+      content: |
+        {
+          "userId": "{{customerId}}",
+          "email": "{{email}}",
+          "at": {{$timestamp}}
+        }
+  - name: Audit line
+    brokerType: PULSAR
+    destination:
+      type: TOPIC
+      name: audit-log
+    payload:
+      format: TEXT
+      content: '{{$isoTimestamp}} {{region}} user {{customerId}} logged in'

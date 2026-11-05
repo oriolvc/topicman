@@ -3,6 +3,8 @@ topicman:
   crypto:
     # Test-only key (bytes 0x00..0x1f). Never use it outside tests.
     master-key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+  # Tests start from an empty database; ExampleDataIT and EmbeddedModeIT turn the examples on.
+  seed-examples: false
 
 spring:
   test:

@@ -1,0 +1,10 @@
+topicman: 1
+kind: environment
+name: Staging
+variables:
+  - name: customerId
+    value: customer-2002
+  - name: email
+    value: qa@example.com
+  - name: region
+    value: eu-west

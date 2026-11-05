@@ -1,0 +1,29 @@
+topicman: 1
+kind: collection
+name: Notifications (RabbitMQ)
+templates:
+  - name: Send email
+    brokerType: RABBITMQ
+    destination:
+      type: EXCHANGE
+      name: amq.topic
+      routingKey: 'notifications.email.{{region}}'
+    headers:
+      priority: high
+    payload:
+      format: JSON
+      content: |
+        {
+          "to": "{{email}}",
+          "subject": "Your order has shipped",
+          "requestId": "{{$uuid}}"
+        }
+  - name: Broadcast
+    brokerType: RABBITMQ
+    destination:
+      type: EXCHANGE
+      name: amq.fanout
+      routingKey: ''
+    payload:
+      format: TEXT
+      content: 'Maintenance in {{region}} tonight.'
