@@ -1,5 +1,8 @@
 package com.oriolvc.topicman.messaging.application.usecase;
 
+import com.oriolvc.topicman.messaging.application.helper.ActiveSession;
+import com.oriolvc.topicman.messaging.application.helper.ConsumeSessionRegistry;
+import com.oriolvc.topicman.messaging.application.helper.JsonPayloads;
 import com.oriolvc.topicman.messaging.application.model.ConsumeSessionSink;
 import com.oriolvc.topicman.messaging.application.model.StreamConsumeSessionCommand;
 import com.oriolvc.topicman.messaging.domain.exception.ConsumeSessionInUseException;

@@ -9,7 +9,7 @@ import com.oriolvc.topicman.connection.application.usecase.CreateConnectionUseCa
 import com.oriolvc.topicman.connection.domain.model.BrokerAddress;
 import com.oriolvc.topicman.connection.domain.model.ConnectionName;
 import com.oriolvc.topicman.connection.domain.model.Credentials;
-import com.oriolvc.topicman.messaging.application.usecase.ConsumeSessionRegistry;
+import com.oriolvc.topicman.messaging.application.helper.ConsumeSessionRegistry;
 import com.oriolvc.topicman.shared.domain.BrokerType;
 import java.time.Duration;
 import java.util.UUID;

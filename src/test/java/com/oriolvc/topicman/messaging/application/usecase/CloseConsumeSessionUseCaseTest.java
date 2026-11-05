@@ -4,6 +4,7 @@ import static com.oriolvc.topicman.messaging.application.usecase.ConsumeSessionF
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.oriolvc.topicman.messaging.application.helper.ConsumeSessionRegistry;
 import com.oriolvc.topicman.messaging.application.model.CloseConsumeSessionCommand;
 import com.oriolvc.topicman.messaging.application.model.OpenConsumeSessionCommand;
 import com.oriolvc.topicman.messaging.domain.exception.ConsumeSessionNotFoundException;

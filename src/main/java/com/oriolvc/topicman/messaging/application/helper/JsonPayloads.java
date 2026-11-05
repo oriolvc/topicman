@@ -1,4 +1,4 @@
-package com.oriolvc.topicman.messaging.application.usecase;
+package com.oriolvc.topicman.messaging.application.helper;
 
 import com.oriolvc.topicman.messaging.domain.exception.InvalidMessageException;
 import com.oriolvc.topicman.messaging.domain.model.Message;
@@ -10,7 +10,7 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 /** Recognizes JSON payloads (the domain has no JSON parser). */
-final class JsonPayloads {
+public final class JsonPayloads {
 
     private static final JsonMapper JSON = JsonMapper.builder()
             .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
@@ -19,7 +19,7 @@ final class JsonPayloads {
     private JsonPayloads() {}
 
     /** Consumed payloads arrive as text; those that parse as JSON are marked as JSON. */
-    static ReceivedMessage markJson(ReceivedMessage received) {
+    public static ReceivedMessage markJson(ReceivedMessage received) {
         var payload = received.message().payload();
         if (payload.format() == PayloadFormat.JSON || !isWellFormed(payload.content())) {
             return received;
@@ -38,7 +38,7 @@ final class JsonPayloads {
         }
     }
 
-    static void requireWellFormed(Payload payload) {
+    public static void requireWellFormed(Payload payload) {
         if (payload.format() != PayloadFormat.JSON) {
             return;
         }

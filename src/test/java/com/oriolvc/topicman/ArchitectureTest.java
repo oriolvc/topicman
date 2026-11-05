@@ -88,6 +88,15 @@ class ArchitectureTest {
     static final ArchRule innerLayersHaveNoLooseClasses =
             noClasses().should().resideInAnyPackage(CONTEXTS + ".domain", CONTEXTS + ".application");
 
+    /** Helpers are public only so use cases can reach them; adapters must not (ADR 0009). */
+    @ArchTest
+    static final ArchRule helpersStayInTheApplicationLayer = noClasses()
+            .that()
+            .resideOutsideOfPackage(CONTEXTS + ".application..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAPackage(CONTEXTS + ".application.helper");
+
     @ArchTest
     static final ArchRule useCasesLiveInUsecase = classes()
             .that()

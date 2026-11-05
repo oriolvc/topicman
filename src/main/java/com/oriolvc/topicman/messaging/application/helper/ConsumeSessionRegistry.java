@@ -1,4 +1,4 @@
-package com.oriolvc.topicman.messaging.application.usecase;
+package com.oriolvc.topicman.messaging.application.helper;
 
 import com.oriolvc.topicman.messaging.domain.exception.ConsumeSessionNotFoundException;
 import com.oriolvc.topicman.messaging.domain.model.ConsumeSessionId;
@@ -15,7 +15,7 @@ public class ConsumeSessionRegistry implements AutoCloseable {
     private final Map<ConsumeSessionId, ActiveSession> sessions = new ConcurrentHashMap<>();
 
     /** @return false, without registering, if {@code maxOpen} sessions are already open */
-    synchronized boolean registerWithin(ActiveSession session, int maxOpen) {
+    public synchronized boolean registerWithin(ActiveSession session, int maxOpen) {
         if (sessions.size() >= maxOpen) {
             return false;
         }
@@ -23,19 +23,19 @@ public class ConsumeSessionRegistry implements AutoCloseable {
         return true;
     }
 
-    int size() {
+    public int size() {
         return sessions.size();
     }
 
-    List<ActiveSession> all() {
+    public List<ActiveSession> all() {
         return List.copyOf(sessions.values());
     }
 
-    boolean contains(ConsumeSessionId id) {
+    public boolean contains(ConsumeSessionId id) {
         return sessions.containsKey(id);
     }
 
-    ActiveSession get(ConsumeSessionId id) {
+    public ActiveSession get(ConsumeSessionId id) {
         var session = sessions.get(id);
         if (session == null) {
             throw new ConsumeSessionNotFoundException(id);
@@ -43,7 +43,7 @@ public class ConsumeSessionRegistry implements AutoCloseable {
         return session;
     }
 
-    Optional<ActiveSession> remove(ConsumeSessionId id) {
+    public Optional<ActiveSession> remove(ConsumeSessionId id) {
         return Optional.ofNullable(sessions.remove(id));
     }
 

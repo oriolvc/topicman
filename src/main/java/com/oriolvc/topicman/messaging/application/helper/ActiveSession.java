@@ -1,4 +1,4 @@
-package com.oriolvc.topicman.messaging.application.usecase;
+package com.oriolvc.topicman.messaging.application.helper;
 
 import com.oriolvc.topicman.messaging.domain.model.ConsumeSession;
 import com.oriolvc.topicman.messaging.domain.model.ReceivedMessage;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * client takes the stream over by claiming it: the streaming thread notices that its claim is no
  * longer the latest, stops and releases the stream to it.
  */
-final class ActiveSession {
+public final class ActiveSession {
 
     private final ConsumeSession session;
     private final MessageStream stream;
@@ -28,20 +28,20 @@ final class ActiveSession {
     // Counts the claims; only the latest may stream.
     private long claims;
 
-    ActiveSession(ConsumeSession session, MessageStream stream) {
+    public ActiveSession(ConsumeSession session, MessageStream stream) {
         this.session = session;
         this.stream = stream;
     }
 
-    ConsumeSession session() {
+    public ConsumeSession session() {
         return session;
     }
 
-    MessageStream stream() {
+    public MessageStream stream() {
         return stream;
     }
 
-    Deque<ReceivedMessage> undelivered() {
+    public Deque<ReceivedMessage> undelivered() {
         return undelivered;
     }
 
@@ -52,7 +52,7 @@ final class ActiveSession {
      * @return the claim, to check with {@link #isClaimedBy}; empty if the session closed, the stream
      *     was not released in time or a later claim won
      */
-    synchronized OptionalLong claim(Duration handover, Instant now) {
+    public synchronized OptionalLong claim(Duration handover, Instant now) {
         var claim = ++claims;
         // Wakes an earlier claim still waiting, so it gives up.
         notifyAll();
@@ -78,23 +78,23 @@ final class ActiveSession {
     }
 
     /** Whether {@code claim} is still the latest, so its client may keep streaming. */
-    synchronized boolean isClaimedBy(long claim) {
+    public synchronized boolean isClaimedBy(long claim) {
         return claims == claim;
     }
 
-    synchronized boolean isCloseRequested() {
+    public synchronized boolean isCloseRequested() {
         return closeRequested;
     }
 
     /** @return whether the caller must close the stream, because no client is streaming it */
-    synchronized boolean requestClose() {
+    public synchronized boolean requestClose() {
         closeRequested = true;
         notifyAll();
         return !streaming;
     }
 
     /** Called by the streaming thread when it stops. @return whether it must close the stream */
-    synchronized boolean release(Instant now) {
+    public synchronized boolean release(Instant now) {
         streaming = false;
         // The idle timeout counts from when the last client left.
         recordActivity(now);
@@ -108,7 +108,7 @@ final class ActiveSession {
      *
      * @return whether it expired; the caller then closes the stream
      */
-    synchronized boolean expireIfIdle(Duration timeout, Instant now) {
+    public synchronized boolean expireIfIdle(Duration timeout, Instant now) {
         if (streaming || closeRequested || !session.isIdle(timeout, now)) {
             return false;
         }

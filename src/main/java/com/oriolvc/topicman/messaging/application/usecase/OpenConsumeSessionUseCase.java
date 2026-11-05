@@ -1,5 +1,7 @@
 package com.oriolvc.topicman.messaging.application.usecase;
 
+import com.oriolvc.topicman.messaging.application.helper.ActiveSession;
+import com.oriolvc.topicman.messaging.application.helper.ConsumeSessionRegistry;
 import com.oriolvc.topicman.messaging.application.model.ConsumeSessionLimits;
 import com.oriolvc.topicman.messaging.application.model.ConsumeSessionResult;
 import com.oriolvc.topicman.messaging.application.model.OpenConsumeSessionCommand;

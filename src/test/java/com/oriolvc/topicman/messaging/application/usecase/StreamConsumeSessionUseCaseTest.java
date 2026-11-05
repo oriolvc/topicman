@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
+import com.oriolvc.topicman.messaging.application.helper.ConsumeSessionRegistry;
 import com.oriolvc.topicman.messaging.application.model.CloseConsumeSessionCommand;
 import com.oriolvc.topicman.messaging.application.model.ConsumeSessionSink;
 import com.oriolvc.topicman.messaging.application.model.OpenConsumeSessionCommand;

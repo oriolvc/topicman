@@ -14,8 +14,9 @@ com.oriolvc.topicman.<context>
 │   ├── port/        outbound ports, always interfaces (e.g. ConnectionRepository, MessageProducer)
 │   └── exception/   domain exceptions
 ├── application/
-│   ├── usecase/     one class per use case, and package-private helpers only they use
-│   └── model/       commands, results and other types use cases expose
+│   ├── usecase/     one class per use case
+│   ├── model/       commands, results and other types use cases expose
+│   └── helper/      what use cases share; only the application layer may use it
 └── infrastructure/
     ├── web/         REST and SSE controllers, request/response DTOs, exception mapping
     ├── persistence/ JPA entities, Spring Data repositories, mappers to the domain

@@ -1,5 +1,6 @@
 package com.oriolvc.topicman.messaging.application.usecase;
 
+import com.oriolvc.topicman.messaging.application.helper.JsonPayloads;
 import com.oriolvc.topicman.messaging.application.model.ProduceMessageCommand;
 import com.oriolvc.topicman.messaging.application.model.ProduceMessageResult;
 import com.oriolvc.topicman.messaging.domain.exception.InvalidDestinationException;

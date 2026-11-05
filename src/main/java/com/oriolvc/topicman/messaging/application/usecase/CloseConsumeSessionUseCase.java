@@ -1,5 +1,6 @@
 package com.oriolvc.topicman.messaging.application.usecase;
 
+import com.oriolvc.topicman.messaging.application.helper.ConsumeSessionRegistry;
 import com.oriolvc.topicman.messaging.application.model.CloseConsumeSessionCommand;
 import com.oriolvc.topicman.messaging.domain.exception.ConsumeSessionNotFoundException;
 import java.time.Clock;

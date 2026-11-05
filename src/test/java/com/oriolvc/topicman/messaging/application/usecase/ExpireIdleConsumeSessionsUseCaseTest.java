@@ -5,6 +5,7 @@ import static com.oriolvc.topicman.messaging.application.usecase.ConsumeSessionF
 import static com.oriolvc.topicman.messaging.application.usecase.ConsumeSessionFixtures.aReceivedText;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.oriolvc.topicman.messaging.application.helper.ConsumeSessionRegistry;
 import com.oriolvc.topicman.messaging.application.model.ExpireIdleConsumeSessionsCommand;
 import com.oriolvc.topicman.messaging.application.model.OpenConsumeSessionCommand;
 import com.oriolvc.topicman.messaging.application.model.StreamConsumeSessionCommand;
