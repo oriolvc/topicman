@@ -274,6 +274,7 @@ components:
           const: TOKEN
         token:
           type: string
+          format: password
           minLength: 1
           writeOnly: true
           description: A bearer token, such as a Pulsar JWT.
@@ -289,6 +290,7 @@ components:
           minLength: 1
         password:
           type: string
+          format: password
           minLength: 1
           writeOnly: true
         saslMechanism:

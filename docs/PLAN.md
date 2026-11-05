@@ -85,7 +85,7 @@ Out (post-MVP):
 ## Phase 5 — Security and packaging
 
 - [x] TLS and SASL options in connections, covered by integration tests
-- [ ] Mask credentials in the `toString()` of the generated request DTOs, so logging a request
+- [x] Mask credentials in the `toString()` of the generated request DTOs, so logging a request
       never prints a password or token
 - [ ] Production Docker image published to GHCR on release
 - [x] `compose.demo.yaml` with PostgreSQL, Pulsar, Kafka and RabbitMQ
