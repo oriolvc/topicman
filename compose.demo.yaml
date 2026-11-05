@@ -32,6 +32,8 @@
 #
 # Broker UIs: Pulsar admin API http://localhost:8082, RabbitMQ management http://localhost:15672.
 # The ports are fixed (PostgreSQL on 5431), so stop compose.kafka.yaml first if it is running.
+# They are published on 127.0.0.1 only: the credentials above are public, and most of these ports
+# need none, so nothing here should be reachable from the network.
 #
 # To run the app from the IDE instead, start the containers on their own and use the `local` profile:
 #   docker compose -f compose.demo.yaml up -d --wait
@@ -50,15 +52,15 @@ services:
       - 'POSTGRES_PASSWORD=topicman'
     ports:
       # Fixed, so the `local` profile can use this database too (application-local.yaml).
-      - '5431:5432'
+      - '127.0.0.1:5431:5432'
 
   kafka:
     image: 'apache/kafka:4.3.1'
     # Creates the SCRAM credentials once the broker runs (demo/kafka/start.sh).
     command: ['/demo/start.sh']
     ports:
-      - '9092:9092'
-      - '9094:9094'
+      - '127.0.0.1:9092:9092'
+      - '127.0.0.1:9094:9094'
     volumes:
       - './demo/kafka/start.sh:/demo/start.sh:ro'
       - './src/test/resources/tls:/etc/kafka/tls:ro'
@@ -106,10 +108,10 @@ services:
       - '-c'
       - 'bin/apply-config-from-env.py conf/standalone.conf && exec bin/pulsar standalone'
     ports:
-      - '6650:6650'
+      - '127.0.0.1:6650:6650'
       # TopicMan serves on 8080, so Pulsar's HTTP port moves to 8082.
-      - '8082:8080'
-      - '6651:6651'
+      - '127.0.0.1:8082:8080'
+      - '127.0.0.1:6651:6651'
     volumes:
       - './src/test/resources/tls:/pulsar/tls:ro'
     environment:
@@ -132,9 +134,9 @@ services:
   rabbitmq:
     image: 'rabbitmq:4.2-management'
     ports:
-      - '5672:5672'
-      - '5671:5671'
-      - '15672:15672'
+      - '127.0.0.1:5672:5672'
+      - '127.0.0.1:5671:5671'
+      - '127.0.0.1:15672:15672'
     volumes:
       - './demo/rabbitmq/20-demo.conf:/etc/rabbitmq/conf.d/20-demo.conf:ro'
       - './demo/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro'
