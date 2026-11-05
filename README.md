@@ -101,6 +101,11 @@ private or self-signed CA issued, paste that CA's certificate (PEM) into the con
 certificates; otherwise the JVM's default CAs are trusted. Client certificates (mutual TLS) are not
 supported yet.
 
+To try it, the `demo` profile's brokers also listen with authentication and TLS: Kafka on
+`localhost:9094`, Pulsar on `pulsar+ssl://localhost:6651` and RabbitMQ on `amqps://localhost:5671`.
+The header of [`compose.demo.yaml`](compose.demo.yaml) lists their demo credentials and the CA
+certificate to trust.
+
 ## Design
 
 Hexagonal architecture in a single Spring Boot service, one adapter per broker behind common ports.

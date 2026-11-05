@@ -7,12 +7,28 @@
 # stops (application-demo.yaml), so every run starts empty. If the app was killed instead of
 # stopped, remove them by hand: `docker compose -f compose.demo.yaml down`.
 #
-# Connections to create in the UI:
+# Connections to create in the UI. Topics are created on first produce; for RabbitMQ use the
+# amq.topic or amq.fanout exchange, or create one.
 #
-#   Kafka     localhost:9092                 topics are created on first produce
-#   Pulsar    pulsar://localhost:6650        topics are created on first produce
-#   RabbitMQ  amqp://localhost:5672          no credentials (the broker's default guest user);
-#                                            use the amq.topic or amq.fanout exchange, or create one
+#   Kafka     localhost:9092                 no credentials, no TLS
+#   Pulsar    pulsar://localhost:6650        no credentials, no TLS
+#   RabbitMQ  amqp://localhost:5672          no credentials (the broker's guest user), no TLS
+#
+# Secured ones, to try authentication and TLS (ADR 0008). For TLS, paste the demo CA,
+# src/test/resources/tls/ca.pem, into the connection's trusted certificates: the brokers use the
+# test certificates, issued for localhost.
+#
+#   Kafka     localhost:9094                 username `demo`, password `demo-secret`, SASL PLAIN,
+#                                            SCRAM-SHA-256 or SCRAM-SHA-512; switch "Use TLS" on
+#   Pulsar    pulsar+ssl://localhost:6651    token below. Pulsar authenticates per broker, not per
+#                                            port: a wrong token is rejected on either port, and a
+#                                            connection without one is let in anonymously
+#   RabbitMQ  amqps://localhost:5671         username `demo`, password `demo-secret`; or guest/guest
+#
+#   Pulsar token (subject `demo`, never expires):
+#   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZW1vIn0.Z_RlpKTzK4icbhYrY7W_fURYnn48EFPhfgh02uo4wx8
+#
+# Every credential, key and certificate here is public and for this demo only.
 #
 # Broker UIs: Pulsar admin API http://localhost:8082, RabbitMQ management http://localhost:15672.
 # The ports are fixed (PostgreSQL on 5431), so stop compose.kafka.yaml first if it is running.
@@ -38,17 +54,36 @@ services:
 
   kafka:
     image: 'apache/kafka:4.3.1'
+    # Creates the SCRAM credentials once the broker runs (demo/kafka/start.sh).
+    command: ['/demo/start.sh']
     ports:
       - '9092:9092'
+      - '9094:9094'
+    volumes:
+      - './demo/kafka/start.sh:/demo/start.sh:ro'
+      - './src/test/resources/tls:/etc/kafka/tls:ro'
     environment:
       # Setting any KAFKA_ variable replaces the image's defaults, so the whole config is here.
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      # Clients run on the host, so the broker advertises the published port there.
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,SECURED://:9094
+      # Clients run on the host, so the broker advertises the published ports there.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,SECURED://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,SECURED:SASL_SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN,SCRAM-SHA-256,SCRAM-SHA-512
+      # The image maps ___ to - and _ to . in configuration names.
+      KAFKA_LISTENER_NAME_SECURED_PLAIN_SASL_JAAS_CONFIG: >-
+        org.apache.kafka.common.security.plain.PlainLoginModule required user_demo="demo-secret";
+      KAFKA_LISTENER_NAME_SECURED_SCRAM___SHA___256_SASL_JAAS_CONFIG: >-
+        org.apache.kafka.common.security.scram.ScramLoginModule required;
+      KAFKA_LISTENER_NAME_SECURED_SCRAM___SHA___512_SASL_JAAS_CONFIG: >-
+        org.apache.kafka.common.security.scram.ScramLoginModule required;
+      KAFKA_SSL_KEYSTORE_TYPE: PEM
+      # Written by demo/kafka/start.sh from the test key and certificate.
+      KAFKA_SSL_KEYSTORE_LOCATION: /tmp/server-keystore.pem
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -58,20 +93,36 @@ services:
     healthcheck:
       test:
         - 'CMD-SHELL'
-        - '/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null'
+        - 'test -f /tmp/ready'
       interval: 5s
       timeout: 10s
       retries: 20
 
   pulsar:
     image: 'apachepulsar/pulsar:4.2.4'
-    command: ['bin/pulsar', 'standalone']
+    # The script writes the PULSAR_PREFIX_ settings below into the configuration first.
+    command:
+      - 'sh'
+      - '-c'
+      - 'bin/apply-config-from-env.py conf/standalone.conf && exec bin/pulsar standalone'
     ports:
       - '6650:6650'
       # TopicMan serves on 8080, so Pulsar's HTTP port moves to 8082.
       - '8082:8080'
+      - '6651:6651'
+    volumes:
+      - './src/test/resources/tls:/pulsar/tls:ro'
     environment:
       PULSAR_MEM: '-Xms256m -Xmx512m -XX:MaxDirectMemorySize=256m'
+      PULSAR_PREFIX_brokerServicePortTls: '6651'
+      PULSAR_PREFIX_tlsCertificateFilePath: /pulsar/tls/server.pem
+      PULSAR_PREFIX_tlsKeyFilePath: /pulsar/tls/server-key.pem
+      PULSAR_PREFIX_authenticationEnabled: 'true'
+      PULSAR_PREFIX_authenticationProviders: org.apache.pulsar.broker.authentication.AuthenticationProviderToken
+      # base64 of `topicman-demo-only-token-signing-key!!`, the HS256 key that signs the demo token.
+      PULSAR_PREFIX_tokenSecretKey: 'data:;base64,dG9waWNtYW4tZGVtby1vbmx5LXRva2VuLXNpZ25pbmcta2V5ISE='
+      # Connections without a token, such as the open demo connection, are let in under this role.
+      PULSAR_PREFIX_anonymousUserRole: anonymous
     healthcheck:
       test: ['CMD-SHELL', 'bin/pulsar-admin brokers healthcheck']
       interval: 5s
@@ -82,7 +133,12 @@ services:
     image: 'rabbitmq:4.2-management'
     ports:
       - '5672:5672'
+      - '5671:5671'
       - '15672:15672'
+    volumes:
+      - './demo/rabbitmq/20-demo.conf:/etc/rabbitmq/conf.d/20-demo.conf:ro'
+      - './demo/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro'
+      - './src/test/resources/tls:/etc/rabbitmq/tls:ro'
     healthcheck:
       test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
       interval: 5s
